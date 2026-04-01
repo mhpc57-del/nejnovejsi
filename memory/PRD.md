@@ -95,6 +95,18 @@
 
 ---
 
+## ✅ K otestování
+
+Po propagaci DNS (craftbolt.cz) otestovat:
+1. Registrace Zákazník
+2. Registrace Dodavatel - Nepodnikatel
+3. Registrace Dodavatel - OSVČ
+4. Registrace Dodavatel - Firma
+5. Email notifikace při registraci
+6. SMS notifikace při akcích
+
+---
+
 ## Konfigurace
 
 ### Environment Variables (backend/.env)
@@ -114,9 +126,15 @@ SMTP_FROM_NAME=CraftBolt
 ```
 
 ### DNS (Wedos)
-- ALIAS @ → is-online.preview.emergentagent.com
-- CNAME www → is-online.preview.emergentagent.com
+- **A** @ → 104.18.10.243 (TTL 300)
+- **A** @ → 104.18.11.243 (TTL 300)
+- **CNAME** www → is-online.preview.emergentagent.com
 - MX, SPF, DKIM, DMARC záznamy pro emaily zachovány
+
+### Deployment (Emergent)
+- Deployment spuštěn: 1. 4. 2026, 14:27
+- Billing: 50 credits/měsíc
+- Stripe: testovací klíč (pro produkci nutno přidat Live key)
 
 ---
 
