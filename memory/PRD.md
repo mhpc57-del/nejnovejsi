@@ -1,85 +1,133 @@
-# CraftBolt - PRD (Product Requirements Document)
+# CraftBolt - PRD & Project Status
 
-## Původní požadavek
-Platforma craftbolt.cz - marketplace spojující zákazníky a dodavatele služeb (řemeslníky). Funguje podobně jako Bolt, ale pro řemeslníky.
+## Základní informace
+- **Projekt:** CraftBolt.cz - Platforma pro propojení zákazníků s řemeslníky
+- **Doména:** craftbolt.cz (DNS směřuje na Emergent)
+- **Provozovatel:** AC/DC MONT s.r.o., IČO: 097 44 550, Sportovní 7, 789 63 Ruda nad Moravou
+- **Poslední aktualizace:** 1. 4. 2026
 
-## User Personas
-1. **Zákazník** - poptává služby, vytváří zakázky
-2. **Dodavatel (Nepodnikatel)** - fyzická osoba nepodnikající, přivýdělek
-3. **Dodavatel (OSVČ/Firma)** - podnikatelé nabízející služby
-4. **Admin** - správce platformy
+---
 
-## Core Requirements (Static)
-- 14denní zkušební doba zdarma
-- Cenové plány:
-  - Zákazník: 190 Kč/měsíc
-  - Nepodnikatel: 290 Kč/měsíc
-  - OSVČ/Firmy: 490 Kč/měsíc
-- 61 kategorií služeb
+## Architektura
+- **Frontend:** React.js + Tailwind CSS
+- **Backend:** FastAPI (Python)
+- **Databáze:** MongoDB
+- **Platební brána:** Stripe (připraveno, testovací režim)
+- **SMS:** Twilio (Alphanumeric Sender ID: "CraftBolt")
+- **Email:** SMTP Wedos (info@craftbolt.cz)
+
+---
+
+## ✅ Implementováno
+
+### Autentizace & Uživatelé
+- JWT autentizace
+- 3 role: Zákazník, Dodavatel, Admin
 - Multi-step registrace
-- Geolokace jako Bolt
-- Real-time chat
+- 14denní trial pro všechny uživatele
+- ARES integrace (automatické vyplnění z IČO)
+
+### Tarify (aktuální)
+| Tarif | Cena | Role |
+|-------|------|------|
+| Zákazník | 99 Kč/měsíc bez DPH | customer |
+| Dodavatel | 399 Kč/měsíc bez DPH | supplier |
+
+### Poptávky & Zakázky
+- 61 kategorií služeb
+- Vytvoření poptávky s fotografiemi
+- Přijetí poptávky dodavatelem
+- Stavy: open → in_progress → completed/cancelled
+- Geocoding + mapa (Leaflet)
+
+### Komunikace
+- Chat mezi zákazníkem a dodavatelem
 - Hodnocení a recenze
-- SMS/Email notifikace (Twilio)
 
-## Co bylo implementováno (2026-04-01)
+### Platební brána (Stripe)
+- Checkout v CZK
+- Opakované měsíční platby (subscriptions)
+- 14denní trial
+- Webhook handling
+- Zrušení předplatného
 
-### Backend (FastAPI + MongoDB)
-- ✅ User autentizace (registrace, přihlášení, JWT tokeny)
-- ✅ 3 typy uživatelů (customer, supplier, admin)
-- ✅ 3 typy dodavatelů (osvc, nepodnikatel, company)
-- ✅ 61 kategorií služeb
-- ✅ CRUD pro poptávky (demands)
-- ✅ Chat/messaging systém
-- ✅ Hodnocení a recenze
-- ✅ Admin API (statistiky, správa uživatelů)
-- ✅ 14denní trial automaticky při registraci
-- ✅ Geolokace - ukládání a aktualizace polohy uživatelů
+### Notifikace
+| Událost | Email | SMS |
+|---------|-------|-----|
+| Registrace úspěšná | ✅ | - |
+| Nová poptávka (pro dodavatele) | ✅ | ✅ |
+| Nová nabídka (pro zákazníka) | ✅ | ✅ |
+| Nová zpráva v chatu | ✅ | ✅ |
+| Změna stavu zakázky | ✅ | ✅ |
+| Platba úspěšná | ✅ | - |
 
-### Frontend (React + Tailwind + Leaflet)
-- ✅ Homepage s hero, výhodami, procesem, ceníkem
-- ✅ Přihlášení
-- ✅ Registrace (multi-step wizard)
-- ✅ Dashboard zákazníka (moje poptávky, nová poptávka)
-- ✅ Dashboard dodavatele (dostupné, moje, statistiky, mapa s zakázkami)
-- ✅ Admin panel (přehled, uživatelé, zakázky)
-- ✅ Detail zakázky s chatem
-- ✅ **Live mapa** - real-time sledování polohy (jako Bolt)
-- ✅ Profil uživatele
-- ✅ **Hero slider** - 10 fotek bez textového překryvu
-- ✅ **"Jak to funguje" slider** - 5 fotek odpovídajících 5 krokům s hover interakcí
-- ✅ **Našeptávač adres** - geocoding + interaktivní mapa s markerem
-- ✅ **Nahrávání fotek k zakázkám** - max 5, JPEG/PNG/WebP
-- ✅ **Volba platby** - hotově/kartou/převodem
-- ✅ **Rozšířená registrace** - zákazník si vybere typ (nepodnikatel/OSVČ/firma) s dynamickými poli
-- ✅ **Profil zákazníka nepodnikatel** - fotka, jméno, telefon, email, trvalý pobyt, bydliště, datum narození, bio
-- ✅ **Profil zákazníka OSVČ/firma** - logo, IČO+ARES, DIČ, název, telefon, email, sídlo, pobočka, bio
-- ✅ **Profil dodavatele** - logo, IČO+ARES, DIČ, název, telefon, email, sídlo, pobočka, web, bio, referenční fotky (max 20), kategorie + vlastní kategorie, oblast působení (kruhy na mapě)
-- ✅ **ARES integrace** - automatické vyplnění údajů z IČO
+### Stránky webu
+- `/` - Homepage s hero sliderem, jak to funguje, ceník, video
+- `/prihlaseni` - Přihlášení
+- `/registrace` - Multi-step registrace
+- `/cenik` - Ceník tarifů
+- `/dashboard` - Dashboard (zákazník/dodavatel/admin)
+- `/obchodni-podminky` - Obchodní podmínky
+- `/kontakt` - Kontaktní stránka
+- `/podminky-opakovanych-plateb` - Podmínky opakovaných plateb
+- `/platba/uspech` - Úspěšná platba
+- `/platba/zruseno` - Zrušená platba
 
-## Prioritizovaný backlog
+### Promo video
+- YouTube embed: https://youtu.be/eR8_-m_mYoE
+- Český dabing
 
-### P0 (Kritické - další iterace)
-- [x] Geocoding - našeptávač adres + interaktivní mapa s markerem
-- [ ] SMS notifikace (Twilio integrace)
-- [ ] Email notifikace
-- [ ] Platební brána (Stripe) pro měsíční paušály
+---
 
-### P1 (Důležité)
-- [ ] Nahrávání fotografií k poptávkám
-- [ ] Galerie/portfolio dodavatelů
-- [ ] Vyhledávání dodavatelů
-- [ ] Filtrování podle lokace
-- [ ] WebSocket pro real-time aktualizace mapy
+## ⏳ Připraveno k aktivaci
 
-### P2 (Nice to have)
-- [ ] Mobilní aplikace (iOS, Android)
-- [ ] Push notifikace
-- [ ] Fakturace
-- [ ] Export dat
+### Stripe (produkce)
+- Aktuálně testovací klíč
+- Pro produkci: nastavit skutečné Stripe API klíče
 
-## Next Tasks
-1. Implementovat Twilio SMS notifikace
-2. Přidat Stripe platební bránu
-3. Implementovat geolokaci s mapou
-4. Přidat nahrávání fotografií
+---
+
+## 📋 Backlog (P0)
+
+### Mobilní aplikace
+- Push notifikace (APP)
+- iOS + Android aplikace
+
+---
+
+## Konfigurace
+
+### Environment Variables (backend/.env)
+```
+MONGO_URL="mongodb://localhost:27017"
+DB_NAME="test_database"
+STRIPE_API_KEY=sk_test_emergent
+TWILIO_ACCOUNT_SID=AC850bb010800d8fda6509294deb7b36eb
+TWILIO_AUTH_TOKEN=e239d907c1476057124ec692243b17e6
+TWILIO_PHONE_NUMBER=CraftBolt
+SMTP_HOST=wes1-smtp.wedos.net
+SMTP_PORT=587
+SMTP_USER=info@craftbolt.cz
+SMTP_PASSWORD=***
+SMTP_FROM_EMAIL=info@craftbolt.cz
+SMTP_FROM_NAME=CraftBolt
+```
+
+### DNS (Wedos)
+- ALIAS @ → is-online.preview.emergentagent.com
+- CNAME www → is-online.preview.emergentagent.com
+- MX, SPF, DKIM, DMARC záznamy pro emaily zachovány
+
+---
+
+## Kontakty
+- **Email:** info@craftbolt.cz
+- **Provozní doba:** Po-Pá 8:00-16:00
+
+---
+
+## Poznámky z vývoje
+- České Twilio čísla nepodporují SMS → použit Alphanumeric Sender ID "CraftBolt"
+- GoPay vyžaduje zdlouhavé ověření → zůstáváme u Stripe
+- Video na YouTube: veřejné od 12:15
+
