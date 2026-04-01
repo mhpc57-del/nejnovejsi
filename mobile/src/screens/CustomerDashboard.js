@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, FlatList,
-  RefreshControl, Modal, TextInput, ScrollView, Alert, ActivityIndicator,
+  RefreshControl, Modal, TextInput, ScrollView, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { demandService, miscService } from '../services/api';
+import * as ImagePicker from 'expo-image-picker';
+import { demandService, miscService, uploadService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS, STATUS_COLORS } from '../utils/theme';
 
@@ -187,12 +188,31 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCats, setShowCats] = useState(false);
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
     miscService.getCategories().then(r => setCategories(r.data)).catch(() => {});
   }, []);
 
   const update = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const pickImages = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert('Oprávnění', 'Pro výběr fotek je potřeba přístup ke galerii'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ allowsMultipleSelection: true, quality: 0.7 });
+    if (!result.canceled && result.assets?.length > 0) {
+      setImages(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, 5));
+    }
+  };
+
+  const takePhoto = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) { Alert.alert('Oprávnění', 'Pro fotografování je potřeba přístup k fotoaparátu'); return; }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+    if (!result.canceled && result.assets?.[0]) {
+      setImages(prev => [...prev, result.assets[0].uri].slice(0, 5));
+    }
+  };
 
   const submit = async () => {
     if (!form.title || !form.description || !form.category || !form.address) {
@@ -201,8 +221,19 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
     }
     setLoading(true);
     try {
+      // Upload images first
+      const uploadedUrls = [];
+      for (const uri of images) {
+        try {
+          const res = await uploadService.upload(uri);
+          uploadedUrls.push(res.data.url);
+        } catch (e) {
+          console.error('Image upload failed:', e);
+        }
+      }
       await demandService.create({
         ...form,
+        images: uploadedUrls,
         budget_max: form.budget_max ? parseFloat(form.budget_max) : null,
         deadline: form.deadline || null,
       });
@@ -263,6 +294,33 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
 
             <Text style={styles.label}>Termín realizace</Text>
             <TextInput style={styles.modalInput} value={form.deadline} onChangeText={v => update('deadline', v)} placeholder="RRRR-MM-DD" placeholderTextColor={COLORS.gray300} />
+
+            <Text style={styles.label}>Fotky (max 5)</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+              {images.map((uri, i) => (
+                <View key={i} style={{ position: 'relative' }}>
+                  <Image source={{ uri }} style={{ width: 72, height: 72, borderRadius: 10 }} />
+                  <TouchableOpacity style={{ position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: 11, backgroundColor: COLORS.red500, justifyContent: 'center', alignItems: 'center' }}
+                    onPress={() => setImages(prev => prev.filter((_, idx) => idx !== i))}>
+                    <Ionicons name="close" size={14} color={COLORS.white} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {images.length < 5 && (
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity style={{ width: 72, height: 72, borderRadius: 10, borderWidth: 1.5, borderColor: COLORS.gray200, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}
+                    onPress={pickImages}>
+                    <Ionicons name="images-outline" size={24} color={COLORS.gray500} />
+                    <Text style={{ fontSize: 10, color: COLORS.gray500, marginTop: 2 }}>Galerie</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ width: 72, height: 72, borderRadius: 10, borderWidth: 1.5, borderColor: COLORS.gray200, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}
+                    onPress={takePhoto}>
+                    <Ionicons name="camera-outline" size={24} color={COLORS.gray500} />
+                    <Text style={{ fontSize: 10, color: COLORS.gray500, marginTop: 2 }}>Fotit</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
 
             <TouchableOpacity style={[styles.submitButton, { marginBottom: 40 }]} onPress={submit} disabled={loading}>
               {loading ? <ActivityIndicator color={COLORS.white} /> : (

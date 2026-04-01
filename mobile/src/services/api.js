@@ -44,6 +44,25 @@ export const userService = {
   updateProfile: (data) => api.put('/users/profile', data),
 };
 
+export const reviewService = {
+  create: (data) => api.post('/reviews', data),
+  getByUser: (userId) => api.get(`/reviews/user/${userId}`),
+};
+
+export const uploadService = {
+  upload: async (uri) => {
+    const formData = new FormData();
+    const filename = uri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    formData.append('file', { uri, name: filename, type });
+    const res = await api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res;
+  },
+};
+
 export const miscService = {
   getCategories: () => api.get('/categories'),
 };

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  TextInput, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform,
+  TextInput, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { demandService, messageService } from '../services/api';
+import { demandService, messageService, reviewService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS, STATUS_COLORS } from '../utils/theme';
 
@@ -29,6 +29,7 @@ export default function DemandDetailScreen({ route, navigation }) {
   const [showChat, setShowChat] = useState(false);
   const [showSoftAccept, setShowSoftAccept] = useState(false);
   const [softAccepting, setSoftAccepting] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -65,6 +66,7 @@ export default function DemandDetailScreen({ route, navigation }) {
   const canChat = isCustomer || isAssignedSupplier || (user?.role === 'supplier' && demand?.status === 'open');
   const autoShowChat = isCustomer || isAssignedSupplier;
   const canComplete = (isCustomer || isAssignedSupplier) && demand?.status === 'in_progress';
+  const canCancel = (isCustomer || isAssignedSupplier) && (demand?.status === 'in_progress' || demand?.status === 'open');
 
   const handleAccept = async () => {
     Alert.alert('Závazné přijetí', 'Opravdu chcete závazně přijmout tuto zakázku?', [
@@ -117,6 +119,21 @@ export default function DemandDetailScreen({ route, navigation }) {
     }
   };
 
+  const handleCancel = () => {
+    Alert.alert('Zrušit zakázku', 'Opravdu chcete zrušit tuto zakázku?', [
+      { text: 'Ne', style: 'cancel' },
+      { text: 'Ano, zrušit', style: 'destructive', onPress: async () => {
+        try {
+          await demandService.cancel(id, 'Zrušeno přes mobilní aplikaci');
+          Alert.alert('Zrušeno', 'Zakázka byla zrušena');
+          fetchData();
+        } catch (e) {
+          Alert.alert('Chyba', e.response?.data?.detail || 'Chyba');
+        }
+      }},
+    ]);
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     setSending(true);
@@ -162,6 +179,16 @@ export default function DemandDetailScreen({ route, navigation }) {
             <Text style={styles.catText}>{demand.category}</Text>
           </View>
           <Text style={styles.desc}>{demand.description}</Text>
+
+          {/* Demand Images */}
+          {demand.images?.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll}>
+              {demand.images.map((img, i) => (
+                <Image key={i} source={{ uri: img.startsWith('http') ? img : `https://craftbolt.cz${img}` }}
+                  style={styles.demandImage} resizeMode="cover" />
+              ))}
+            </ScrollView>
+          )}
 
           <View style={styles.metaGrid}>
             <View style={styles.metaItem}>
@@ -259,10 +286,22 @@ export default function DemandDetailScreen({ route, navigation }) {
               <Text style={styles.completeBtnText}>Dokončit zakázku</Text>
             </TouchableOpacity>
           )}
+          {demand.status === 'completed' && (isCustomer || isAssignedSupplier) && (
+            <TouchableOpacity style={styles.reviewBtn} onPress={() => setShowReview(true)}>
+              <Ionicons name="star-outline" size={22} color={COLORS.primary} />
+              <Text style={styles.reviewBtnText}>Ohodnotit</Text>
+            </TouchableOpacity>
+          )}
           {canChat && !showChat && !autoShowChat && (
             <TouchableOpacity style={styles.chatStartBtn} onPress={() => setShowChat(true)}>
               <Ionicons name="chatbubbles-outline" size={22} color={COLORS.gray700} />
               <Text style={styles.chatStartBtnText}>Spustit chat</Text>
+            </TouchableOpacity>
+          )}
+          {canCancel && (
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+              <Ionicons name="close-circle-outline" size={22} color={COLORS.red500} />
+              <Text style={styles.cancelBtnText}>Zrušit zakázku</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -341,6 +380,11 @@ export default function DemandDetailScreen({ route, navigation }) {
         </View>
       )}
 
+      {/* Review Modal */}
+      {showReview && (
+        <ReviewModal demandId={id} onClose={() => setShowReview(false)} onSuccess={() => { setShowReview(false); fetchData(); }} />
+      )}
+
       {/* Soft Accept Modal */}
       <Modal visible={showSoftAccept} animationType="slide" transparent>
         <View style={modalStyles.overlay}>
@@ -374,6 +418,77 @@ export default function DemandDetailScreen({ route, navigation }) {
   );
 }
 
+const ReviewModal = ({ demandId, onClose, onSuccess }) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (rating === 0) { Alert.alert('Chyba', 'Vyberte hodnocení (1-5 hvězd)'); return; }
+    if (!comment.trim()) { Alert.alert('Chyba', 'Napište komentář'); return; }
+    setLoading(true);
+    try {
+      await reviewService.create({
+        demand_id: demandId,
+        rating,
+        comment: comment.trim(),
+        images: [],
+        rating_percentage: rating * 20,
+      });
+      Alert.alert('Děkujeme', 'Hodnocení bylo odesláno');
+      onSuccess();
+    } catch (e) {
+      Alert.alert('Chyba', e.response?.data?.detail || 'Nepodařilo se odeslat hodnocení');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal visible animationType="slide" transparent>
+      <View style={modalStyles.overlay}>
+        <View style={modalStyles.container}>
+          <View style={modalStyles.handle} />
+          <View style={modalStyles.header}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="star" size={22} color={COLORS.primary} />
+              <Text style={modalStyles.title}>Hodnocení</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={modalStyles.closeBtn}>
+              <Ionicons name="close" size={22} color={COLORS.gray700} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={modalStyles.body}>
+            <Text style={{ fontSize: 15, color: COLORS.gray700, marginBottom: 16 }}>Jak jste spokojeni se zakázkou?</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+              {[1, 2, 3, 4, 5].map(s => (
+                <TouchableOpacity key={s} onPress={() => setRating(s)}>
+                  <Ionicons name={s <= rating ? 'star' : 'star-outline'} size={40} color={s <= rating ? COLORS.primary : COLORS.gray300} />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: COLORS.gray900, marginBottom: 6 }}>Komentář</Text>
+            <TextInput
+              style={{ borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 14, padding: 14, fontSize: 15, color: COLORS.gray900, height: 100, textAlignVertical: 'top', backgroundColor: COLORS.gray50 }}
+              value={comment} onChangeText={setComment} placeholder="Popište vaši zkušenost..."
+              placeholderTextColor={COLORS.gray300} multiline
+            />
+            <TouchableOpacity style={{ backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 17, alignItems: 'center', marginTop: 20, marginBottom: 40 }}
+              onPress={submit} disabled={loading}>
+              {loading ? <ActivityIndicator color={COLORS.white} /> : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="send" size={18} color={COLORS.white} />
+                  <Text style={{ color: COLORS.white, fontSize: 16, fontWeight: '600' }}>Odeslat hodnocení</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 const modalStyles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   container: { backgroundColor: COLORS.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' },
@@ -403,6 +518,8 @@ const styles = StyleSheet.create({
   catBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 14 },
   catText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
   desc: { fontSize: 15, color: COLORS.gray700, lineHeight: 22, marginBottom: 18 },
+  imagesScroll: { marginBottom: 14 },
+  demandImage: { width: 160, height: 120, borderRadius: 12, marginRight: 10 },
   metaGrid: { gap: 14 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   metaIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: COLORS.gray50, justifyContent: 'center', alignItems: 'center' },
@@ -417,8 +534,12 @@ const styles = StyleSheet.create({
   arriveBtnText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
   completeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: COLORS.green500, borderRadius: 16, paddingVertical: 16 },
   completeBtnText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
+  reviewBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 2, borderColor: COLORS.primary, borderRadius: 16, paddingVertical: 16, backgroundColor: COLORS.primaryLight },
+  reviewBtnText: { color: COLORS.primary, fontSize: 16, fontWeight: '600' },
   chatStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1.5, borderColor: COLORS.gray200, borderRadius: 16, paddingVertical: 16 },
   chatStartBtnText: { color: COLORS.gray700, fontSize: 16, fontWeight: '600' },
+  cancelBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1.5, borderColor: COLORS.red500 + '40', borderRadius: 16, paddingVertical: 14, marginTop: 4 },
+  cancelBtnText: { color: COLORS.red500, fontSize: 15, fontWeight: '600' },
   softAcceptsSection: { marginBottom: 16 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.gray900 },

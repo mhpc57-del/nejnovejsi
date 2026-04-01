@@ -13,6 +13,7 @@ import CustomerDashboard from '../screens/CustomerDashboard';
 import SupplierDashboard from '../screens/SupplierDashboard';
 import DemandDetailScreen from '../screens/DemandDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -45,6 +46,13 @@ function CustomerTabs() {
             <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} />
           ),
         }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen}
+        options={{
+          tabBarLabel: 'Oznámení',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} />
+          ),
+        }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
         options={{
           tabBarLabel: 'Profil',
@@ -64,6 +72,13 @@ function SupplierTabs() {
           tabBarLabel: 'Přehled',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} />
+          ),
+        }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen}
+        options={{
+          tabBarLabel: 'Oznámení',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} />
           ),
         }} />
       <Tab.Screen name="Profile" component={ProfileScreen}

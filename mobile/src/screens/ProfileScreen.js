@@ -6,7 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { userService } from '../services/api';
+import { userService, uploadService, reviewService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS } from '../utils/theme';
 
@@ -19,6 +19,8 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     fetchProfile();
@@ -29,9 +31,12 @@ export default function ProfileScreen() {
       const res = await userService.getById(user.id);
       setProfile(res.data);
       setForm(res.data);
-      if (res.data.profile_photo) {
-        setAvatarUri(res.data.profile_photo);
+      if (res.data.profile_image) {
+        setAvatarUri(res.data.profile_image);
       }
+      // Fetch reviews
+      const reviewRes = await reviewService.getByUser(user.id).catch(() => ({ data: [] }));
+      setReviews(reviewRes.data || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -81,7 +86,19 @@ export default function ProfileScreen() {
 
       if (!result.canceled && result.assets?.[0]) {
         setAvatarUri(result.assets[0].uri);
-        Alert.alert('Hotovo', 'Profilová fotka nastavena');
+        setUploading(true);
+        try {
+          const uploadRes = await uploadService.upload(result.assets[0].uri);
+          const imageUrl = uploadRes.data.url;
+          await userService.updateProfile({ profile_image: imageUrl });
+          setAvatarUri(imageUrl);
+          Alert.alert('Hotovo', 'Profilová fotka nastavena a uložena');
+        } catch (uploadErr) {
+          console.error('Upload error:', uploadErr);
+          Alert.alert('Fotka vybrána', 'Fotka nastavena lokálně (upload na server selhal)');
+        } finally {
+          setUploading(false);
+        }
       }
     } catch (e) {
       Alert.alert('Chyba', 'Nepodařilo se vybrat fotku');
@@ -229,6 +246,38 @@ export default function ProfileScreen() {
         </View>
       )}
 
+      {/* Reviews */}
+      {reviews.length > 0 && (
+        <View style={styles.fieldsCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Ionicons name="chatbubbles-outline" size={18} color={COLORS.gray900} />
+            <Text style={styles.fieldsTitle}>Hodnocení ({reviews.length})</Text>
+          </View>
+          {reviews.slice(0, 5).map((review) => (
+            <View key={review.id} style={styles.reviewCard}>
+              <View style={styles.reviewHeader}>
+                <View style={styles.reviewStars}>
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Ionicons key={s} name={s <= review.rating ? 'star' : 'star-outline'} size={14} color={s <= review.rating ? COLORS.primary : COLORS.gray300} />
+                  ))}
+                </View>
+                <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString('cs-CZ')}</Text>
+              </View>
+              <Text style={styles.reviewAuthor}>{review.reviewer_name}</Text>
+              <Text style={styles.reviewComment}>{review.comment}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Upload indicator */}
+      {uploading && (
+        <View style={styles.uploadOverlay}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ color: COLORS.gray700, marginTop: 8 }}>Nahrávám fotku...</Text>
+        </View>
+      )}
+
       <View style={{ height: 40 }} />
     </ScrollView>
   );
@@ -267,4 +316,11 @@ const styles = StyleSheet.create({
   catsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   catChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
   catChipText: { fontSize: 13, color: COLORS.primary, fontWeight: '500' },
+  reviewCard: { borderBottomWidth: 1, borderBottomColor: COLORS.gray100, paddingBottom: 14, marginBottom: 14 },
+  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  reviewStars: { flexDirection: 'row', gap: 2 },
+  reviewDate: { fontSize: 12, color: COLORS.gray500 },
+  reviewAuthor: { fontSize: 13, fontWeight: '600', color: COLORS.gray900, marginBottom: 4 },
+  reviewComment: { fontSize: 14, color: COLORS.gray700, lineHeight: 20 },
+  uploadOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.85)', justifyContent: 'center', alignItems: 'center' },
 });
