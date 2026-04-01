@@ -774,7 +774,7 @@ const CertificationsSection = ({ userId, isOwnProfile, token }) => {
           <label className={`flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-orange-300 rounded-xl cursor-pointer hover:bg-orange-50 transition-colors ${uploading ? 'opacity-50' : ''}`}>
             <Plus className="w-5 h-5 text-orange-500" />
             <span className="text-sm text-orange-600 font-medium">{uploading ? 'Nahrávání...' : 'Vybrat soubor'}</span>
-            <input type="file" accept="image/*,.pdf" onChange={handleUploadCert} className="hidden" disabled={uploading || !certName.trim()} data-testid="cert-file-input" />
+            <input type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar" onChange={handleUploadCert} className="hidden" disabled={uploading || !certName.trim()} data-testid="cert-file-input" />
           </label>
         </div>
       )}
