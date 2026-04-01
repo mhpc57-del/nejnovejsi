@@ -4,7 +4,7 @@ import { useAuth, API } from '../App';
 import axios from 'axios';
 import { 
   ArrowLeft, MapPin, Calendar, User, Clock, Check, X,
-  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow
+  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
 
@@ -27,6 +27,9 @@ const DemandDetail = () => {
   const messagesEndRef = useRef(null);
   const locationIntervalRef = useRef(null);
   const [statusNotification, setStatusNotification] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  const [showSoftAcceptModal, setShowSoftAcceptModal] = useState(false);
+  const [softAccepting, setSoftAccepting] = useState(false);
 
   // Sound notification for new messages
   const playNotificationSound = useCallback(() => {
@@ -259,6 +262,23 @@ const DemandDetail = () => {
     }
   };
 
+  const handleSoftAccept = async (reason) => {
+    setSoftAccepting(true);
+    try {
+      await axios.post(`${API}/demands/${id}/soft-accept`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { reason }
+      });
+      setShowSoftAcceptModal(false);
+      fetchData();
+      alert('Vaše podmínka byla odeslána zákazníkovi.');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se odeslat');
+    } finally {
+      setSoftAccepting(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       open: 'bg-green-100 text-green-700',
@@ -305,6 +325,9 @@ const DemandDetail = () => {
   const canChat = isCustomer || isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open');
   const canAccept = user?.role === 'supplier' && demand.status === 'open';
   const canComplete = (isCustomer || isAssignedSupplier) && demand.status === 'in_progress';
+
+  // Auto-show chat for assigned users in active demands
+  const autoShowChat = isCustomer || isAssignedSupplier;
   const canCancel = isCustomer && (demand.status === 'open' || demand.status === 'in_progress');
   const showMapButton = demand.status === 'in_progress' && (isCustomer || isAssignedSupplier);
 
@@ -451,13 +474,33 @@ const DemandDetail = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
                 {canAccept && (
+                  <>
+                    <button
+                      onClick={handleAcceptDemand}
+                      className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-xl font-medium text-white transition-colors flex items-center gap-2"
+                      data-testid="accept-demand-btn"
+                    >
+                      <Check weight="bold" className="w-5 h-5" />
+                      Závazně přijmout
+                    </button>
+                    <button
+                      onClick={() => setShowSoftAcceptModal(true)}
+                      className="px-5 py-2.5 border-2 border-orange-400 hover:bg-orange-50 rounded-xl font-medium text-orange-600 transition-colors flex items-center gap-2"
+                      data-testid="soft-accept-btn"
+                    >
+                      <HandWaving weight="bold" className="w-5 h-5" />
+                      Nezávazně přijmout
+                    </button>
+                  </>
+                )}
+                {canChat && !showChat && (
                   <button
-                    onClick={handleAcceptDemand}
-                    className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-xl font-medium text-white transition-colors flex items-center gap-2"
-                    data-testid="accept-demand-btn"
+                    onClick={() => setShowChat(true)}
+                    className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-gray-700 transition-colors flex items-center gap-2"
+                    data-testid="start-chat-btn"
                   >
-                    <Check weight="bold" className="w-5 h-5" />
-                    Přijmout zakázku
+                    <ChatCircle weight="bold" className="w-5 h-5" />
+                    Spustit chat
                   </button>
                 )}
                 {canComplete && (
@@ -504,10 +547,29 @@ const DemandDetail = () => {
                   </div>
                 )}
               </div>
+
+              {/* Soft Accepts display */}
+              {demand.soft_accepts && demand.soft_accepts.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-100" data-testid="soft-accepts-section">
+                  <h3 className="font-semibold text-gray-900 mb-3">Nezávazné nabídky dodavatelů</h3>
+                  <div className="space-y-3">
+                    {demand.soft_accepts.map((sa, i) => (
+                      <div key={i} className="p-4 bg-orange-50 border border-orange-200 rounded-xl" data-testid={`soft-accept-${i}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium text-gray-900">{sa.supplier_name}</span>
+                          <span className="text-sm text-gray-500">{new Date(sa.created_at).toLocaleDateString('cs-CZ')}</span>
+                        </div>
+                        <p className="text-gray-800">{sa.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Chat */}
-            {canChat && (
+            {/* Chat - shown only after clicking "Spustit chat" */}
+            {canChat && (showChat || autoShowChat) && (
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex items-center gap-2">
                   <ChatCircle className="w-5 h-5 text-gray-400" />
@@ -631,6 +693,15 @@ const DemandDetail = () => {
           demandId={id} 
           token={token} 
           onClose={() => setShowReviewModal(false)} 
+        />
+      )}
+
+      {/* Soft Accept Modal */}
+      {showSoftAcceptModal && (
+        <SoftAcceptModal
+          onSelect={handleSoftAccept}
+          onClose={() => setShowSoftAcceptModal(false)}
+          loading={softAccepting}
         />
       )}
     </div>
@@ -780,3 +851,38 @@ const ReviewModal = ({ demandId, token, onClose }) => {
 };
 
 export default DemandDetail;
+
+const SOFT_ACCEPT_REASONS = [
+  "Zakázku bych přijal, ale zákazník musí zaplatit víc. Jeho cenová představa je nereálná.",
+  "Požadovaný termín realizace je nevyhovující. Navrhněte například v chatu jiný termín.",
+  "Nepřijímám platby kartou. Pouze hotovost.",
+  "Zakázku bych přijal, ale nemám potřebné nářadí a vybavení. Pokud jej máte vy, zakázku přijmu.",
+  "Zakázka je většího rozsahu a budu ji dělat více dnů. Navrhuji upřesnit termíny realizace přes chat."
+];
+
+const SoftAcceptModal = ({ onSelect, onClose, loading }) => (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="soft-accept-modal">
+      <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+        <h2 className="font-bold text-gray-900 text-lg">Nezávazné přijetí — vyberte důvod</h2>
+        <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-soft-accept-btn">
+          <X className="w-4 h-4 text-gray-600" />
+        </button>
+      </div>
+      <div className="p-5 space-y-3">
+        {SOFT_ACCEPT_REASONS.map((reason, i) => (
+          <button
+            key={i}
+            onClick={() => onSelect(reason)}
+            disabled={loading}
+            className="w-full text-left p-4 border border-gray-200 hover:border-orange-400 hover:bg-orange-50 rounded-xl transition-all text-gray-800 disabled:opacity-50"
+            data-testid={`soft-accept-reason-${i}`}
+          >
+            <span className="font-medium text-orange-500 mr-2">{i + 1}.</span>
+            {reason}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);

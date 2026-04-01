@@ -372,3 +372,47 @@ async def get_supplier_finances(supplier_id: str, current_user: dict = Depends(g
         "completed_jobs": len(completed),
         "transactions": completed
     }
+
+
+
+@router.post("/demands/{demand_id}/soft-accept")
+async def soft_accept_demand(demand_id: str, reason: str = "", current_user: dict = Depends(get_current_user)):
+    """Supplier conditionally accepts a demand with a predefined reason"""
+    if current_user["role"] != "supplier":
+        raise HTTPException(status_code=403, detail="Pouze dodavatelé mohou nezávazně přijmout zakázku")
+    
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Poptávka nenalezena")
+    if demand["status"] != "open":
+        raise HTTPException(status_code=400, detail="Pouze otevřené poptávky lze nezávazně přijmout")
+    
+    supplier_name = current_user.get("company_name") or f"{current_user.get('first_name', '') or ''} {current_user.get('last_name', '') or ''}".strip() or "Dodavatel"
+    
+    soft_accept = {
+        "supplier_id": current_user["id"],
+        "supplier_name": supplier_name.strip(),
+        "reason": reason,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$push": {"soft_accepts": soft_accept}}
+    )
+    
+    # Notify customer
+    try:
+        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
+        if customer:
+            await notification_service.notify_soft_accept(
+                customer_email=customer["email"],
+                customer_phone=customer.get("phone"),
+                supplier_name=supplier_name.strip(),
+                demand_title=demand["title"],
+                reason=reason
+            )
+    except Exception as e:
+        logger.error(f"Failed to send soft-accept notification: {str(e)}")
+    
+    return {"message": "Nezávazné přijetí odesláno zákazníkovi"}

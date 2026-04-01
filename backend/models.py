@@ -132,6 +132,7 @@ class DemandResponse(BaseModel):
     progress_photos: List[str] = []
     cancellation_reason: Optional[str] = None
     deadline: Optional[str] = None
+    soft_accepts: List[dict] = []
 
 
 class MessageCreate(BaseModel):

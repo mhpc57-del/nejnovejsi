@@ -13,26 +13,29 @@
 
 ## Implementováno
 
+### Systém přijímání zakázek (NOVÉ 1.4.2026)
+- **Závazně přijmout** — přijme zakázku (dříve "Přijmout zakázku")
+- **Nezávazně přijmout** — 5 předdefinovaných důvodů, uloží se na zakázku + notifikace zákazníkovi (email+SMS)
+- **Spustit chat** — chat je skrytý, zobrazí se až po kliknutí (pro open demands)
+- Nezávazné nabídky viditelné v detailu zakázky pro oba uživatele
+- Backend: POST /api/demands/{id}/soft-accept
+
 ### Dashboardy
 - Zákazník: stat karty → modal popup, nová poptávka s termínem realizace
 - Dodavatel: 4 kategorie, mapa (h-80, scroll zoom), finanční přehled
-- Mobilní bottom navigation bar na obou
-
-### Deaktivace účtu
-- 2-krokový modal (varování → heslo), backend deaktivace, admin obnovení
+- Mobilní bottom navigation bar, deaktivace účtu
 
 ### Poptávky
-- CRUD + **požadovaný termín realizace** (deadline)
+- CRUD + požadovaný termín realizace (deadline)
 - Příjezd, dochvilnost, fotky, fakturace, zrušení
 
 ### Email notifikace
-- Oznamovací email dodavatelům nyní obsahuje **iniciály/jméno zákazníka**
+- Nová poptávka: obsahuje jméno zákazníka
+- Nezávazné přijetí: dodavatel+důvod odesláno zákazníkovi
 
-### UX vylepšení
-- Větší a černé texty na celé platformě (text-sm, text-gray-900/700)
-- Větší mapa v Dostupných zakázkách + scroll wheel zoom
-- Fotomenu: Vyfotit/Galerie
-- Klikatelné profily v sidebaru zakázky
+### UX
+- Větší a černé texty, větší mapa + scroll zoom
+- Fotomenu: Vyfotit/Galerie, klikatelné profily
 
 ### Core
 - JWT auth, 3 role, ARES, 61 kategorií, chat polling, hodnocení + dochvilnost

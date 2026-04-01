@@ -328,6 +328,38 @@ class NotificationTemplates:
     # ============ PAYMENT ============
     
     @staticmethod
+    def soft_accept_email(supplier_name: str, demand_title: str, reason: str) -> tuple:
+        """Email template for supplier's conditional acceptance"""
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel projevil zájem o vaši poptávku</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dobrý den,
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{supplier_name}</strong> nezávazně reagoval na vaši poptávku 
+                „<strong>{demand_title}</strong>" s následující podmínkou:
+            </p>
+            <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 16px; margin: 0 0 24px 0; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; color: #1a1a1a; font-size: 15px;">
+                    {reason}
+                </p>
+            </div>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Doporučujeme kontaktovat dodavatele přes chat v aplikaci.
+            </p>
+            <a href="https://craftbolt.cz/dashboard" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Zobrazit poptávku
+            </a>
+        """
+        subject = f"Zájem o poptávku: {demand_title}"
+        return subject, NotificationTemplates.email_base(content, subject)
+    
+    @staticmethod
+    def soft_accept_sms(supplier_name: str, demand_title: str) -> str:
+        """SMS template for soft accept"""
+        return f"CraftBolt: {supplier_name} projevil zájem o '{demand_title[:25]}' s podmínkou. Zkontrolujte detail poptávky."
+
+    @staticmethod
     def payment_success_email(plan_name: str, amount: float) -> tuple:
         """Email template for successful payment"""
         content = f"""
@@ -408,6 +440,15 @@ class NotificationService:
         """Notify about successful payment"""
         subject, html = self.templates.payment_success_email(plan_name, amount)
         await self.email_service.send_email(user_email, subject, html)
+
+    async def notify_soft_accept(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str):
+        """Notify customer about supplier's conditional acceptance"""
+        subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason)
+        await self.email_service.send_email(customer_email, subject, html)
+        
+        if customer_phone:
+            sms_text = self.templates.soft_accept_sms(supplier_name, demand_title)
+            self.sms_service.send_sms(customer_phone, sms_text)
 
 
 # Global notification service instance
