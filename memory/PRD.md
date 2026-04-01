@@ -14,12 +14,12 @@
 ## Implementováno
 
 ### Dashboard dodavatele
-- **Dostupné** (zelená), **Rozdělané** (červená), **Dokončené** (šedá), **Nedokončené** (oranžová)
-- Finanční přehled celkových příjmů
+- 4 kategorie: Dostupné, Rozdělané, Dokončené, Nedokončené
+- Finanční přehled, mobilní bottom nav
 
 ### Dashboard zákazníka
-- Stat karty (Celkem/Otevřené/Probíhající/Dokončené) → otevírají **modal popup** s filtrovanými poptávkami (mobile-friendly)
-- Nová poptávka modal s mapou, geocoding, fotkami
+- Stat karty → modal popup s filtrovanými poptávkami
+- Mobilní bottom nav (Domů, Přehled, +Nová poptávka, Profil, Odhlásit)
 
 ### Core
 - JWT auth, 3 role, multi-step registrace, ARES, 61 kategorií
@@ -27,22 +27,21 @@
 
 ### Poptávky & Zakázky
 - CRUD, stavy: open → in_progress → completed/cancelled
-- Tlačítko "Dorazil jsem" + čas příjezdu + upload průběžných fotek + fakturace + zrušení
+- Dorazil jsem + dochvilnost + průběžné fotky + fakturace + zrušení
 
 ### Komunikace
 - Real-time chat (polling 5s) + zvuková notifikace
 
 ### Hodnotící systém
-- Hvězdičky 1-5 + procentuální hodnocení 0-100%
-- Certifikace dodavatelů, Admin hodnocení důvěryhodnosti
-- Automatická dochvilnost: 80% recenze + 20% punctuality
+- Hvězdičky 1-5 + % hodnocení (80% recenze + 20% dochvilnost)
+- Certifikace dodavatelů, Admin trust score
 
-### Upload
-- Veřejný/autentizovaný endpoint, HEIC konverze, max 25 MB
-- Fotomenu: Vyfotit (fotoaparát) / Vybrat z galerie
+### Upload & Fotky
+- HEIC konverze, fotomenu: Vyfotit/Galerie
 
-### Klikatelné profily v detailu zakázky
-- Jména zákazníka a dodavatele v sidebaru klikatelná → /profil/:id
+### Navigace
+- Klikatelné profily v sidebaru zakázky
+- Mobilní bottom navigation bar na obou dashboardech
 
 ## Backlog
-- P3: Mobilní aplikace + push notifikace (odloženo na konec)
+- P3: Mobilní aplikace + push notifikace (odloženo)

@@ -102,7 +102,7 @@ const CustomerDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen">
+      <main className="lg:ml-64 min-h-screen pb-20 lg:pb-0">
         {/* Header */}
         <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center justify-between">
@@ -220,6 +220,33 @@ const CustomerDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40" data-testid="mobile-bottom-nav">
+        <div className="flex items-center justify-around py-2">
+          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
+            <House className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Domů</span>
+          </Link>
+          <Link to="/zakaznik" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-orange-500" data-testid="mobile-nav-dashboard">
+            <List className="w-6 h-6" weight="fill" />
+            <span className="text-[10px] font-medium">Přehled</span>
+          </Link>
+          <button onClick={() => setShowNewDemand(true)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 -mt-4" data-testid="mobile-nav-new-demand">
+            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+              <Plus weight="bold" className="w-6 h-6 text-white" />
+            </div>
+          </button>
+          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
+            <User className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Profil</span>
+          </Link>
+          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
+            <SignOut className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Odhlásit</span>
+          </button>
+        </div>
+      </nav>
 
       {/* New Demand Modal */}
       {showNewDemand && (
