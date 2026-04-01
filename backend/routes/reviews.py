@@ -53,7 +53,7 @@ async def create_review(review_data: ReviewCreate, current_user: dict = Depends(
     await db.reviews.insert_one(review)
     
     # Update user rating (both star and percentage)
-    reviews = await db.reviews.find({"reviewed_user_id": reviewed_user_id}, {"_id": 0}).to_list(1000)
+    reviews = await db.reviews.find({"reviewed_user_id": reviewed_user_id}, {"_id": 0, "rating": 1, "rating_percentage": 1}).to_list(500)
     if reviews:
         avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
         # Calculate percentage rating (0-100%)

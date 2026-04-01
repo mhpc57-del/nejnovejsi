@@ -204,7 +204,7 @@ async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_curr
         "assigned_supplier_id": current_user["id"],
         "supplier_arrived": True,
         "arrival_minutes": {"$exists": True}
-    }, {"_id": 0, "arrival_minutes": 1}).to_list(1000)
+    }, {"_id": 0, "arrival_minutes": 1}).to_list(500)
     
     if supplier_demands:
         avg_arrival = sum(d.get("arrival_minutes", 0) for d in supplier_demands) / len(supplier_demands)
