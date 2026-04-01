@@ -114,7 +114,7 @@ const HomePage = () => {
                 <span className="text-orange-500">Během pár minut!</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                CraftBolt propojí zákazníky s ověřenými řemeslníky ve vašem okolí. Rychle, bezpečně a bez provizí.
+                Sjednávání zakázek a služeb jinak, než u konkurence. Rychle, jednoduše, přehledně, levně a online.
               </p>
               <div className="flex flex-wrap gap-4 mb-12">
                 <Link 
