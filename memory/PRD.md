@@ -49,13 +49,23 @@
 ### Dashboard zákazníka
 - Klikatelné stat karty s filtrovanými poptávkami
 
+### Klikatelné profily v detailu zakázky (NOVÉ - 1.4.2026)
+- Jména zákazníka a dodavatele v sidebaru DemandDetail jsou klikatelná
+- Navigace na /profil/:id s kompletním read-only profilem (adresa, telefon, email, certifikace)
+
+### Automatický systém dochvilnosti (NOVÉ - 1.4.2026)
+- Výpočet dochvilnosti při příjezdu dodavatele (<=30min=100%, 30-60=90%, 60-120=70%, 120-240=50%, >240=30%)
+- Průměrná dochvilnost (punctuality_score) uložena na profilu dodavatele
+- Celkové hodnocení = 80% recenze + 20% dochvilnost
+- Badge "X% dochvilnost" zobrazený na profilu dodavatele
+
 ## API Endpoints (nové)
 - POST /api/demands/{id}/progress-photo - průběžné foto
 - POST /api/demands/{id}/invoice - naúčtování
 - POST /api/demands/{id}/cancel-reason - důvod zrušení
 - GET /api/suppliers/{id}/finances - finanční přehled
+- POST /api/demands/{id}/arrive - příjezd dodavatele + punctuality score
 
 ## Backlog
-- P0: Uživatelské E2E testování
-- P2: Automatický vliv času příjezdu na hodnocení
-- P3: Mobilní aplikace + push notifikace
+- P2: Automatický vliv času příjezdu na hodnocení ✅ HOTOVO
+- P3: Mobilní aplikace + push notifikace (odloženo na konec)
