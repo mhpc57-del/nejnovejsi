@@ -9,10 +9,10 @@
 ---
 
 ## Architektura
-- **Frontend:** React.js + Tailwind CSS
-- **Backend:** FastAPI (Python)
+- **Frontend:** React.js + Tailwind CSS + Leaflet + Phosphor Icons
+- **Backend:** FastAPI (Python) + Motor (MongoDB async)
 - **Databáze:** MongoDB
-- **Platební brána:** Stripe (připraveno, testovací režim)
+- **Platební brána:** Stripe (testovací režim, emergentintegrations)
 - **SMS:** Twilio (Alphanumeric Sender ID: "CraftBolt")
 - **Email:** SMTP Wedos (info@craftbolt.cz)
 
@@ -21,125 +21,88 @@
 ## Implementováno
 
 ### Autentizace & Uživatelé
-- JWT autentizace
-- 3 role: Zákazník, Dodavatel, Admin
-- Multi-step registrace
-- 14denní trial pro všechny uživatele
-- ARES integrace (automatické vyplnění z IČO)
+- JWT autentizace, 3 role: Zákazník, Dodavatel, Admin
+- Multi-step registrace, 14denní trial, ARES integrace
 
-### Tarify (aktuální)
+### Tarify
 | Tarif | Cena | Role |
 |-------|------|------|
 | Zákazník | 99 Kč/měsíc bez DPH | customer |
 | Dodavatel | 399 Kč/měsíc bez DPH | supplier |
 
 ### Poptávky & Zakázky
-- 61 kategorií služeb
-- Vytvoření poptávky s fotografiemi
-- Přijetí poptávky dodavatelem
+- 61 kategorií služeb, geocoding + mapa
 - Stavy: open → in_progress → completed/cancelled
-- Geocoding + mapa (Leaflet)
 
 ### Komunikace
-- Chat mezi zákazníkem a dodavatelem
-- Hodnocení a recenze
-
-### Platební brána (Stripe)
-- Checkout v CZK
-- Opakované měsíční platby (subscriptions)
-- 14denní trial
-- Webhook handling
-- Zrušení předplatného
-
-### Notifikace
-| Událost | Email | SMS |
-|---------|-------|-----|
-| Registrace úspěšná | OK | - |
-| Nová poptávka (pro dodavatele) | OK | OK |
-| Nová nabídka (pro zákazníka) | OK | OK |
-| Nová zpráva v chatu | OK | OK |
-| Změna stavu zakázky | OK | OK |
-| Platba úspěšná | OK | - |
+- **Real-time chat** s polling každých 5 sekund
+- **Zvuková notifikace** (Web Audio API) při nové zprávě od protistrany
+- **Status notifikace** - popup při změně stavu zakázky
+- **Čekající banner** pro zákazníka: "Nyní vyčkejte, až dodavatel dorazí"
 
 ### Upload souborů
-- Veřejný upload endpoint pro registraci (`/api/upload/public`) - nevyžaduje autentizaci
-- Autentizovaný upload pro přihlášené uživatele (`/api/upload`)
-- Podporované formáty: JPEG, PNG, WebP, GIF, HEIC, HEIF, BMP, TIFF, AVIF
-- Automatická konverze HEIC/HEIF na JPEG (přes Pillow + pillow-heif)
-- Max velikost: 25 MB
+- Veřejný endpoint `/api/upload/public` (bez autentizace - pro registraci)
+- Formáty: JPEG, PNG, WebP, GIF, HEIC, HEIF, BMP, TIFF, AVIF
+- HEIC→JPEG konverze, max 25 MB
 
-### Adresový našeptávač
-- Integrace s OpenStreetMap Nominatim API
-- Debounced autocomplete v registraci (400ms)
+### Adresový našeptávač (registrace)
+- Nominatim API s debounce 400ms
 - Leaflet mapa s markerem po výběru adresy
-- Funguje pro všechny adresové pole (trvalý pobyt, skutečná adresa, sídlo, pobočka)
+- Funguje pro všechna adresová pole
 
-### Stránky webu
-- `/` - Homepage s hero sliderem, jak to funguje, ceník, video
-- `/prihlaseni` - Přihlášení
-- `/registrace` - Multi-step registrace s autocomplete adres a mapou
-- `/cenik` - Ceník tarifů
-- `/dashboard` - Dashboard (zákazník/dodavatel/admin)
-- `/obchodni-podminky` - Obchodní podmínky
-- `/kontakt` - Kontaktní stránka
-- `/podminky-opakovanych-plateb` - Podmínky opakovaných plateb
-- `/platba/uspech` - Úspěšná platba
-- `/platba/zruseno` - Zrušená platba
+### Filtrování kategorií (registrace)
+- Vyhledávací pole s ikonou lupy
+- Case-insensitive filtrování 61 kategorií
+- Možnost přidat vlastní kategorii
 
-### Promo video
-- YouTube embed: https://youtu.be/eR8_-m_mYoE
-- Český dabing
+### Dashboard zákazníka
+- **Klikatelné stat karty** (Celkem, Otevřené, Probíhající, Dokončené)
+- Kliknutím se zobrazí filtrovaný seznam poptávek
+- Sekce "Moje poptávky" odstraněna (nahrazena klikatelnými kartami)
 
----
-
-## Připraveno k aktivaci
-
-### Stripe (produkce)
-- Aktuálně testovací klíč
-- Pro produkci: nastavit skutečné Stripe API klíče
-
----
-
-## K otestování uživatelem
-
-Po zprovoznění domény (craftbolt.cz) otestovat:
-1. Registrace Zákazník - Nepodnikatel
-2. Registrace Zákazník - OSVČ
-3. Registrace Zákazník - Firma
-4. Registrace Dodavatel - Nepodnikatel
-5. Registrace Dodavatel - OSVČ
-6. Registrace Dodavatel - Firma
-7. Upload profilové fotky během registrace
-8. Adresový našeptávač + mapa při registraci
-9. Email notifikace při registraci
-10. SMS notifikace při akcích
+### Notifikace
+| Událost | Email | SMS | Popup |
+|---------|-------|-----|-------|
+| Registrace | OK | - | - |
+| Nová poptávka | OK | OK | - |
+| Zakázka přijata | OK | OK | OK (zelený banner) |
+| Nová zpráva | OK | OK | Zvuk (pípnutí) |
+| Změna stavu | OK | OK | OK (banner) |
+| Platba úspěšná | OK | - | - |
 
 ---
 
 ## Backlog
 
-### P0 - Bug fixy z uživatelského testování
-- Opravy na základě výsledků testování registrace
+### P0 - K otestování uživatelem
+- 4 registrační cesty (zákazník + dodavatel × nepodnikatel/OSVČ/firma)
+- Upload fotky, adresový našeptávač, email, SMS
+- Chat v reálném čase + zvukové notifikace
+- Klikatelné stat karty na mobilu
 
-### P1 - Mobilní aplikace
-- Push notifikace (APP)
-- iOS + Android aplikace
+### P2 - Hodnotící systém (příští iterace)
+- Procentuální hodnocení 0-100% s posuvníkem
+- Tlačítko "Dodavatel dorazil" + sledování času příjezdu
+- Čas příjezdu ovlivňuje hodnocení dodavatele
+- Certifikace dodavatelů (nahrání certifikátů, oprávnění)
+- Admin hodnocení důvěryhodnosti (hvězdičky 1-5)
 
-### P2 - Refaktoring
-- server.py (1300+ řádků) rozdělit na moduly
+### P3 - Budoucí úkoly
+- Mobilní aplikace (iOS + Android) + push notifikace
+- Refaktoring server.py (1300+ řádků) na moduly
 
 ---
 
 ## DNS (Wedos)
-- **A** @ → 162.159.142.117 (TTL 300)
-- **A** @ → 172.66.2.113 (TTL 300)
-- **CNAME** www → craftbolt.cz (TTL 300)
-- MX, SPF, DKIM, DMARC záznamy pro emaily zachovány
+- A @ → 162.159.142.117 (TTL 300)
+- A @ → 172.66.2.113 (TTL 300)
+- CNAME www → craftbolt.cz (TTL 300)
 
----
-
-## Poznámky z vývoje
-- České Twilio čísla nepodporují SMS → použit Alphanumeric Sender ID "CraftBolt"
-- GoPay vyžaduje zdlouhavé ověření → zůstáváme u Stripe
-- Video na YouTube: veřejné od 12:15
-- Doména craftbolt.cz zprovozněna 1. 4. 2026
+## Stránky webu
+- `/` - Homepage
+- `/prihlaseni` - Přihlášení
+- `/registrace` - Multi-step registrace
+- `/cenik` - Ceník tarifů
+- `/dashboard` - Dashboard (zákazník/dodavatel/admin)
+- `/zakazka/:id` - Detail zakázky + chat
+- `/obchodni-podminky`, `/kontakt`, `/podminky-opakovanych-plateb`
