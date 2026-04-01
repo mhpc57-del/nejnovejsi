@@ -14,10 +14,12 @@
 ## Implementováno
 
 ### Dashboard dodavatele
-- **Dostupné** (zelená) - zakázky v okolí/kategoriích dodavatele s mapou
-- **Rozdělané** (červená) - probíhající zakázky + upload průběžných fotek
-- **Dokončené** (šedá) - dokončené zakázky + finanční přehled
-- **Nedokončené** (oranžová) - zrušené zakázky s důvody
+- **Dostupné** (zelená), **Rozdělané** (červená), **Dokončené** (šedá), **Nedokončené** (oranžová)
+- Finanční přehled celkových příjmů
+
+### Dashboard zákazníka
+- Stat karty (Celkem/Otevřené/Probíhající/Dokončené) → otevírají **modal popup** s filtrovanými poptávkami (mobile-friendly)
+- Nová poptávka modal s mapou, geocoding, fotkami
 
 ### Core
 - JWT auth, 3 role, multi-step registrace, ARES, 61 kategorií
@@ -25,8 +27,7 @@
 
 ### Poptávky & Zakázky
 - CRUD, stavy: open → in_progress → completed/cancelled
-- Tlačítko "Dorazil jsem" + čas příjezdu
-- Upload průběžných fotek, naúčtování částky, důvod zrušení
+- Tlačítko "Dorazil jsem" + čas příjezdu + upload průběžných fotek + fakturace + zrušení
 
 ### Komunikace
 - Real-time chat (polling 5s) + zvuková notifikace
@@ -34,22 +35,14 @@
 ### Hodnotící systém
 - Hvězdičky 1-5 + procentuální hodnocení 0-100%
 - Certifikace dodavatelů, Admin hodnocení důvěryhodnosti
+- Automatická dochvilnost: 80% recenze + 20% punctuality
 
 ### Upload
 - Veřejný/autentizovaný endpoint, HEIC konverze, max 25 MB
+- Fotomenu: Vyfotit (fotoaparát) / Vybrat z galerie
 
-### Klikatelné profily v detailu zakázky (1.4.2026)
+### Klikatelné profily v detailu zakázky
 - Jména zákazníka a dodavatele v sidebaru klikatelná → /profil/:id
-
-### Automatický systém dochvilnosti (1.4.2026)
-- Výpočet dochvilnosti při příjezdu (<=30min=100%, 30-60=90%, 60-120=70%, 120-240=50%, >240=30%)
-- Celkové hodnocení = 80% recenze + 20% dochvilnost
-- Badge "X% dochvilnost" na profilu dodavatele
-
-### Fotoaparát při nahrávání fotky (1.4.2026)
-- Popup menu s volbami "Vyfotit" (capture="user") a "Vybrat z galerie"
-- Implementováno na RegisterPage + ProfilePage
-- Click-outside dismiss, stopPropagation na toggle button
 
 ## Backlog
 - P3: Mobilní aplikace + push notifikace (odloženo na konec)

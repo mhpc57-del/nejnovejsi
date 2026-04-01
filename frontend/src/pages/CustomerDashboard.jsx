@@ -149,65 +149,73 @@ const CustomerDashboard = () => {
             ))}
           </div>
 
-          {/* Filtered Demands - shown when a stat card is clicked */}
+          {/* Filtered Demands Modal - shown when a stat card is clicked */}
           {activeFilter && (
-            <div className="bg-white rounded-xl border border-gray-100 mb-6" data-testid="filtered-demands-section">
-              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">
-                  {activeFilter === 'all' ? 'Všechny poptávky' : activeFilter === 'open' ? 'Otevřené poptávky' : activeFilter === 'in_progress' ? 'Probíhající poptávky' : 'Dokončené poptávky'}
-                </h2>
-                <button onClick={() => setActiveFilter(null)} className="text-gray-400 hover:text-gray-600" data-testid="close-filter-btn">
-                  <X className="w-5 h-5" />
-                </button>
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setActiveFilter(null)}>
+              <div 
+                className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[85vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+                data-testid="filtered-demands-modal"
+              >
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                  <h2 className="font-semibold text-gray-900">
+                    {activeFilter === 'all' ? 'Všechny poptávky' : activeFilter === 'open' ? 'Otevřené poptávky' : activeFilter === 'in_progress' ? 'Probíhající poptávky' : 'Dokončené poptávky'}
+                  </h2>
+                  <button onClick={() => setActiveFilter(null)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" data-testid="close-filter-btn">
+                    <X className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto flex-1">
+                  {(() => {
+                    const filtered = activeFilter === 'all' ? demands : demands.filter(d => d.status === activeFilter);
+                    if (loading) return (
+                      <div className="p-10 text-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
+                      </div>
+                    );
+                    if (filtered.length === 0) return (
+                      <div className="p-10 text-center">
+                        <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500 mb-4">Žádné poptávky v této kategorii</p>
+                        <button onClick={() => { setActiveFilter(null); setShowNewDemand(true); }} className="text-orange-500 hover:text-orange-600 font-medium" data-testid="empty-new-demand-btn">
+                          Vytvořit poptávku
+                        </button>
+                      </div>
+                    );
+                    return (
+                      <div className="divide-y divide-gray-100">
+                        {filtered.map((demand) => (
+                          <Link key={demand.id} to={`/zakazka/${demand.id}`}
+                            className="block p-5 hover:bg-gray-50 transition-colors"
+                            data-testid={`demand-item-${demand.id}`}>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
+                                  {getStatusBadge(demand.status)}
+                                </div>
+                                <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-gray-400">
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />
+                                    {demand.address}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
+                                  </span>
+                                </div>
+                              </div>
+                              <ArrowRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
-              
-              {(() => {
-                const filtered = activeFilter === 'all' ? demands : demands.filter(d => d.status === activeFilter);
-                if (loading) return (
-                  <div className="p-10 text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
-                  </div>
-                );
-                if (filtered.length === 0) return (
-                  <div className="p-10 text-center">
-                    <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">Žádné poptávky v této kategorii</p>
-                    <button onClick={() => setShowNewDemand(true)} className="text-orange-500 hover:text-orange-600 font-medium" data-testid="empty-new-demand-btn">
-                      Vytvořit poptávku
-                    </button>
-                  </div>
-                );
-                return (
-                  <div className="divide-y divide-gray-100">
-                    {filtered.map((demand) => (
-                      <Link key={demand.id} to={`/zakazka/${demand.id}`}
-                        className="block p-5 hover:bg-gray-50 transition-colors"
-                        data-testid={`demand-item-${demand.id}`}>
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
-                              {getStatusBadge(demand.status)}
-                            </div>
-                            <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4" />
-                                {demand.address}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
-                              </span>
-                            </div>
-                          </div>
-                          <ArrowRight className="w-5 h-5 text-gray-300" />
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                );
-              })()}
             </div>
           )}
         </div>
