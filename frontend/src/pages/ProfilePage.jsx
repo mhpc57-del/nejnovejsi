@@ -147,6 +147,8 @@ const ProfilePage = () => {
         setProfile(profileData);
         setFormData({
           company_name: profileData?.company_name || '',
+          first_name: profileData?.first_name || '',
+          last_name: profileData?.last_name || '',
           phone: profileData?.phone || '',
           ico: profileData?.ico || '',
           dic: profileData?.dic || '',
@@ -323,7 +325,12 @@ const ProfilePage = () => {
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.company_name || profile.email}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    {[profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.company_name || profile.email}
+                  </h1>
+                  {profile.company_name && (profile.first_name || profile.last_name) && (
+                    <p className="text-sm text-gray-500 mb-1">{profile.company_name}</p>
+                  )}
                   <div className="flex items-center gap-3 text-sm text-gray-500 flex-wrap">
                     <span className="px-2 py-1 bg-gray-100 rounded-full">{getRoleName(profile.role)}</span>
                     {accountType && <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">{getTypeName(accountType)}</span>}
@@ -403,13 +410,27 @@ const ProfilePage = () => {
                 )}
 
                 {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {isNepodnikatel ? 'Jméno a příjmení / přezdívka' : 'Jméno a příjmení / název firmy'}
-                  </label>
-                  <input type="text" value={formData.company_name} onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-name-input" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Jméno</label>
+                    <input type="text" value={formData.first_name} onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                      placeholder="Jan" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-first-name-input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Příjmení</label>
+                    <input type="text" value={formData.last_name} onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                      placeholder="Novák" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-last-name-input" />
+                  </div>
                 </div>
+
+                {/* Company name - only for non-nepodnikatel */}
+                {!isNepodnikatel && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Název firmy</label>
+                    <input type="text" value={formData.company_name} onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                      placeholder="Firma s.r.o." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-company-input" />
+                  </div>
+                )}
 
                 {/* Phone */}
                 <div>

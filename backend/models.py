@@ -23,6 +23,8 @@ class UserCreate(BaseModel):
     account_type: Optional[str] = None
     supplier_type: Optional[str] = None
     company_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     ico: Optional[str] = None
     dic: Optional[str] = None
     address: Optional[str] = None
@@ -53,6 +55,8 @@ class UserResponse(BaseModel):
     account_type: Optional[str] = None
     supplier_type: Optional[str] = None
     company_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     ico: Optional[str] = None
     dic: Optional[str] = None
     address: Optional[str] = None
@@ -171,6 +175,8 @@ class LocationUpdate(BaseModel):
 
 class ProfileUpdate(BaseModel):
     company_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     branch_address: Optional[str] = None

@@ -11,6 +11,8 @@ def user_to_response(user: dict) -> UserResponse:
         account_type=user.get("account_type"),
         supplier_type=user.get("supplier_type"),
         company_name=user.get("company_name"),
+        first_name=user.get("first_name"),
+        last_name=user.get("last_name"),
         ico=user.get("ico"),
         dic=user.get("dic"),
         address=user.get("address"),

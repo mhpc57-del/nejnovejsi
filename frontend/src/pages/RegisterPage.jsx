@@ -45,6 +45,8 @@ const RegisterPage = () => {
     role: searchParams.get('role') || '',
     account_type: searchParams.get('type') || '',
     company_name: '',
+    first_name: '',
+    last_name: '',
     ico: '',
     dic: '',
     address: '',
@@ -228,7 +230,8 @@ const RegisterPage = () => {
         if (!formData.account_type) { setError('Vyberte prosím typ účtu'); return false; }
         break;
       case 'details':
-        if (!formData.company_name) { setError('Vyplňte jméno a příjmení / název firmy'); return false; }
+        if (!formData.first_name) { setError('Vyplňte jméno'); return false; }
+        if (!formData.last_name) { setError('Vyplňte příjmení'); return false; }
         if (!formData.phone) { setError('Vyplňte telefonní číslo'); return false; }
         if (formData.role === 'supplier' || formData.account_type !== 'nepodnikatel') {
           if (!formData.ico) { setError('Vyplňte IČO'); return false; }
@@ -480,15 +483,39 @@ const RegisterPage = () => {
             )}
 
             {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                {isNepodnikatel ? 'Jméno a příjmení / přezdívka' : 'Jméno a příjmení / název firmy'} <span className="text-red-500">*</span>
-              </label>
-              <input type="text" name="company_name" value={formData.company_name} onChange={handleInputChange}
-                placeholder={isNepodnikatel ? 'Jan Novák' : 'Jan Novák / Firma s.r.o.'}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                data-testid="register-company-input" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Jméno <span className="text-red-500">*</span>
+                </label>
+                <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange}
+                  placeholder="Jan"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="register-first-name-input" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Příjmení <span className="text-red-500">*</span>
+                </label>
+                <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange}
+                  placeholder="Novák"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="register-last-name-input" />
+              </div>
             </div>
+
+            {/* Company name - only for OSVČ and Firma */}
+            {!isNepodnikatel && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Název firmy
+                </label>
+                <input type="text" name="company_name" value={formData.company_name} onChange={handleInputChange}
+                  placeholder="Firma s.r.o."
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="register-company-input" />
+              </div>
+            )}
 
             {/* Phone */}
             <div>

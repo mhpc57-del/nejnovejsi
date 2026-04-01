@@ -32,6 +32,8 @@ async def register(user_data: UserCreate):
         "account_type": account_type,
         "supplier_type": account_type,
         "company_name": user_data.company_name,
+        "first_name": user_data.first_name,
+        "last_name": user_data.last_name,
         "ico": user_data.ico,
         "dic": user_data.dic,
         "address": user_data.address,
