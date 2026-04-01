@@ -11,12 +11,21 @@ from email.mime.multipart import MIMEMultipart
 from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioRestException
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+# Rate limiting for chat notifications (max 1 email per 15 min per conversation)
+_chat_notification_cache = {}
+CHAT_NOTIFY_COOLDOWN_SECONDS = 900  # 15 minutes
+
+# Daily email counter
+_daily_email_count = 0
+_daily_email_date = None
+DAILY_EMAIL_LIMIT = 400  # Safety margin below Wedos 500 limit
 
 # ============ EMAIL SERVICE ============
 
@@ -36,9 +45,21 @@ class EmailService:
         html_content: str,
         text_content: Optional[str] = None
     ) -> bool:
-        """Send an email using SMTP"""
+        """Send an email using SMTP with daily limit protection"""
+        global _daily_email_count, _daily_email_date
+        
         if not self.user or not self.password:
             logger.warning("SMTP credentials not configured")
+            return False
+        
+        # Daily limit check
+        today = datetime.now(timezone.utc).date()
+        if _daily_email_date != today:
+            _daily_email_count = 0
+            _daily_email_date = today
+        
+        if _daily_email_count >= DAILY_EMAIL_LIMIT:
+            logger.warning(f"Daily email limit ({DAILY_EMAIL_LIMIT}) reached, skipping email to {to_email}: {subject}")
             return False
             
         try:
@@ -61,7 +82,8 @@ class EmailService:
                 start_tls=True
             )
             
-            logger.info(f"Email sent to {to_email}: {subject}")
+            logger.info(f"Email sent to {to_email}: {subject} (daily count: {_daily_email_count + 1})")
+            _daily_email_count += 1
             return True
             
         except Exception as e:
@@ -400,11 +422,16 @@ class NotificationService:
         await self.email_service.send_email(user_email, subject, html)
     
     async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str, customer_name: str = ""):
-        """Notify suppliers about new demand in their category"""
+        """Notify suppliers about new demand in their category (max 20 suppliers)"""
         subject, html = self.templates.new_demand_email(demand_title, demand_category, demand_address, customer_name)
         sms_text = self.templates.new_demand_sms(demand_title, demand_category)
         
-        for supplier in suppliers:
+        # Limit to max 20 suppliers to avoid exceeding email limits
+        limited_suppliers = suppliers[:20]
+        if len(suppliers) > 20:
+            logger.info(f"Limiting new demand notifications from {len(suppliers)} to 20 suppliers")
+        
+        for supplier in limited_suppliers:
             await self.email_service.send_email(supplier["email"], subject, html)
             if supplier.get("phone"):
                 self.sms_service.send_sms(supplier["phone"], sms_text)
@@ -419,7 +446,16 @@ class NotificationService:
             self.sms_service.send_sms(customer_phone, sms_text)
     
     async def notify_new_message(self, recipient_email: str, recipient_phone: Optional[str], sender_name: str, demand_title: str, message: str):
-        """Notify about new chat message"""
+        """Notify about new chat message (rate limited: max 1 per 15 min per conversation)"""
+        cache_key = f"{recipient_email}:{demand_title}"
+        now = datetime.now(timezone.utc).timestamp()
+        last_sent = _chat_notification_cache.get(cache_key, 0)
+        
+        if now - last_sent < CHAT_NOTIFY_COOLDOWN_SECONDS:
+            logger.info(f"Chat notification throttled for {recipient_email} on '{demand_title}' (cooldown active)")
+            return
+        
+        _chat_notification_cache[cache_key] = now
         subject, html = self.templates.new_message_email(sender_name, demand_title, message)
         await self.email_service.send_email(recipient_email, subject, html)
         
