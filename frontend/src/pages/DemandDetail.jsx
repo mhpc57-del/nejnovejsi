@@ -562,30 +562,30 @@ const DemandDetail = () => {
             {/* Customer Info */}
             <div className="bg-white rounded-xl border border-gray-100 p-5">
               <h3 className="font-semibold text-gray-900 mb-4">Zákazník</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-gray-400" />
+              <Link to={`/profil/${demand.customer_id}`} className="flex items-center gap-3 group cursor-pointer" data-testid="customer-profile-link">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                  <User className="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{demand.customer_name}</p>
-                  <p className="text-sm text-gray-500">Zákazník</p>
+                  <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{demand.customer_name}</p>
+                  <p className="text-sm text-gray-500">Zákazník — zobrazit profil</p>
                 </div>
-              </div>
+              </Link>
             </div>
 
             {/* Supplier Info */}
             {demand.assigned_supplier_id && (
               <div className="bg-white rounded-xl border border-gray-100 p-5">
                 <h3 className="font-semibold text-gray-900 mb-4">Přiřazený dodavatel</h3>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-orange-500" />
+                <Link to={`/profil/${demand.assigned_supplier_id}`} className="flex items-center gap-3 group cursor-pointer" data-testid="supplier-profile-link">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                    <User className="w-6 h-6 text-orange-500 group-hover:text-orange-700 transition-colors" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{demand.assigned_supplier_name}</p>
-                    <p className="text-sm text-gray-500">Dodavatel</p>
+                    <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{demand.assigned_supplier_name}</p>
+                    <p className="text-sm text-gray-500">Dodavatel — zobrazit profil</p>
                   </div>
-                </div>
+                </Link>
                 {demand.accepted_at && (
                   <p className="text-xs text-gray-400 mt-3">
                     Přijato: {new Date(demand.accepted_at).toLocaleDateString('cs-CZ')}

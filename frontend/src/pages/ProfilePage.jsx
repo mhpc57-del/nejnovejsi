@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import { 
   ArrowLeft, User, MapPin, Phone, Star, Calendar, 
   Briefcase, Check, PencilSimple, Camera, Envelope, Buildings, 
-  MagnifyingGlass, Globe, X, Plus, Image as ImageIcon, Trash
+  MagnifyingGlass, Globe, X, Plus, Image as ImageIcon, Trash, Clock
 } from '@phosphor-icons/react';
 
 // Fix default marker icon
@@ -361,6 +361,17 @@ const ProfilePage = () => {
                       (profile.rating_percentage || 0) >= 80 ? 'text-green-600' : (profile.rating_percentage || 0) >= 50 ? 'text-orange-500' : 'text-red-500'
                     }`}>{(profile.rating_percentage || 0).toFixed(0)}%</span>
                   </div>
+                  {/* Punctuality score */}
+                  {profile.punctuality_score != null && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full" data-testid="punctuality-score-badge">
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      <span className={`text-sm font-semibold ${
+                        profile.punctuality_score >= 80 ? 'text-blue-600' : profile.punctuality_score >= 50 ? 'text-orange-500' : 'text-red-500'
+                      }`}>
+                        {profile.punctuality_score.toFixed(0)}% dochvilnost
+                      </span>
+                    </div>
+                  )}
                   {/* Trust score (admin-set) */}
                   {profile.trust_score > 0 && (
                     <div className="flex items-center gap-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded-full" data-testid="trust-score-badge">

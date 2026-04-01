@@ -199,6 +199,22 @@ async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_curr
         }}
     )
     
+    # Calculate punctuality score for this arrival (0-100%)
+    def calc_punctuality(minutes):
+        if minutes is None:
+            return 50
+        if minutes <= 30:
+            return 100
+        if minutes <= 60:
+            return 90
+        if minutes <= 120:
+            return 70
+        if minutes <= 240:
+            return 50
+        return 30
+
+    this_punctuality = calc_punctuality(arrival_minutes)
+
     # Update supplier's average arrival time and punctuality score
     supplier_demands = await db.demands.find({
         "assigned_supplier_id": current_user["id"],
@@ -208,9 +224,14 @@ async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_curr
     
     if supplier_demands:
         avg_arrival = sum(d.get("arrival_minutes", 0) for d in supplier_demands) / len(supplier_demands)
+        all_punctuality = [calc_punctuality(d.get("arrival_minutes")) for d in supplier_demands]
+        avg_punctuality = sum(all_punctuality) / len(all_punctuality)
         await db.users.update_one(
             {"id": current_user["id"]},
-            {"$set": {"avg_arrival_minutes": round(avg_arrival, 1)}}
+            {"$set": {
+                "avg_arrival_minutes": round(avg_arrival, 1),
+                "punctuality_score": round(avg_punctuality, 1)
+            }}
         )
     
     return {

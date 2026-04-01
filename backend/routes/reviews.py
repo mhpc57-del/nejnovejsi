@@ -52,7 +52,7 @@ async def create_review(review_data: ReviewCreate, current_user: dict = Depends(
     
     await db.reviews.insert_one(review)
     
-    # Update user rating (both star and percentage)
+    # Update user rating (both star and percentage) with punctuality influence
     reviews = await db.reviews.find({"reviewed_user_id": reviewed_user_id}, {"_id": 0, "rating": 1, "rating_percentage": 1}).to_list(500)
     if reviews:
         avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
@@ -60,11 +60,19 @@ async def create_review(review_data: ReviewCreate, current_user: dict = Depends(
         pct_reviews = [r for r in reviews if r.get("rating_percentage") is not None]
         avg_pct = sum(r["rating_percentage"] for r in pct_reviews) / len(pct_reviews) if pct_reviews else (avg_rating / 5.0) * 100
         
+        # Blend punctuality score into overall rating for suppliers (80% reviews + 20% punctuality)
+        reviewed_user = await db.users.find_one({"id": reviewed_user_id}, {"_id": 0, "role": 1, "punctuality_score": 1})
+        final_pct = avg_pct
+        if reviewed_user and reviewed_user.get("role") == "supplier" and reviewed_user.get("punctuality_score") is not None:
+            punctuality = reviewed_user["punctuality_score"]
+            final_pct = (avg_pct * 0.8) + (punctuality * 0.2)
+        
         await db.users.update_one(
             {"id": reviewed_user_id},
             {"$set": {
                 "rating": round(avg_rating, 1),
-                "rating_percentage": round(avg_pct, 1),
+                "rating_percentage": round(final_pct, 1),
+                "review_avg_percentage": round(avg_pct, 1),
                 "reviews_count": len(reviews)
             }}
         )

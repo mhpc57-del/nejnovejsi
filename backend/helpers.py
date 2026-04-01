@@ -36,5 +36,7 @@ def user_to_response(user: dict) -> UserResponse:
         location=user.get("location"),
         rating_percentage=user.get("rating_percentage", 0.0),
         certifications=user.get("certifications", []),
-        trust_score=user.get("trust_score", 0)
+        trust_score=user.get("trust_score", 0),
+        punctuality_score=user.get("punctuality_score"),
+        avg_arrival_minutes=user.get("avg_arrival_minutes")
     )

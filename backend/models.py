@@ -81,6 +81,8 @@ class UserResponse(BaseModel):
     rating_percentage: float = 0.0
     certifications: List[dict] = []
     trust_score: int = 0
+    punctuality_score: Optional[float] = None
+    avg_arrival_minutes: Optional[float] = None
 
 
 class TokenResponse(BaseModel):
