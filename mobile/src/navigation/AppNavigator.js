@@ -2,7 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS } from '../utils/theme';
 
@@ -16,24 +17,21 @@ import ProfileScreen from '../screens/ProfileScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const TabIcon = ({ label, focused }) => (
-  <View style={[tabStyles.iconWrap, focused && tabStyles.iconWrapActive]}>
-    <Text style={[tabStyles.icon, focused && tabStyles.iconActive]}>
-      {label === 'Přehled' ? '▦' : label === 'Profil' ? '●' : '●'}
-    </Text>
-  </View>
-);
-
 const tabScreenOptions = {
   headerShown: false,
   tabBarActiveTintColor: COLORS.primary,
   tabBarInactiveTintColor: COLORS.gray500,
-  tabBarLabelStyle: tabStyles.label,
+  tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: -2 },
   tabBarStyle: {
     backgroundColor: COLORS.white,
     borderTopWidth: 1,
     borderTopColor: COLORS.gray100,
-    paddingTop: 4,
+    paddingTop: 6,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
   },
 };
 
@@ -41,9 +39,19 @@ function CustomerTabs() {
   return (
     <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={CustomerDashboard}
-        options={{ tabBarLabel: 'Přehled', tabBarIcon: ({ focused }) => <TabIcon label="Přehled" focused={focused} /> }} />
+        options={{
+          tabBarLabel: 'Přehled',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} />
+          ),
+        }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused }) => <TabIcon label="Profil" focused={focused} /> }} />
+        options={{
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
+          ),
+        }} />
     </Tab.Navigator>
   );
 }
@@ -52,9 +60,19 @@ function SupplierTabs() {
   return (
     <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={SupplierDashboard}
-        options={{ tabBarLabel: 'Přehled', tabBarIcon: ({ focused }) => <TabIcon label="Přehled" focused={focused} /> }} />
+        options={{
+          tabBarLabel: 'Přehled',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} />
+          ),
+        }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused }) => <TabIcon label="Profil" focused={focused} /> }} />
+        options={{
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
+          ),
+        }} />
     </Tab.Navigator>
   );
 }
@@ -65,16 +83,18 @@ export default function AppNavigator() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.white }}>
+        <Ionicons name="flash" size={48} color={COLORS.primary} style={{ marginBottom: 12 }} />
         <Text style={{ fontSize: 32, color: COLORS.gray900, fontWeight: '300' }}>
           Craft<Text style={{ fontWeight: '700', color: COLORS.primary }}>Bolt</Text>
         </Text>
+        <ActivityIndicator color={COLORS.primary} style={{ marginTop: 20 }} />
       </View>
     );
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         {!user ? (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -94,11 +114,3 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
-
-const tabStyles = StyleSheet.create({
-  label: { fontSize: 11, fontWeight: '600' },
-  iconWrap: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  iconWrapActive: { backgroundColor: COLORS.primaryLight },
-  icon: { fontSize: 16, color: COLORS.gray500 },
-  iconActive: { color: COLORS.primary },
-});

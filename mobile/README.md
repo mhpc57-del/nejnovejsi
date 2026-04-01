@@ -3,7 +3,7 @@
 ## Spuštění na vašem telefonu
 
 ### Předpoklady
-1. **Node.js** — stáhněte z https://nodejs.org (verze 18+)
+1. **Node.js** — stáhněte z https://nodejs.org (verze 20+)
 2. Na telefonu nainstalujte **Expo Go** z Google Play Store
 
 ### Instalace a spuštění
@@ -27,13 +27,8 @@ npx expo start
 ### Sestavení .apk pro Google Play
 
 ```bash
-# Nainstalujte EAS CLI
 npm install -g eas-cli
-
-# Přihlaste se do Expo účtu (zdarma)
 eas login
-
-# Sestavte APK pro Android
 eas build -p android --profile preview
 ```
 
@@ -44,32 +39,34 @@ APK soubor si poté stáhnete z Expo dashboardu a nahrajete do Google Play Conso
 ```
 mobile/
 ├── App.js                      # Vstupní bod aplikace
-├── app.json                    # Expo konfigurace
+├── app.json                    # Expo konfigurace (SDK 54)
 ├── package.json                # Závislosti
 ├── assets/                     # Ikony a splash screen
 └── src/
     ├── navigation/
-    │   └── AppNavigator.js     # Routing (React Navigation)
+    │   └── AppNavigator.js     # Routing (React Navigation + Bottom Tabs)
     ├── screens/
-    │   ├── LoginScreen.js      # Přihlášení
-    │   ├── RegisterScreen.js   # Registrace (3 kroky)
-    │   ├── CustomerDashboard.js # Dashboard zákazníka
-    │   ├── SupplierDashboard.js # Dashboard dodavatele (4 taby)
+    │   ├── LoginScreen.js      # Přihlášení (s ikonami)
+    │   ├── RegisterScreen.js   # Registrace (3 kroky, progress bar)
+    │   ├── CustomerDashboard.js # Dashboard zákazníka (ikony, statistiky)
+    │   ├── SupplierDashboard.js # Dashboard dodavatele (4 taby s ikonami)
     │   ├── DemandDetailScreen.js # Detail zakázky + chat
-    │   └── ProfileScreen.js    # Profil uživatele
+    │   └── ProfileScreen.js    # Profil (fotoaparát/galerie, hodnocení)
     ├── services/
     │   └── api.js              # API klient (axios)
     └── utils/
-        ├── AuthContext.js      # Autentizace (Context API)
+        ├── AuthContext.js      # Autentizace (Context API + AsyncStorage)
         └── theme.js            # Barvy a styly
 ```
 
-## Funkce (Fáze 1)
+## Funkce
 - Přihlášení a registrace (zákazník / dodavatel)
 - Dashboard zákazníka — poptávky, stat karty, nová poptávka
 - Dashboard dodavatele — 4 kategorie (Dostupné/Rozdělané/Dokončené/Nedokončené)
 - Detail zakázky — závazné/nezávazné přijetí, chat v reálném čase
-- Profil — zobrazení a úprava údajů
+- Profil — profilová fotka (fotoaparát/galerie), hodnocení, dochvilnost, editace
+- Ionicons ikony pro profesionální vzhled
+- Safe Area podpora pro všechny typy telefonů
 - Automatické obnovení přihlášení (token v AsyncStorage)
 
 ## API

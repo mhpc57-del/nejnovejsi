@@ -22,6 +22,7 @@ export const COLORS = {
   blue700: '#1d4ed8',
   orange100: '#ffedd5',
   orange500: '#f97316',
+  yellow500: '#eab308',
 };
 
 export const FONTS = {
