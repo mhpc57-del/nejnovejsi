@@ -24,15 +24,22 @@ const TabIcon = ({ label, focused }) => (
   </View>
 );
 
+const tabScreenOptions = {
+  headerShown: false,
+  tabBarActiveTintColor: COLORS.primary,
+  tabBarInactiveTintColor: COLORS.gray500,
+  tabBarLabelStyle: tabStyles.label,
+  tabBarStyle: {
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.gray100,
+    paddingTop: 4,
+  },
+};
+
 function CustomerTabs() {
   return (
-    <Tab.Navigator screenOptions={{
-      headerShown: false,
-      tabBarStyle: tabStyles.bar,
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.gray500,
-      tabBarLabelStyle: tabStyles.label,
-    }}>
+    <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={CustomerDashboard}
         options={{ tabBarLabel: 'Přehled', tabBarIcon: ({ focused }) => <TabIcon label="Přehled" focused={focused} /> }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
@@ -43,13 +50,7 @@ function CustomerTabs() {
 
 function SupplierTabs() {
   return (
-    <Tab.Navigator screenOptions={{
-      headerShown: false,
-      tabBarStyle: tabStyles.bar,
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.gray500,
-      tabBarLabelStyle: tabStyles.label,
-    }}>
+    <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={SupplierDashboard}
         options={{ tabBarLabel: 'Přehled', tabBarIcon: ({ focused }) => <TabIcon label="Přehled" focused={focused} /> }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
@@ -95,7 +96,6 @@ export default function AppNavigator() {
 }
 
 const tabStyles = StyleSheet.create({
-  bar: { backgroundColor: COLORS.white, borderTopWidth: 1, borderTopColor: COLORS.gray100, height: 60, paddingBottom: 8, paddingTop: 4 },
   label: { fontSize: 11, fontWeight: '600' },
   iconWrap: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   iconWrapActive: { backgroundColor: COLORS.primaryLight },
