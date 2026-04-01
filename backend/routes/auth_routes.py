@@ -83,6 +83,8 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user.get("is_deactivated"):
+        raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Kontaktujte administrátora pro obnovení.")
     
     token = create_token(user["id"], user["email"], user["role"])
     return TokenResponse(access_token=token, user=user_to_response(user))
@@ -91,3 +93,22 @@ async def login(credentials: UserLogin):
 @router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
     return user_to_response(current_user)
+
+
+@router.post("/auth/deactivate")
+async def deactivate_account(current_user: dict = Depends(get_current_user), password: str = ""):
+    """Deactivate (soft-delete) user account. Requires password confirmation."""
+    full_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    if not full_user:
+        raise HTTPException(status_code=404, detail="Uživatel nenalezen")
+    if not verify_password(password, full_user["password"]):
+        raise HTTPException(status_code=401, detail="Nesprávné heslo")
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {
+            "is_deactivated": True,
+            "deactivated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    return {"message": "Účet byl deaktivován"}

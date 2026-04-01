@@ -35,6 +35,7 @@ const SupplierDashboard = () => {
   const [finances, setFinances] = useState(null);
   const [myLocation, setMyLocation] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
+  const [showDeactivate, setShowDeactivate] = useState(false);
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
   const completed = myDemands.filter(d => d.status === 'completed');
@@ -340,6 +341,10 @@ const SupplierDashboard = () => {
               {user?.trial_ends_at ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}` : 'Aktivní předplatné'}
             </p>
           </div>
+          <button onClick={() => setShowDeactivate(true)}
+            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl mb-1" data-testid="deactivate-btn-sidebar">
+            <Trash className="w-5 h-5" /> Zrušit účet
+          </button>
           <button onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 w-full text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="logout-btn">
             <SignOut className="w-5 h-5" /> Odhlásit se
@@ -436,6 +441,95 @@ const SupplierDashboard = () => {
           </button>
         </div>
       </nav>
+
+      {/* Deactivate Account Modal */}
+      {showDeactivate && (
+        <DeactivateSupplierModal
+          token={token}
+          onClose={() => setShowDeactivate(false)}
+          onSuccess={() => { logout(); navigate('/'); }}
+        />
+      )}
+    </div>
+  );
+};
+
+const DeactivateSupplierModal = ({ token, onClose, onSuccess }) => {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+
+  const handleDeactivate = async () => {
+    if (!password.trim()) { setError('Zadejte heslo'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      await axios.post(`${API}/auth/deactivate`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { password }
+      });
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Nepodařilo se deaktivovat účet');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden" data-testid="deactivate-modal">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-red-600">Zrušení účtu</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-deactivate-btn">
+            <X className="w-4 h-4 text-gray-600" />
+          </button>
+        </div>
+        <div className="p-6">
+          {step === 1 ? (
+            <>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Warning className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-center font-semibold text-gray-900 mb-2">Opravdu chcete zrušit účet?</h3>
+              <p className="text-center text-sm text-gray-500 mb-6">
+                Váš účet bude deaktivován. Nebudete se moci přihlásit, dokud administrátor účet neobnoví. Vaše data zůstanou zachována.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={onClose} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-testid="cancel-deactivate-btn">
+                  Zpět
+                </button>
+                <button onClick={() => setStep(2)} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors" data-testid="confirm-deactivate-step1-btn">
+                  Pokračovat
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 mb-4">Pro potvrzení deaktivace zadejte své heslo:</p>
+              {error && <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm mb-4">{error}</div>}
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Vaše heslo"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-4"
+                data-testid="deactivate-password-input"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button onClick={() => { setStep(1); setError(''); }} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  Zpět
+                </button>
+                <button onClick={handleDeactivate} disabled={loading} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50" data-testid="confirm-deactivate-final-btn">
+                  {loading ? 'Deaktivuji...' : 'Zrušit účet'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

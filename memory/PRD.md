@@ -13,35 +13,36 @@
 
 ## Implementováno
 
-### Dashboard dodavatele
-- 4 kategorie: Dostupné, Rozdělané, Dokončené, Nedokončené
-- Finanční přehled, mobilní bottom nav
+### Dashboard dodavatele + zákazníka
+- Stat karty → modal popup, mobilní bottom nav
+- 4 kategorie dodavatele: Dostupné, Rozdělané, Dokončené, Nedokončené
 
-### Dashboard zákazníka
-- Stat karty → modal popup s filtrovanými poptávkami
-- Mobilní bottom nav (Domů, Přehled, +Nová poptávka, Profil, Odhlásit)
+### Deaktivace účtu (1.4.2026)
+- 2-krokový modal: varování → zadání hesla
+- Backend: POST /api/auth/deactivate (vyžaduje heslo)
+- Login blokován pro deaktivované účty (403 + česká hláška)
+- Admin obnovení: PUT /api/admin/users/{id}/reactivate
+- Tlačítko v sidebaru obou dashboardů
 
 ### Core
 - JWT auth, 3 role, multi-step registrace, ARES, 61 kategorií
 - Tarify: Zákazník 99 Kč/měsíc, Dodavatel 399 Kč/měsíc
 
 ### Poptávky & Zakázky
-- CRUD, stavy: open → in_progress → completed/cancelled
-- Dorazil jsem + dochvilnost + průběžné fotky + fakturace + zrušení
+- CRUD, stavy, příjezd, dochvilnost, fotky, fakturace, zrušení
 
 ### Komunikace
 - Real-time chat (polling 5s) + zvuková notifikace
 
 ### Hodnotící systém
-- Hvězdičky 1-5 + % hodnocení (80% recenze + 20% dochvilnost)
-- Certifikace dodavatelů, Admin trust score
+- Hvězdičky + % (80% recenze + 20% dochvilnost), certifikace, trust score
 
 ### Upload & Fotky
 - HEIC konverze, fotomenu: Vyfotit/Galerie
 
 ### Navigace
 - Klikatelné profily v sidebaru zakázky
-- Mobilní bottom navigation bar na obou dashboardech
+- Mobilní bottom navigation bar
 
 ## Backlog
 - P3: Mobilní aplikace + push notifikace (odloženo)

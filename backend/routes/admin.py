@@ -46,3 +46,18 @@ async def get_all_demands(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin only")
     demands = await db.demands.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return [DemandResponse(**d) for d in demands]
+
+
+@router.put("/admin/users/{user_id}/reactivate")
+async def reactivate_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin reactivates a deactivated user account."""
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_deactivated": False}, "$unset": {"deactivated_at": ""}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Uživatel nenalezen")
+    return {"message": "Účet byl obnoven"}
