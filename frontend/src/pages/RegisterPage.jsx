@@ -8,7 +8,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Eye, EyeSlash, ArrowLeft, ArrowRight, User, Briefcase, 
-  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass
+  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X
 } from '@phosphor-icons/react';
 
 // Leaflet marker fix
@@ -36,6 +36,7 @@ const RegisterPage = () => {
   const [categories, setCategories] = useState([]);
   const [aresLoading, setAresLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('');
   
   const [formData, setFormData] = useState({
     email: '',
@@ -66,26 +67,30 @@ const RegisterPage = () => {
   const [addressSuggestions, setAddressSuggestions] = useState({});
   const [activeAddressField, setActiveAddressField] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
-  
-  // useEffect-based autocomplete: watches address field values and fetches suggestions
-  useEffect(() => {
-    if (!activeAddressField) return;
-    const query = formData[activeAddressField];
-    if (!query || query.length < 3) {
-      setAddressSuggestions(prev => ({ ...prev, [activeAddressField]: [] }));
+  const searchTimers = React.useRef({});
+
+  const handleAddressInput = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setActiveAddressField(name);
+    
+    // Clear old timer
+    if (searchTimers.current[name]) clearTimeout(searchTimers.current[name]);
+    
+    if (!value || value.length < 3) {
+      setAddressSuggestions(prev => ({ ...prev, [name]: [] }));
       return;
     }
-    const timer = setTimeout(async () => {
+    
+    searchTimers.current[name] = setTimeout(async () => {
       try {
-        const response = await axios.get(`${API}/geocode/search`, { params: { q: query } });
-        setAddressSuggestions(prev => ({ ...prev, [activeAddressField]: response.data || [] }));
+        const response = await axios.get(`${API}/geocode/search`, { params: { q: value } });
+        setAddressSuggestions(prev => ({ ...prev, [name]: response.data || [] }));
       } catch (err) {
         console.error('Geocode search error:', err);
       }
     }, 400);
-    return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.permanent_address, formData.actual_address, formData.address, formData.branch_address, activeAddressField]);
+  };
 
   const selectAddress = (suggestion, fieldName) => {
     const displayName = suggestion.display_name;
@@ -511,7 +516,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input type="text" name="permanent_address" value={formData.permanent_address}
-                      onChange={handleInputChange}
+                      onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('permanent_address')}
                       placeholder="Začněte psát adresu..."
                       autoComplete="off"
@@ -536,7 +541,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input type="text" name="actual_address" value={formData.actual_address}
-                      onChange={handleInputChange}
+                      onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('actual_address')}
                       placeholder="Pokud se liší od trvalého pobytu"
                       autoComplete="off"
@@ -572,7 +577,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input type="text" name="address" value={formData.address}
-                      onChange={handleInputChange}
+                      onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('address')}
                       placeholder="Začněte psát adresu..."
                       autoComplete="off"
@@ -596,7 +601,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <Buildings className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input type="text" name="branch_address" value={formData.branch_address}
-                      onChange={handleInputChange}
+                      onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('branch_address')}
                       placeholder="Adresa pobočky (pokud se liší od sídla)"
                       autoComplete="off"
@@ -662,20 +667,41 @@ const RegisterPage = () => {
         );
 
       case 'categories':
+        const filteredCategories = categoryFilter
+          ? categories.filter(cat => cat.toLowerCase().includes(categoryFilter.toLowerCase()))
+          : categories;
         return (
           <div>
-            <p className="text-gray-600 mb-4">Vyberte kategorie služeb, které nabízíte:</p>
-            <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1.5">
-              {categories.map((category) => (
-                <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
-                  className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
-                    formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                  }`}
-                  data-testid={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}>
-                  {category}
-                  {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
+            <p className="text-gray-600 mb-3">Vyberte kategorie služeb, které nabízíte:</p>
+            {/* Category search filter */}
+            <div className="relative mb-3">
+              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input type="text" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+                placeholder="Filtrovat kategorie..."
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                data-testid="category-filter-input" />
+              {categoryFilter && (
+                <button type="button" onClick={() => setCategoryFilter('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-4 h-4" />
                 </button>
-              ))}
+              )}
+            </div>
+            <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1.5">
+              {filteredCategories.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">Žádná kategorie nebyla nalezena</p>
+              ) : (
+                filteredCategories.map((category) => (
+                  <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
+                    className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
+                      formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                    }`}
+                    data-testid={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}>
+                    {category}
+                    {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
+                  </button>
+                ))
+              )}
             </div>
             <p className="text-sm text-gray-500 mt-2">Vybráno: {formData.categories.length} kategorií</p>
 

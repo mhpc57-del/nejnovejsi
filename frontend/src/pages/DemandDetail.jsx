@@ -21,8 +21,77 @@ const DemandDetail = () => {
   const [showMap, setShowMap] = useState(false);
   const [customerLocation, setCustomerLocation] = useState(null);
   const [supplierLocation, setSupplierLocation] = useState(null);
+  const chatPollRef = useRef(null);
+  const prevMessageCountRef = useRef(0);
+  const prevDemandStatusRef = useRef(null);
   const messagesEndRef = useRef(null);
   const locationIntervalRef = useRef(null);
+  const [statusNotification, setStatusNotification] = useState(null);
+
+  // Sound notification for new messages
+  const playNotificationSound = useCallback(() => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+      oscillator.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.4);
+    } catch (e) {
+      console.log('Sound notification not available');
+    }
+  }, []);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const newMessages = res.data;
+      
+      // Play sound if new messages arrived from the other user
+      if (prevMessageCountRef.current > 0 && newMessages.length > prevMessageCountRef.current) {
+        const latestMsg = newMessages[newMessages.length - 1];
+        if (latestMsg.sender_id !== user?.id) {
+          playNotificationSound();
+        }
+      }
+      prevMessageCountRef.current = newMessages.length;
+      setMessages(newMessages);
+    } catch (err) {
+      console.error('Error polling messages:', err);
+    }
+  }, [id, token, user?.id, playNotificationSound]);
+
+  const fetchDemandStatus = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/demands/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const newDemand = res.data;
+      
+      // Check if status changed
+      if (prevDemandStatusRef.current && prevDemandStatusRef.current !== newDemand.status) {
+        if (newDemand.status === 'in_progress' && user?.role === 'customer') {
+          setStatusNotification({
+            type: 'accepted',
+            message: 'Dodavatel přijal vaši zakázku! Nyní vyčkejte, až dodavatel dorazí a provede práci.'
+          });
+        } else if (newDemand.status === 'completed') {
+          setStatusNotification({
+            type: 'completed',
+            message: 'Zakázka byla dokončena!'
+          });
+        }
+        playNotificationSound();
+      }
+      prevDemandStatusRef.current = newDemand.status;
+      setDemand(newDemand);
+    } catch (err) {
+      console.error('Error polling demand:', err);
+    }
+  }, [id, token, user?.role, playNotificationSound]);
 
   const fetchData = async () => {
     try {
@@ -32,6 +101,8 @@ const DemandDetail = () => {
       ]);
       setDemand(demandRes.data);
       setMessages(messagesRes.data);
+      prevMessageCountRef.current = messagesRes.data.length;
+      prevDemandStatusRef.current = demandRes.data.status;
       
       // Fetch user locations if demand is in progress
       if (demandRes.data.status === 'in_progress') {
@@ -73,13 +144,21 @@ const DemandDetail = () => {
   useEffect(() => {
     fetchData();
     
-    // Poll for location updates every 10 seconds when in progress
+    // Start polling for messages and demand status every 5 seconds
+    chatPollRef.current = setInterval(() => {
+      fetchMessages();
+      fetchDemandStatus();
+    }, 5000);
+    
     return () => {
       if (locationIntervalRef.current) {
         clearInterval(locationIntervalRef.current);
       }
+      if (chatPollRef.current) {
+        clearInterval(chatPollRef.current);
+      }
     };
-  }, [id, token]);
+  }, [id, token, fetchMessages, fetchDemandStatus]);
 
   useEffect(() => {
     if (demand?.status === 'in_progress' && showMap) {
@@ -276,6 +355,43 @@ const DemandDetail = () => {
               isSupplier={isAssignedSupplier}
               showTracking={true}
             />
+          </div>
+        )}
+
+        {/* Status notification banner */}
+        {statusNotification && (
+          <div className={`rounded-xl p-4 mb-6 flex items-start gap-3 ${
+            statusNotification.type === 'accepted' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'
+          }`} data-testid="status-notification-banner">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+              statusNotification.type === 'accepted' ? 'bg-green-500' : 'bg-blue-500'
+            }`}>
+              <Check weight="bold" className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className={`font-semibold ${statusNotification.type === 'accepted' ? 'text-green-800' : 'text-blue-800'}`}>
+                {statusNotification.type === 'accepted' ? 'Zakázka přijata!' : 'Zakázka dokončena!'}
+              </p>
+              <p className={`text-sm mt-1 ${statusNotification.type === 'accepted' ? 'text-green-600' : 'text-blue-600'}`}>
+                {statusNotification.message}
+              </p>
+            </div>
+            <button onClick={() => setStatusNotification(null)} className="text-gray-400 hover:text-gray-600" data-testid="dismiss-notification-btn">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Customer waiting banner when demand is in_progress */}
+        {demand.status === 'in_progress' && isCustomer && !statusNotification && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3" data-testid="waiting-banner">
+            <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+              <Clock weight="bold" className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-amber-800">Dodavatel přijal zakázku</p>
+              <p className="text-sm text-amber-600 mt-1">Nyní vyčkejte, až dodavatel dorazí a provede práci.</p>
+            </div>
           </div>
         )}
 

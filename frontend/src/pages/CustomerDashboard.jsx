@@ -15,6 +15,7 @@ const CustomerDashboard = () => {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewDemand, setShowNewDemand] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
 
   const fetchDemands = async () => {
     try {
@@ -124,80 +125,91 @@ const CustomerDashboard = () => {
 
         {/* Content */}
         <div className="p-6">
-          {/* Stats */}
+          {/* Stats - clickable cards */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Celkem poptávek', value: demands.length, color: 'bg-blue-500' },
-              { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-green-500' },
-              { label: 'Probíhající', value: demands.filter(d => d.status === 'in_progress').length, color: 'bg-orange-500' },
-              { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-gray-500' },
+              { label: 'Celkem poptávek', value: demands.length, color: 'bg-blue-500', filter: 'all' },
+              { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-green-500', filter: 'open' },
+              { label: 'Probíhající', value: demands.filter(d => d.status === 'in_progress').length, color: 'bg-orange-500', filter: 'in_progress' },
+              { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-gray-500', filter: 'completed' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white rounded-xl p-5 border border-gray-100">
+              <button key={i} 
+                onClick={() => setActiveFilter(activeFilter === stat.filter ? null : stat.filter)}
+                className={`bg-white rounded-xl p-5 border transition-all text-left ${
+                  activeFilter === stat.filter ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                }`}
+                data-testid={`stat-card-${stat.filter}`}
+              >
                 <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
                   <List weight="bold" className="w-5 h-5 text-white" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 <p className="text-sm text-gray-500">{stat.label}</p>
-              </div>
+              </button>
             ))}
           </div>
 
-          {/* Demands List */}
-          <div className="bg-white rounded-xl border border-gray-100">
-            <div className="p-5 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">Moje poptávky</h2>
-            </div>
-            
-            {loading ? (
-              <div className="p-10 text-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
-              </div>
-            ) : demands.length === 0 ? (
-              <div className="p-10 text-center">
-                <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 mb-4">Zatím nemáte žádné poptávky</p>
-                <button 
-                  onClick={() => setShowNewDemand(true)}
-                  className="text-orange-500 hover:text-orange-600 font-medium"
-                  data-testid="empty-new-demand-btn"
-                >
-                  Vytvořit první poptávku
+          {/* Filtered Demands - shown when a stat card is clicked */}
+          {activeFilter && (
+            <div className="bg-white rounded-xl border border-gray-100 mb-6" data-testid="filtered-demands-section">
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900">
+                  {activeFilter === 'all' ? 'Všechny poptávky' : activeFilter === 'open' ? 'Otevřené poptávky' : activeFilter === 'in_progress' ? 'Probíhající poptávky' : 'Dokončené poptávky'}
+                </h2>
+                <button onClick={() => setActiveFilter(null)} className="text-gray-400 hover:text-gray-600" data-testid="close-filter-btn">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {demands.map((demand) => (
-                  <Link 
-                    key={demand.id} 
-                    to={`/zakazka/${demand.id}`}
-                    className="block p-5 hover:bg-gray-50 transition-colors"
-                    data-testid={`demand-item-${demand.id}`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
-                          {getStatusBadge(demand.status)}
+              
+              {(() => {
+                const filtered = activeFilter === 'all' ? demands : demands.filter(d => d.status === activeFilter);
+                if (loading) return (
+                  <div className="p-10 text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
+                  </div>
+                );
+                if (filtered.length === 0) return (
+                  <div className="p-10 text-center">
+                    <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">Žádné poptávky v této kategorii</p>
+                    <button onClick={() => setShowNewDemand(true)} className="text-orange-500 hover:text-orange-600 font-medium" data-testid="empty-new-demand-btn">
+                      Vytvořit poptávku
+                    </button>
+                  </div>
+                );
+                return (
+                  <div className="divide-y divide-gray-100">
+                    {filtered.map((demand) => (
+                      <Link key={demand.id} to={`/zakazka/${demand.id}`}
+                        className="block p-5 hover:bg-gray-50 transition-colors"
+                        data-testid={`demand-item-${demand.id}`}>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
+                              {getStatusBadge(demand.status)}
+                            </div>
+                            <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-4 h-4" />
+                                {demand.address}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
+                              </span>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-gray-300" />
                         </div>
-                        <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {demand.address}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-gray-300" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
       </main>
 
