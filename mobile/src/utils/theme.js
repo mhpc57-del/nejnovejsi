@@ -1,0 +1,44 @@
+export const COLORS = {
+  primary: '#f97316',
+  primaryDark: '#ea580c',
+  primaryLight: '#fff7ed',
+  white: '#ffffff',
+  black: '#1a1a1a',
+  gray50: '#f9fafb',
+  gray100: '#f3f4f6',
+  gray200: '#e5e7eb',
+  gray300: '#d1d5db',
+  gray500: '#6b7280',
+  gray700: '#374151',
+  gray900: '#111827',
+  green100: '#dcfce7',
+  green500: '#22c55e',
+  green700: '#15803d',
+  red100: '#fee2e2',
+  red500: '#ef4444',
+  red700: '#b91c1c',
+  blue100: '#dbeafe',
+  blue500: '#3b82f6',
+  blue700: '#1d4ed8',
+  orange100: '#ffedd5',
+  orange500: '#f97316',
+};
+
+export const FONTS = {
+  regular: { fontSize: 14, color: COLORS.gray900 },
+  medium: { fontSize: 14, fontWeight: '500', color: COLORS.gray900 },
+  semibold: { fontSize: 14, fontWeight: '600', color: COLORS.gray900 },
+  bold: { fontSize: 14, fontWeight: '700', color: COLORS.gray900 },
+  h1: { fontSize: 24, fontWeight: '700', color: COLORS.gray900 },
+  h2: { fontSize: 20, fontWeight: '600', color: COLORS.gray900 },
+  h3: { fontSize: 16, fontWeight: '600', color: COLORS.gray900 },
+  small: { fontSize: 12, color: COLORS.gray500 },
+  caption: { fontSize: 11, color: COLORS.gray500 },
+};
+
+export const STATUS_COLORS = {
+  open: { bg: COLORS.green100, text: COLORS.green700, label: 'Otevřená' },
+  in_progress: { bg: COLORS.blue100, text: COLORS.blue700, label: 'Probíhá' },
+  completed: { bg: COLORS.gray100, text: COLORS.gray700, label: 'Dokončeno' },
+  cancelled: { bg: COLORS.red100, text: COLORS.red700, label: 'Zrušeno' },
+};

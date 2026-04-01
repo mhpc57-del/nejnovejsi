@@ -6,39 +6,48 @@
 - **Poslední aktualizace:** 1. 4. 2026
 
 ## Architektura
-- Frontend: React.js + Tailwind CSS + Leaflet
-- Backend: FastAPI - modulární routes
-- Databáze: MongoDB
-- Integrace: Stripe (MOCKED), Twilio, Wedos SMTP
+- **Web Frontend:** React.js + Tailwind CSS + Leaflet (`/app/frontend/`)
+- **Mobile App:** React Native / Expo (`/app/mobile/`)
+- **Backend:** FastAPI - modulární routes (`/app/backend/`)
+- **Databáze:** MongoDB
+- **Integrace:** Stripe (MOCKED), Twilio, Wedos SMTP
 
-## Implementováno
+## Mobilní aplikace (Fáze 1) — NOVÉ 1.4.2026
 
-### Systém přijímání zakázek (NOVÉ 1.4.2026)
-- **Závazně přijmout** — přijme zakázku (dříve "Přijmout zakázku")
-- **Nezávazně přijmout** — 5 předdefinovaných důvodů, uloží se na zakázku + notifikace zákazníkovi (email+SMS)
-- **Spustit chat** — chat je skrytý, zobrazí se až po kliknutí (pro open demands)
-- Nezávazné nabídky viditelné v detailu zakázky pro oba uživatele
-- Backend: POST /api/demands/{id}/soft-accept
+### Vytvořené obrazovky
+- **LoginScreen** — přihlášení s validací
+- **RegisterScreen** — 3-kroková registrace (údaje → role → osobní info + kategorie)
+- **CustomerDashboard** — stat karty, seznam poptávek, FAB "Nová poptávka", modal s formulářem
+- **SupplierDashboard** — 4 taby (Dostupné/Rozdělané/Dokončené/Nedokončené), earnings bar
+- **DemandDetailScreen** — info karta, Závazně/Nezávazně přijmout, chat (polling 5s), Dorazil jsem, Dokončit
+- **ProfileScreen** — avatar, hodnocení, dochvilnost, editace údajů, kategorie
+
+### Technická architektura
+- React Navigation (Stack + Bottom Tabs)
+- AsyncStorage pro persistentní přihlášení
+- Axios API klient s JWT interceptorem
+- Připojeno na stávající backend API
+
+### Spuštění
+1. `cd mobile && npm install && npx expo start`
+2. Expo Go na telefonu → naskenovat QR kód
+
+## Web — implementováno
 
 ### Dashboardy
 - Zákazník: stat karty → modal popup, nová poptávka s termínem realizace
 - Dodavatel: 4 kategorie, mapa (h-80, scroll zoom), finanční přehled
 - Mobilní bottom navigation bar, deaktivace účtu
 
-### Poptávky
-- CRUD + požadovaný termín realizace (deadline)
-- Příjezd, dochvilnost, fotky, fakturace, zrušení
-
-### Email notifikace
-- Nová poptávka: obsahuje jméno zákazníka
-- Nezávazné přijetí: dodavatel+důvod odesláno zákazníkovi
-
-### UX
-- Větší a černé texty, větší mapa + scroll zoom
-- Fotomenu: Vyfotit/Galerie, klikatelné profily
+### Systém přijímání zakázek
+- Závazně přijmout / Nezávazně přijmout (5 důvodů + email+SMS notifikace)
+- Chat se zobrazí po kliknutí "Spustit chat"
 
 ### Core
 - JWT auth, 3 role, ARES, 61 kategorií, chat polling, hodnocení + dochvilnost
+- Větší a černé texty, fotomenu Vyfotit/Galerie, klikatelné profily
 
 ## Backlog
-- P3: Mobilní aplikace + push notifikace (odloženo)
+- Fáze 2 mobilní app: Profil s fotoaparátem, hodnocení, upload fotek
+- Fáze 3 mobilní app: Admin panel, platby, plný feature parity
+- Push notifikace (Firebase Cloud Messaging)
