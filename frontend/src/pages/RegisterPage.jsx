@@ -3,10 +3,29 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import axios from 'axios';
 import { API } from '../App';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { 
   Eye, EyeSlash, ArrowLeft, ArrowRight, User, Briefcase, 
   Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass
 } from '@phosphor-icons/react';
+
+// Leaflet marker fix
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+function MapUpdater({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) map.setView(center, 14);
+  }, [center, map]);
+  return null;
+}
 
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
@@ -42,6 +61,41 @@ const RegisterPage = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Address autocomplete state
+  const [addressSuggestions, setAddressSuggestions] = useState({});
+  const [activeAddressField, setActiveAddressField] = useState(null);
+  const [mapCenter, setMapCenter] = useState(null);
+  
+  // useEffect-based autocomplete: watches address field values and fetches suggestions
+  useEffect(() => {
+    if (!activeAddressField) return;
+    const query = formData[activeAddressField];
+    if (!query || query.length < 3) {
+      setAddressSuggestions(prev => ({ ...prev, [activeAddressField]: [] }));
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const response = await axios.get(`${API}/geocode/search`, { params: { q: query } });
+        setAddressSuggestions(prev => ({ ...prev, [activeAddressField]: response.data || [] }));
+      } catch (err) {
+        console.error('Geocode search error:', err);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.permanent_address, formData.actual_address, formData.address, formData.branch_address, activeAddressField]);
+
+  const selectAddress = (suggestion, fieldName) => {
+    const displayName = suggestion.display_name;
+    setFormData(prev => ({ ...prev, [fieldName]: displayName }));
+    setAddressSuggestions(prev => ({ ...prev, [fieldName]: [] }));
+    setActiveAddressField(null);
+    if (suggestion.lat && suggestion.lon) {
+      setMapCenter([parseFloat(suggestion.lat), parseFloat(suggestion.lon)]);
+    }
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -113,17 +167,26 @@ const RegisterPage = () => {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    // Check file size client-side (25MB)
+    if (file.size > 25 * 1024 * 1024) {
+      setError(`Soubor je příliš velký (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 25 MB.`);
+      return;
+    }
+    
     setUploadingPhoto(true);
     setError('');
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const response = await axios.post(`${API}/upload`, fd, {
+      // Use public upload endpoint (no auth needed during registration)
+      const response = await axios.post(`${API}/upload/public`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setFormData(prev => ({ ...prev, profile_image: response.data.url }));
     } catch (err) {
-      setError('Nepodařilo se nahrát fotografii');
+      const detail = err.response?.data?.detail || 'Nepodařilo se nahrát fotografii. Zkuste jiný formát (JPEG, PNG).';
+      setError(detail);
     } finally {
       setUploadingPhoto(false);
     }
@@ -372,7 +435,7 @@ const RegisterPage = () => {
                   ) : (
                     <Camera weight="fill" className="w-4 h-4 text-white" />
                   )}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
                 </label>
               </div>
             </div>
@@ -443,25 +506,54 @@ const RegisterPage = () => {
             {/* Nepodnikatel customer: trvalý pobyt, skutečná adresa, datum narození */}
             {isNepodnikatel && isCustomer && (
               <>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Trvalý pobyt</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input type="text" name="permanent_address" value={formData.permanent_address} onChange={handleInputChange}
-                      placeholder="Ulice, PSČ Město"
+                    <input type="text" name="permanent_address" value={formData.permanent_address}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveAddressField('permanent_address')}
+                      placeholder="Začněte psát adresu..."
+                      autoComplete="off"
                       className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-permanent-address-input" />
                   </div>
+                  {activeAddressField === 'permanent_address' && addressSuggestions.permanent_address?.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {addressSuggestions.permanent_address.map((s, i) => (
+                        <button key={i} type="button" onClick={() => selectAddress(s, 'permanent_address')}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2"
+                          data-testid={`address-suggestion-${i}`}>
+                          <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Skutečná adresa bydliště</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input type="text" name="actual_address" value={formData.actual_address} onChange={handleInputChange}
+                    <input type="text" name="actual_address" value={formData.actual_address}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveAddressField('actual_address')}
                       placeholder="Pokud se liší od trvalého pobytu"
+                      autoComplete="off"
                       className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-actual-address-input" />
                   </div>
+                  {activeAddressField === 'actual_address' && addressSuggestions.actual_address?.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {addressSuggestions.actual_address.map((s, i) => (
+                        <button key={i} type="button" onClick={() => selectAddress(s, 'actual_address')}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Datum narození</label>
@@ -475,27 +567,66 @@ const RegisterPage = () => {
             {/* OSVČ/firma: sídlo, pobočka */}
             {!isNepodnikatel && (
               <>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Sídlo</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input type="text" name="address" value={formData.address} onChange={handleInputChange}
-                      placeholder="Ulice, PSČ Město"
+                    <input type="text" name="address" value={formData.address}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveAddressField('address')}
+                      placeholder="Začněte psát adresu..."
+                      autoComplete="off"
                       className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-address-input" />
                   </div>
+                  {activeAddressField === 'address' && addressSuggestions.address?.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {addressSuggestions.address.map((s, i) => (
+                        <button key={i} type="button" onClick={() => selectAddress(s, 'address')}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Pobočka</label>
                   <div className="relative">
                     <Buildings className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input type="text" name="branch_address" value={formData.branch_address} onChange={handleInputChange}
+                    <input type="text" name="branch_address" value={formData.branch_address}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveAddressField('branch_address')}
                       placeholder="Adresa pobočky (pokud se liší od sídla)"
+                      autoComplete="off"
                       className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-branch-input" />
                   </div>
+                  {activeAddressField === 'branch_address' && addressSuggestions.branch_address?.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {addressSuggestions.branch_address.map((s, i) => (
+                        <button key={i} type="button" onClick={() => selectAddress(s, 'branch_address')}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
+            )}
+
+            {/* Map preview */}
+            {mapCenter && (
+              <div className="rounded-xl overflow-hidden border border-gray-200 h-48" data-testid="register-map-preview">
+                <MapContainer center={mapCenter} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                  <Marker position={mapCenter} />
+                  <MapUpdater center={mapCenter} />
+                </MapContainer>
+              </div>
             )}
 
             {/* Supplier: WEB */}

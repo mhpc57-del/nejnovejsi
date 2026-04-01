@@ -316,7 +316,7 @@ const ProfilePage = () => {
               {isOwnProfile && editing && (
                 <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors" data-testid="profile-upload-photo-btn">
                   {uploadingPhoto ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div> : <Camera weight="fill" className="w-4 h-4 text-white" />}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
                 </label>
               )}
             </div>
@@ -500,7 +500,7 @@ const ProfilePage = () => {
                       {uploadingRef ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div> : (
                         <><Plus className="w-5 h-5 text-gray-400" /><span className="text-[10px] text-gray-400 mt-1">Přidat</span></>
                       )}
-                      <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleRefPhotoUpload} className="hidden" disabled={uploadingRef} />
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" multiple onChange={handleRefPhotoUpload} className="hidden" disabled={uploadingRef} />
                     </label>
                   )}
                 </div>

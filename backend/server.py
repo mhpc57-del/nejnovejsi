@@ -596,21 +596,46 @@ async def ares_lookup(ico: str):
 
 # ============ UPLOAD ROUTES ============
 
-@api_router.post("/upload")
-async def upload_file(
-    file: UploadFile = File(...),
-    current_user: dict = Depends(get_current_user)
-):
-    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Nepodporovaný formát. Povolené: JPEG, PNG, WebP, GIF")
+ALLOWED_IMAGE_TYPES = [
+    "image/jpeg", "image/png", "image/webp", "image/gif",
+    "image/heic", "image/heif", "image/bmp", "image/tiff",
+    "image/svg+xml", "image/avif",
+]
+MAX_UPLOAD_SIZE = 25 * 1024 * 1024  # 25MB
+
+async def _process_upload(file: UploadFile):
+    """Shared upload logic for both authenticated and public endpoints."""
+    content_type = file.content_type or ""
+    ext = (file.filename.split(".")[-1] if file.filename and "." in file.filename else "jpg").lower()
     
-    max_size = 10 * 1024 * 1024  # 10MB
+    # Accept by content type OR file extension
+    allowed_extensions = ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "bmp", "tiff", "tif", "svg", "avif"]
+    if content_type not in ALLOWED_IMAGE_TYPES and ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Nepodporovaný formát ({ext}). Povolené: JPEG, PNG, WebP, GIF, HEIC, BMP, TIFF, AVIF"
+        )
+    
     contents = await file.read()
-    if len(contents) > max_size:
-        raise HTTPException(status_code=400, detail="Soubor je příliš velký. Max 10 MB.")
+    if len(contents) > MAX_UPLOAD_SIZE:
+        size_mb = len(contents) / (1024 * 1024)
+        raise HTTPException(status_code=400, detail=f"Soubor je příliš velký ({size_mb:.1f} MB). Max 25 MB.")
     
-    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    # Convert HEIC/HEIF to JPEG if Pillow is available
+    if ext in ["heic", "heif"]:
+        try:
+            import pillow_heif
+            pillow_heif.register_heif_opener()
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(contents))
+            output = io.BytesIO()
+            img.convert("RGB").save(output, format="JPEG", quality=90)
+            contents = output.getvalue()
+            ext = "jpg"
+        except Exception as e:
+            logger.warning(f"HEIC conversion failed, saving raw: {e}")
+    
     filename = f"{uuid.uuid4()}.{ext}"
     filepath = UPLOADS_DIR / filename
     
@@ -618,6 +643,18 @@ async def upload_file(
         f.write(contents)
     
     return {"url": f"/api/uploads/{filename}", "filename": filename}
+
+@api_router.post("/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    return await _process_upload(file)
+
+@api_router.post("/upload/public")
+async def upload_file_public(file: UploadFile = File(...)):
+    """Public upload endpoint for registration (no auth required)."""
+    return await _process_upload(file)
 
 # ============ DEMANDS ROUTES ============
 
