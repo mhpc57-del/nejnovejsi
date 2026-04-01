@@ -4,7 +4,7 @@ import { useAuth, API } from '../App';
 import axios from 'axios';
 import { 
   House, Users, Briefcase, ChartBar, SignOut, 
-  User, Calendar, Check, X, Eye
+  User, Calendar, Check, X, Eye, Star
 } from '@phosphor-icons/react';
 
 const AdminDashboard = () => {
@@ -15,6 +15,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingTrust, setUpdatingTrust] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,6 +42,21 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleTrustScoreUpdate = async (userId, score) => {
+    setUpdatingTrust(userId);
+    try {
+      await axios.put(`${API}/admin/users/${userId}/trust-score`, {
+        user_id: userId,
+        trust_score: score
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se aktualizovat hodnocení');
+    } finally {
+      setUpdatingTrust(null);
+    }
   };
 
   const tabs = [
@@ -158,6 +174,8 @@ const AdminDashboard = () => {
                   <th className="text-left p-4 text-sm font-medium text-gray-500">E-mail</th>
                   <th className="text-left p-4 text-sm font-medium text-gray-500">Jméno</th>
                   <th className="text-left p-4 text-sm font-medium text-gray-500">Role</th>
+                  <th className="text-left p-4 text-sm font-medium text-gray-500">Certifikace</th>
+                  <th className="text-left p-4 text-sm font-medium text-gray-500">Důvěryhodnost</th>
                   <th className="text-left p-4 text-sm font-medium text-gray-500">Registrace</th>
                   <th className="text-left p-4 text-sm font-medium text-gray-500">Ověřen</th>
                 </tr>
@@ -168,6 +186,24 @@ const AdminDashboard = () => {
                     <td className="p-4 text-sm text-gray-900">{u.email}</td>
                     <td className="p-4 text-sm text-gray-500">{u.company_name || '-'}</td>
                     <td className="p-4">{getRoleBadge(u.role)}</td>
+                    <td className="p-4 text-sm text-gray-500">
+                      {u.role === 'supplier' ? (u.certifications?.length || 0) : '-'}
+                    </td>
+                    <td className="p-4">
+                      {u.role === 'supplier' ? (
+                        <div className="flex items-center gap-1" data-testid={`trust-score-${u.id}`}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button key={star} onClick={() => handleTrustScoreUpdate(u.id, star)}
+                              disabled={updatingTrust === u.id}
+                              className="p-0.5 hover:scale-110 transition-transform disabled:opacity-50"
+                              data-testid={`trust-star-${u.id}-${star}`}>
+                              <Star weight={star <= (u.trust_score || 0) ? 'fill' : 'regular'}
+                                className={`w-4 h-4 ${star <= (u.trust_score || 0) ? 'text-yellow-500' : 'text-gray-300'}`} />
+                            </button>
+                          ))}
+                        </div>
+                      ) : '-'}
+                    </td>
                     <td className="p-4 text-sm text-gray-500">
                       {new Date(u.created_at).toLocaleDateString('cs-CZ')}
                     </td>

@@ -247,6 +247,18 @@ const DemandDetail = () => {
     }
   };
 
+  const handleSupplierArrived = async () => {
+    try {
+      const res = await axios.post(`${API}/demands/${id}/arrive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert(`Příjezd potvrzen! Čas příjezdu: ${res.data.arrival_minutes ? Math.round(res.data.arrival_minutes) + ' minut' : 'zaznamenán'}`);
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se potvrdit příjezd');
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       open: 'bg-green-100 text-green-700',
@@ -462,6 +474,29 @@ const DemandDetail = () => {
                     Zrušit zakázku
                   </button>
                 )}
+                {/* Supplier arrived button */}
+                {isAssignedSupplier && demand.status === 'in_progress' && !demand.supplier_arrived && (
+                  <button
+                    onClick={handleSupplierArrived}
+                    className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl font-medium text-white transition-colors flex items-center gap-2"
+                    data-testid="supplier-arrived-btn"
+                  >
+                    <NavigationArrow weight="bold" className="w-5 h-5" />
+                    Dorazil jsem
+                  </button>
+                )}
+                {/* Arrival confirmed badge */}
+                {demand.supplier_arrived && demand.status === 'in_progress' && (
+                  <div className="px-5 py-2.5 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-green-700" data-testid="arrived-badge">
+                    <Check weight="bold" className="w-5 h-5" />
+                    <span className="font-medium">Dodavatel na místě</span>
+                    {demand.supplier_arrived_at && (
+                      <span className="text-sm text-green-500 ml-1">
+                        ({new Date(demand.supplier_arrived_at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })})
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -598,6 +633,7 @@ const DemandDetail = () => {
 
 const ReviewModal = ({ demandId, token, onClose }) => {
   const [rating, setRating] = useState(5);
+  const [ratingPercentage, setRatingPercentage] = useState(80);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -609,7 +645,8 @@ const ReviewModal = ({ demandId, token, onClose }) => {
       await axios.post(`${API}/reviews`, {
         demand_id: demandId,
         rating,
-        comment
+        comment,
+        rating_percentage: ratingPercentage
       }, { headers: { Authorization: `Bearer ${token}` } });
       onClose();
     } catch (error) {
@@ -617,6 +654,18 @@ const ReviewModal = ({ demandId, token, onClose }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getPercentageColor = (pct) => {
+    if (pct >= 80) return 'text-green-600';
+    if (pct >= 50) return 'text-orange-500';
+    return 'text-red-500';
+  };
+
+  const getPercentageBarColor = (pct) => {
+    if (pct >= 80) return 'bg-green-500';
+    if (pct >= 50) return 'bg-orange-500';
+    return 'bg-red-500';
   };
 
   return (
@@ -633,8 +682,9 @@ const ReviewModal = ({ demandId, token, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Star rating */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Hodnocení</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Hodnocení hvězdičkami</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
@@ -650,6 +700,41 @@ const ReviewModal = ({ demandId, token, onClose }) => {
                   />
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Percentage slider */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Celkové hodnocení</label>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={ratingPercentage}
+                  onChange={(e) => setRatingPercentage(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer accent-orange-500"
+                  style={{
+                    background: `linear-gradient(to right, ${ratingPercentage >= 80 ? '#22c55e' : ratingPercentage >= 50 ? '#f97316' : '#ef4444'} ${ratingPercentage}%, #e5e7eb ${ratingPercentage}%)`
+                  }}
+                  data-testid="rating-percentage-slider"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+              <div className={`text-2xl font-bold min-w-[60px] text-right ${getPercentageColor(ratingPercentage)}`} data-testid="rating-percentage-value">
+                {ratingPercentage}%
+              </div>
+            </div>
+            <div className="mt-2 h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 ${getPercentageBarColor(ratingPercentage)}`}
+                style={{ width: `${ratingPercentage}%` }}
+              />
             </div>
           </div>
 

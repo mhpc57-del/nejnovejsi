@@ -337,12 +337,32 @@ const ProfilePage = () => {
                 )}
               </div>
               {isSupplier && (
-                <div className="flex items-center gap-4 mt-4">
+                <div className="flex items-center gap-4 mt-4 flex-wrap">
                   <div className="flex items-center gap-1">
                     <Star weight="fill" className="w-5 h-5 text-orange-500" />
                     <span className="font-semibold">{profile.rating?.toFixed(1) || '0.0'}</span>
                     <span className="text-gray-500 text-sm">({profile.reviews_count || 0} hodnocení)</span>
                   </div>
+                  {/* Percentage rating */}
+                  <div className="flex items-center gap-2" data-testid="rating-percentage-display">
+                    <div className="w-24 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${
+                        (profile.rating_percentage || 0) >= 80 ? 'bg-green-500' : (profile.rating_percentage || 0) >= 50 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} style={{ width: `${profile.rating_percentage || 0}%` }} />
+                    </div>
+                    <span className={`font-semibold text-sm ${
+                      (profile.rating_percentage || 0) >= 80 ? 'text-green-600' : (profile.rating_percentage || 0) >= 50 ? 'text-orange-500' : 'text-red-500'
+                    }`}>{(profile.rating_percentage || 0).toFixed(0)}%</span>
+                  </div>
+                  {/* Trust score (admin-set) */}
+                  {profile.trust_score > 0 && (
+                    <div className="flex items-center gap-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded-full" data-testid="trust-score-badge">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <Star key={i} weight={i < profile.trust_score ? 'fill' : 'regular'} className={`w-3.5 h-3.5 ${i < profile.trust_score ? 'text-yellow-500' : 'text-gray-300'}`} />
+                      ))}
+                      <span className="text-xs text-yellow-700 ml-1 font-medium">Ověřeno</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -618,6 +638,15 @@ const ProfilePage = () => {
                 </div>
               </div>
             )}
+
+            {/* Certifications */}
+            {isSupplier && (
+              <CertificationsSection 
+                userId={userId}
+                isOwnProfile={isOwnProfile}
+                token={token}
+              />
+            )}
           </div>
         )}
 
@@ -628,12 +657,17 @@ const ProfilePage = () => {
             <div className="space-y-4">
               {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star key={star} weight={star <= review.rating ? 'fill' : 'regular'} className={`w-4 h-4 ${star <= review.rating ? 'text-orange-500' : 'text-gray-300'}`} />
                       ))}
                     </div>
+                    {review.rating_percentage != null && (
+                      <span className={`text-sm font-semibold ${review.rating_percentage >= 80 ? 'text-green-600' : review.rating_percentage >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                        {review.rating_percentage}%
+                      </span>
+                    )}
                     <span className="text-sm text-gray-500">{review.reviewer_name}</span>
                     <span className="text-sm text-gray-400">{new Date(review.created_at).toLocaleDateString('cs-CZ')}</span>
                   </div>
@@ -644,6 +678,140 @@ const ProfilePage = () => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+const CertificationsSection = ({ userId, isOwnProfile, token }) => {
+  const [certs, setCerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [certName, setCertName] = useState('');
+  const [certDesc, setCertDesc] = useState('');
+
+  useEffect(() => {
+    fetchCerts();
+  }, [userId]);
+
+  const fetchCerts = async () => {
+    try {
+      const res = await axios.get(`${API}/users/${userId}/certifications`);
+      setCerts(res.data.certifications || []);
+    } catch (err) {
+      console.error('Failed to load certifications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadCert = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!certName.trim()) {
+      alert('Zadejte název certifikace');
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const uploadRes = await axios.post(`${API}/upload`, fd, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      await axios.post(`${API}/users/certifications`, {
+        name: certName.trim(),
+        description: certDesc.trim() || null,
+        file_url: uploadRes.data.url
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setCertName('');
+      setCertDesc('');
+      setShowAdd(false);
+      fetchCerts();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Nepodařilo se nahrát certifikaci');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (certId) => {
+    if (!window.confirm('Opravdu chcete odebrat tuto certifikaci?')) return;
+    try {
+      await axios.delete(`${API}/users/certifications/${certId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCerts();
+    } catch (err) {
+      alert('Nepodařilo se odstranit certifikaci');
+    }
+  };
+
+  if (loading) return null;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-6 lg:col-span-2" data-testid="certifications-section">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-gray-900">
+          Certifikace a oprávnění ({certs.length})
+        </h2>
+        {isOwnProfile && (
+          <button onClick={() => setShowAdd(!showAdd)} className="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center gap-1" data-testid="add-cert-btn">
+            <Plus className="w-4 h-4" /> Přidat
+          </button>
+        )}
+      </div>
+
+      {/* Add certification form */}
+      {showAdd && (
+        <div className="mb-4 p-4 bg-gray-50 rounded-xl space-y-3" data-testid="add-cert-form">
+          <input type="text" value={certName} onChange={(e) => setCertName(e.target.value)} placeholder="Název certifikace *"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+            data-testid="cert-name-input" />
+          <input type="text" value={certDesc} onChange={(e) => setCertDesc(e.target.value)} placeholder="Popis (volitelný)"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+            data-testid="cert-desc-input" />
+          <label className={`flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-orange-300 rounded-xl cursor-pointer hover:bg-orange-50 transition-colors ${uploading ? 'opacity-50' : ''}`}>
+            <Plus className="w-5 h-5 text-orange-500" />
+            <span className="text-sm text-orange-600 font-medium">{uploading ? 'Nahrávání...' : 'Vybrat soubor'}</span>
+            <input type="file" accept="image/*,.pdf" onChange={handleUploadCert} className="hidden" disabled={uploading || !certName.trim()} data-testid="cert-file-input" />
+          </label>
+        </div>
+      )}
+
+      {certs.length === 0 ? (
+        <p className="text-sm text-gray-400">Žádné certifikace zatím nebyly nahrány</p>
+      ) : (
+        <div className="space-y-3">
+          {certs.map((cert) => (
+            <div key={cert.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl" data-testid={`cert-item-${cert.id}`}>
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                <Briefcase className="w-5 h-5 text-orange-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm truncate">{cert.name}</p>
+                {cert.description && <p className="text-xs text-gray-500 truncate">{cert.description}</p>}
+                <p className="text-xs text-gray-400">{new Date(cert.uploaded_at).toLocaleDateString('cs-CZ')}</p>
+              </div>
+              {cert.verified && (
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Ověřeno
+                </span>
+              )}
+              {cert.file_url && (
+                <a href={`${API.replace('/api', '')}${cert.file_url}`} target="_blank" rel="noreferrer" className="text-orange-500 hover:text-orange-600 text-xs font-medium">
+                  Zobrazit
+                </a>
+              )}
+              {isOwnProfile && (
+                <button onClick={() => handleDelete(cert.id)} className="text-gray-400 hover:text-red-500" data-testid={`delete-cert-${cert.id}`}>
+                  <Trash className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

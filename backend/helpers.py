@@ -1,0 +1,38 @@
+from models import UserResponse
+from datetime import datetime, timezone
+
+
+def user_to_response(user: dict) -> UserResponse:
+    return UserResponse(
+        id=user["id"],
+        email=user["email"],
+        phone=user.get("phone", ""),
+        role=user["role"],
+        account_type=user.get("account_type"),
+        supplier_type=user.get("supplier_type"),
+        company_name=user.get("company_name"),
+        ico=user.get("ico"),
+        dic=user.get("dic"),
+        address=user.get("address"),
+        branch_address=user.get("branch_address"),
+        permanent_address=user.get("permanent_address"),
+        actual_address=user.get("actual_address"),
+        date_of_birth=user.get("date_of_birth"),
+        profile_image=user.get("profile_image"),
+        bio=user.get("bio"),
+        website=user.get("website"),
+        categories=user.get("categories", []),
+        custom_categories=user.get("custom_categories", []),
+        reference_photos=user.get("reference_photos", []),
+        service_areas=user.get("service_areas", []),
+        is_verified=user.get("is_verified", False),
+        trial_ends_at=user.get("trial_ends_at"),
+        subscription_active=user.get("subscription_active", False),
+        created_at=user.get("created_at", datetime.now(timezone.utc).isoformat()),
+        rating=user.get("rating", 0.0),
+        reviews_count=user.get("reviews_count", 0),
+        location=user.get("location"),
+        rating_percentage=user.get("rating_percentage", 0.0),
+        certifications=user.get("certifications", []),
+        trust_score=user.get("trust_score", 0)
+    )
