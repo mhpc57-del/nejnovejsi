@@ -2,107 +2,94 @@
 
 ## Základní informace
 - **Projekt:** CraftBolt.cz - Platforma pro propojení zákazníků s řemeslníky
-- **Doména:** craftbolt.cz (DNS aktivní, funguje)
-- **Provozovatel:** AC/DC MONT s.r.o., IČO: 097 44 550, Sportovní 7, 789 63 Ruda nad Moravou
+- **Doména:** craftbolt.cz (DNS aktivní)
+- **Provozovatel:** AC/DC MONT s.r.o., IČO: 097 44 550
 - **Poslední aktualizace:** 1. 4. 2026
 
----
-
-## Architektura
+## Architektura (po refaktoringu)
 - **Frontend:** React.js + Tailwind CSS + Leaflet + Phosphor Icons
-- **Backend:** FastAPI (Python) + Motor (MongoDB async)
+- **Backend:** FastAPI (Python) - modulární struktura:
+  - `server.py` - hlavní app, startup, middleware
+  - `database.py` - MongoDB connection
+  - `auth.py` - JWT helpers
+  - `models.py` - Pydantic modely
+  - `helpers.py` - user_to_response
+  - `notifications.py` - Twilio SMS + Wedos SMTP
+  - `routes/auth_routes.py` - registrace, login, me
+  - `routes/users.py` - profil, certifikace, trust score
+  - `routes/demands.py` - poptávky, příjezd dodavatele
+  - `routes/messages.py` - chat zprávy
+  - `routes/reviews.py` - hodnocení s % posuvníkem
+  - `routes/uploads.py` - upload souborů
+  - `routes/payments.py` - Stripe platby
+  - `routes/admin.py` - admin statistiky
+  - `routes/misc.py` - geocoding, ARES, kategorie
 - **Databáze:** MongoDB
-- **Platební brána:** Stripe (testovací režim, emergentintegrations)
-- **SMS:** Twilio (Alphanumeric Sender ID: "CraftBolt")
-- **Email:** SMTP Wedos (info@craftbolt.cz)
-
----
+- **Integrace:** Stripe, Twilio, Wedos SMTP
 
 ## Implementováno
 
-### Autentizace & Uživatelé
-- JWT autentizace, 3 role: Zákazník, Dodavatel, Admin
-- Multi-step registrace, 14denní trial, ARES integrace
-
-### Tarify
-| Tarif | Cena | Role |
-|-------|------|------|
-| Zákazník | 99 Kč/měsíc bez DPH | customer |
-| Dodavatel | 399 Kč/měsíc bez DPH | supplier |
+### Core
+- JWT auth, 3 role, multi-step registrace, ARES, 61 kategorií
+- Tarify: Zákazník 99 Kč/měsíc, Dodavatel 399 Kč/měsíc
 
 ### Poptávky & Zakázky
-- 61 kategorií služeb, geocoding + mapa
-- Stavy: open → in_progress → completed/cancelled
+- CRUD, stavy: open → in_progress → completed/cancelled
+- Geocoding + Leaflet mapa
+- **Tlačítko "Dorazil jsem"** - dodavatel potvrdí příjezd, zaznamenání času příjezdu
+- Průměrný čas příjezdu se ukládá do profilu dodavatele
 
 ### Komunikace
-- **Real-time chat** s polling každých 5 sekund
-- **Zvuková notifikace** (Web Audio API) při nové zprávě od protistrany
-- **Status notifikace** - popup při změně stavu zakázky
-- **Čekající banner** pro zákazníka: "Nyní vyčkejte, až dodavatel dorazí"
+- Real-time chat (polling 5s) + zvuková notifikace (Web Audio API)
+- Status notifikace (popup při změně stavu zakázky)
+- Čekající banner pro zákazníka: "Nyní vyčkejte..."
 
-### Upload souborů
-- Veřejný endpoint `/api/upload/public` (bez autentizace - pro registraci)
-- Formáty: JPEG, PNG, WebP, GIF, HEIC, HEIF, BMP, TIFF, AVIF
-- HEIC→JPEG konverze, max 25 MB
+### Hodnotící systém
+- **Hvězdičky 1-5** (klasické)
+- **Procentuální hodnocení 0-100%** s barevným posuvníkem (zelená 80+%, oranžová 50-79%, červená <50%)
+- Oba typy se průměrují a zobrazují na profilu
 
-### Adresový našeptávač (registrace)
-- Nominatim API s debounce 400ms
-- Leaflet mapa s markerem po výběru adresy
-- Funguje pro všechna adresová pole
+### Certifikace dodavatelů
+- Upload certifikátů, oprávnění, vyhlášek (CRUD)
+- Zobrazení na profilu s možností stažení
+- Počet certifikací viditelný v admin panelu
 
-### Filtrování kategorií (registrace)
-- Vyhledávací pole s ikonou lupy
-- Case-insensitive filtrování 61 kategorií
-- Možnost přidat vlastní kategorii
-
-### Dashboard zákazníka
-- **Klikatelné stat karty** (Celkem, Otevřené, Probíhající, Dokončené)
-- Kliknutím se zobrazí filtrovaný seznam poptávek
-- Sekce "Moje poptávky" odstraněna (nahrazena klikatelnými kartami)
+### Admin hodnocení důvěryhodnosti
+- Hvězdičky 1-5 přímo v admin tabulce uživatelů
+- Badge "Ověřeno" s hvězdičkami na profilu dodavatele
 
 ### Notifikace
 | Událost | Email | SMS | Popup |
 |---------|-------|-----|-------|
 | Registrace | OK | - | - |
 | Nová poptávka | OK | OK | - |
-| Zakázka přijata | OK | OK | OK (zelený banner) |
-| Nová zpráva | OK | OK | Zvuk (pípnutí) |
-| Změna stavu | OK | OK | OK (banner) |
+| Zakázka přijata | OK | OK | OK |
+| Dodavatel dorazil | - | - | Badge |
+| Nová zpráva | OK | OK | Zvuk |
 | Platba úspěšná | OK | - | - |
 
----
+### Upload
+- Veřejný endpoint pro registraci, formáty: JPEG/PNG/WebP/GIF/HEIC/BMP/TIFF/AVIF
+- HEIC→JPEG konverze, max 25 MB
+
+### Adresový našeptávač
+- Nominatim API, debounce 400ms, Leaflet mapa s markerem
+
+### Filtrování kategorií
+- Vyhledávací pole v registraci dodavatele
+
+### Dashboard zákazníka
+- Klikatelné stat karty s filtrovanými poptávkami
 
 ## Backlog
 
-### P0 - K otestování uživatelem
-- 4 registrační cesty (zákazník + dodavatel × nepodnikatel/OSVČ/firma)
-- Upload fotky, adresový našeptávač, email, SMS
-- Chat v reálném čase + zvukové notifikace
-- Klikatelné stat karty na mobilu
+### P0 - Uživatelské testování
+- Registrace (4 cesty), upload, chat, notifikace
 
-### P2 - Hodnotící systém (příští iterace)
-- Procentuální hodnocení 0-100% s posuvníkem
-- Tlačítko "Dodavatel dorazil" + sledování času příjezdu
-- Čas příjezdu ovlivňuje hodnocení dodavatele
-- Certifikace dodavatelů (nahrání certifikátů, oprávnění)
-- Admin hodnocení důvěryhodnosti (hvězdičky 1-5)
-
-### P3 - Budoucí úkoly
-- Mobilní aplikace (iOS + Android) + push notifikace
-- Refaktoring server.py (1300+ řádků) na moduly
-
----
+### P2 - Budoucí
+- Čas příjezdu automaticky ovlivňuje hodnocení dodavatele
+- Mobilní aplikace + push notifikace
 
 ## DNS (Wedos)
-- A @ → 162.159.142.117 (TTL 300)
-- A @ → 172.66.2.113 (TTL 300)
+- A @ → 162.159.142.117, 172.66.2.113 (TTL 300)
 - CNAME www → craftbolt.cz (TTL 300)
-
-## Stránky webu
-- `/` - Homepage
-- `/prihlaseni` - Přihlášení
-- `/registrace` - Multi-step registrace
-- `/cenik` - Ceník tarifů
-- `/dashboard` - Dashboard (zákazník/dodavatel/admin)
-- `/zakazka/:id` - Detail zakázky + chat
-- `/obchodni-podminky`, `/kontakt`, `/podminky-opakovanych-plateb`
