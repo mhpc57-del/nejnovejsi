@@ -102,6 +102,7 @@ class DemandCreate(BaseModel):
     budget_min: Optional[float] = None
     budget_max: Optional[float] = None
     payment_method: str = "cash"
+    deadline: Optional[str] = None
 
 
 class DemandResponse(BaseModel):
@@ -130,6 +131,7 @@ class DemandResponse(BaseModel):
     invoiced_amount: Optional[float] = None
     progress_photos: List[str] = []
     cancellation_reason: Optional[str] = None
+    deadline: Optional[str] = None
 
 
 class MessageCreate(BaseModel):

@@ -32,6 +32,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
         "budget_min": demand_data.budget_min,
         "budget_max": demand_data.budget_max,
         "payment_method": demand_data.payment_method,
+        "deadline": demand_data.deadline,
         "status": "open",
         "customer_id": current_user["id"],
         "customer_name": current_user.get("company_name") or current_user["email"],
@@ -58,7 +59,8 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
                 suppliers=suppliers,
                 demand_title=demand_data.title,
                 demand_category=demand_data.category,
-                demand_address=demand_data.address or ""
+                demand_address=demand_data.address or "",
+                customer_name=demand.get("customer_name", "")
             )
     except Exception as e:
         logger.error(f"Failed to send new demand notifications: {str(e)}")

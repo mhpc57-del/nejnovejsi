@@ -121,23 +121,26 @@ const SupplierDashboard = () => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-semibold text-gray-900 text-sm">{demand.title}</h3>
-            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">{demand.category}</span>
+            <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-sm">{demand.category}</span>
           </div>
-          <p className="text-xs text-gray-500 line-clamp-1 mb-2">{demand.description}</p>
-          <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
-            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{demand.address}</span>
-            <span className="flex items-center gap-1"><User className="w-3 h-3" />{demand.customer_name}</span>
-            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
+          <p className="text-sm text-gray-900 line-clamp-1 mb-2">{demand.description}</p>
+          <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap">
+            <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
+            <span className="flex items-center gap-1"><User className="w-4 h-4" />{demand.customer_name}</span>
+            <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
+            {demand.deadline && (
+              <span className="flex items-center gap-1 text-orange-600 font-medium"><Clock className="w-4 h-4" />Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}</span>
+            )}
             {demand.invoiced_amount && (
               <span className="flex items-center gap-1 text-green-600 font-semibold">
-                <CurrencyDollar className="w-3 h-3" />{demand.invoiced_amount.toLocaleString('cs-CZ')} Kč
+                <CurrencyDollar className="w-4 h-4" />{demand.invoiced_amount.toLocaleString('cs-CZ')} Kč
               </span>
             )}
           </div>
           {demand.cancellation_reason && (
-            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-              <Warning className="w-3 h-3" /> {demand.cancellation_reason}
+            <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+              <Warning className="w-4 h-4" /> {demand.cancellation_reason}
             </p>
           )}
         </div>
@@ -150,9 +153,9 @@ const SupplierDashboard = () => {
     <div>
       {/* Map for available demands */}
       {availableDemands.length > 0 && availableDemands.some(d => d.latitude && d.longitude) && (
-        <div className="rounded-xl overflow-hidden border border-gray-200 mb-4 h-48" data-testid="available-map">
+        <div className="rounded-xl overflow-hidden border border-gray-200 mb-4 h-80" data-testid="available-map">
           <MapContainer center={myLocation ? [myLocation.lat, myLocation.lng] : [49.8, 15.5]} zoom={9}
-            style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+            style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
             {availableDemands.filter(d => d.latitude && d.longitude).map(d => (
               <Marker key={d.id} position={[d.latitude, d.longitude]} icon={demandIcon}>
@@ -167,7 +170,7 @@ const SupplierDashboard = () => {
       {availableDemands.length === 0 ? (
         <div className="p-8 text-center">
           <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Momentálně nejsou dostupné žádné zakázky ve vašich kategoriích</p>
+          <p className="text-gray-700">Momentálně nejsou dostupné žádné zakázky ve vašich kategoriích</p>
         </div>
       ) : (
         <div>
@@ -176,13 +179,16 @@ const SupplierDashboard = () => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="font-semibold text-gray-900 text-sm">{demand.title}</h3>
-                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">{demand.category}</span>
+                    <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm">{demand.category}</span>
                   </div>
-                  <p className="text-xs text-gray-500 line-clamp-2 mb-2">{demand.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap mb-3">
-                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{demand.address}</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
+                  <p className="text-sm text-gray-900 line-clamp-2 mb-2">{demand.description}</p>
+                  <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap mb-3">
+                    <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
+                    {demand.deadline && (
+                      <span className="flex items-center gap-1 text-orange-600 font-medium"><Clock className="w-4 h-4" />Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}</span>
+                    )}
                     {demand.budget_max && (
                       <span className="text-green-600 font-semibold">Rozpočet: {demand.budget_min ? `${demand.budget_min}-` : ''}{demand.budget_max} Kč</span>
                     )}
@@ -209,25 +215,25 @@ const SupplierDashboard = () => {
       {inProgress.length === 0 ? (
         <div className="p-8 text-center">
           <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Žádné rozdělané zakázky</p>
+          <p className="text-gray-700">Žádné rozdělané zakázky</p>
         </div>
       ) : (
         inProgress.map(demand => (
           <div key={demand.id} className="p-4 border-b border-gray-100 last:border-0">
             <Link to={`/zakazka/${demand.id}`} className="block" data-testid={`demand-progress-${demand.id}`}>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h3 className="font-semibold text-gray-900 text-sm">{demand.title}</h3>
-                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">Probíhá</span>
+                <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-sm">Probíhá</span>
                 {demand.supplier_arrived && (
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs flex items-center gap-1">
+                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm flex items-center gap-1">
                     <Check className="w-3 h-3" /> Na místě
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500 line-clamp-1 mb-2">{demand.description}</p>
-              <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
-                <span className="flex items-center gap-1"><User className="w-3 h-3" />{demand.customer_name}</span>
-                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{demand.address}</span>
+              <p className="text-sm text-gray-900 line-clamp-1 mb-2">{demand.description}</p>
+              <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap">
+                <span className="flex items-center gap-1"><User className="w-4 h-4" />{demand.customer_name}</span>
+                <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
               </div>
             </Link>
             {/* Progress photos */}
@@ -247,7 +253,7 @@ const SupplierDashboard = () => {
                   onChange={(e) => handleProgressPhoto(demand.id, e.target.files[0])}
                   data-testid={`progress-photo-${demand.id}`} />
               </label>
-              <span className="text-xs text-gray-400">Přidat foto</span>
+              <span className="text-sm text-gray-700">Přidat foto</span>
             </div>
           </div>
         ))
@@ -278,7 +284,7 @@ const SupplierDashboard = () => {
       {completed.length === 0 ? (
         <div className="p-8 text-center">
           <Check className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Žádné dokončené zakázky</p>
+          <p className="text-gray-700">Žádné dokončené zakázky</p>
         </div>
       ) : (
         completed.map(demand => renderDemandCard(demand, 'completed'))
@@ -291,7 +297,7 @@ const SupplierDashboard = () => {
       {cancelled.length === 0 ? (
         <div className="p-8 text-center">
           <Warning className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Žádné nedokončené zakázky</p>
+          <p className="text-gray-700">Žádné nedokončené zakázky</p>
         </div>
       ) : (
         cancelled.map(demand => renderDemandCard(demand, 'cancelled'))
@@ -395,7 +401,7 @@ const SupplierDashboard = () => {
                       </div>
                       <div className="text-left">
                         <p className={`font-semibold ${tab.textColor}`}>{tab.label}</p>
-                        <p className="text-xs text-gray-400">{tab.count} zakázek</p>
+                        <p className="text-sm text-gray-600">{tab.count} zakázek</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

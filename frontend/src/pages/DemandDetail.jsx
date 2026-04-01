@@ -440,6 +440,12 @@ const DemandDetail = () => {
                     Rozpočet: {demand.budget_min ? `${demand.budget_min} - ` : ''}{demand.budget_max} Kč
                   </div>
                 )}
+                {demand.deadline && (
+                  <div className="flex items-center gap-2 text-orange-600 font-medium" data-testid="demand-deadline-display">
+                    <Clock className="w-5 h-5" />
+                    Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

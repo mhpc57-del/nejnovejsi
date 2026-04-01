@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 7 testing completed successfully. All 4 new features verified: 1) Deadline field in demands (create/get), 2) Customer name in notification email template, 3) User deactivation/reactivation flow, 4) Supplier dashboard map enlarged with scroll wheel zoom and larger text styling.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration7_features.py",
+    "/app/test_reports/pytest/pytest_results_iteration7.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration7_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all tested flows working)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!"
+  },
+  "seed_data_creation": "Multiple test users and demands created during testing with unique emails (test-*@example.com)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 7 features tested successfully. Backend APIs fully functional. Frontend UI working correctly. Stripe payment is MOCKED.",
+  "features_tested": {
+    "DEADLINE_FIELD_CREATE": "PASSED - POST /api/demands creates demand with deadline field stored correctly (tested with deadline='2026-06-15')",
+    "DEADLINE_FIELD_GET": "PASSED - GET /api/demands returns deadline field in response",
+    "DEADLINE_FIELD_LIST": "PASSED - GET /api/demands/my includes deadline in list response",
+    "DEADLINE_UI_INPUT": "PASSED - NewDemandModal shows 'Požadovaný termín realizace' date input with data-testid='demand-deadline-input'",
+    "DEADLINE_UI_DISPLAY": "PASSED - DemandDetail page shows deadline as 'Termín: 15. 6. 2026' with data-testid='demand-deadline-display'",
+    "NOTIFICATION_CUSTOMER_NAME": "PASSED - new_demand_email template accepts customer_name parameter and displays 'Zákazník:' line",
+    "NOTIFICATION_BACKWARD_COMPAT": "PASSED - Template works without customer_name (empty string)",
+    "DEACTIVATE_REQUIRES_PASSWORD": "PASSED - POST /api/auth/deactivate requires correct password (401 for wrong password)",
+    "DEACTIVATE_SUCCESS": "PASSED - Account deactivated with correct password",
+    "LOGIN_BLOCKED_DEACTIVATED": "PASSED - Login returns 403 with Czech message 'Váš účet byl deaktivován. Kontaktujte administrátora pro obnovení.'",
+    "ADMIN_REACTIVATE": "PASSED - PUT /api/admin/users/{id}/reactivate restores account, login works again",
+    "REACTIVATE_REQUIRES_ADMIN": "PASSED - Non-admin users get 403 when trying to reactivate",
+    "SUPPLIER_MAP_HEIGHT": "VERIFIED - SupplierDashboard map has h-80 class (320px height)",
+    "SUPPLIER_MAP_SCROLL_ZOOM": "VERIFIED - MapContainer has scrollWheelZoom={true}",
+    "SUPPLIER_TEXT_STYLING": "VERIFIED - Dashboard uses text-sm, text-gray-900, text-gray-700 classes throughout",
+    "CUSTOMER_PROFILE_LINK": "PASSED - DemandDetail sidebar shows customer profile link with 'Zákazník — zobrazit profil'"
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - checkout creates fake session with sk_test_emergent"
+  },
+  "rca_of_the_issue": "No issues found. All features implemented correctly."
+}

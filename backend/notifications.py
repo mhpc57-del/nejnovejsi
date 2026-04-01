@@ -193,8 +193,9 @@ class NotificationTemplates:
     # ============ NEW DEMAND ============
     
     @staticmethod
-    def new_demand_email(demand_title: str, demand_category: str, demand_address: str) -> tuple:
+    def new_demand_email(demand_title: str, demand_category: str, demand_address: str, customer_name: str = "") -> tuple:
         """Email template for new demand notification to suppliers"""
+        customer_line = f'<p style="margin: 0 0 8px 0;"><strong>Zákazník:</strong> {customer_name}</p>' if customer_name else ""
         content = f"""
             <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Nová poptávka ve vaší kategorii!</h2>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
@@ -206,7 +207,8 @@ class NotificationTemplates:
             <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin: 0 0 24px 0;">
                 <p style="margin: 0 0 8px 0;"><strong>Název:</strong> {demand_title}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Kategorie:</strong> {demand_category}</p>
-                <p style="margin: 0;"><strong>Lokalita:</strong> {demand_address}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Lokalita:</strong> {demand_address}</p>
+                {customer_line}
             </div>
             <a href="https://craftbolt.cz/dashboard" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
                 Zobrazit poptávku
@@ -365,9 +367,9 @@ class NotificationService:
         subject, html = self.templates.registration_success_email(user_name, user_role)
         await self.email_service.send_email(user_email, subject, html)
     
-    async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str):
+    async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str, customer_name: str = ""):
         """Notify suppliers about new demand in their category"""
-        subject, html = self.templates.new_demand_email(demand_title, demand_category, demand_address)
+        subject, html = self.templates.new_demand_email(demand_title, demand_category, demand_address, customer_name)
         sms_text = self.templates.new_demand_sms(demand_title, demand_category)
         
         for supplier in suppliers:

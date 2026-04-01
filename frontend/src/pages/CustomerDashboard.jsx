@@ -294,7 +294,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
     longitude: null,
     budget_min: '',
     budget_max: '',
-    payment_method: 'cash'
+    payment_method: 'cash',
+    deadline: ''
   });
 
   // Address autocomplete state
@@ -442,7 +443,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
         ...formData,
         images: uploadedImages,
         budget_min: formData.budget_min ? parseFloat(formData.budget_min) : null,
-        budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null
+        budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null,
+        deadline: formData.deadline || null
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -653,7 +655,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Payment method */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Způsob platby</label>
+            <label className="block text-sm font-medium text-gray-900 mb-1.5">Způsob platby</label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { value: 'cash', label: 'Hotově' },
@@ -667,7 +669,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                   className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all ${
                     formData.payment_method === opt.value
                       ? 'border-orange-500 bg-orange-50 text-orange-600'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                   data-testid={`payment-${opt.value}-btn`}
                 >
@@ -675,6 +677,20 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Deadline */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1.5">Požadovaný termín realizace</label>
+            <input
+              type="date"
+              value={formData.deadline}
+              onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-gray-900"
+              data-testid="demand-deadline-input"
+            />
+            <p className="text-xs text-gray-500 mt-1">Nepovinné — zadejte pokud máte požadovaný termín</p>
           </div>
 
           <div className="flex gap-4 pt-4">
