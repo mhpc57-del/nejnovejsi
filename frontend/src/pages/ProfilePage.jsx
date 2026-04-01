@@ -129,9 +129,20 @@ const ProfilePage = () => {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({});
   const [customCatInput, setCustomCatInput] = useState('');
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const galleryInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const isOwnProfile = !id || id === currentUser?.id;
   const userId = id || currentUser?.id;
+
+  // Close photo menu on outside click
+  useEffect(() => {
+    if (!showPhotoMenu) return;
+    const close = () => setShowPhotoMenu(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showPhotoMenu]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -316,10 +327,41 @@ const ProfilePage = () => {
                 </div>
               )}
               {isOwnProfile && editing && (
-                <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors" data-testid="profile-upload-photo-btn">
-                  {uploadingPhoto ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div> : <Camera weight="fill" className="w-4 h-4 text-white" />}
-                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
-                </label>
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setShowPhotoMenu(!showPhotoMenu); }}
+                    className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors"
+                    data-testid="profile-upload-photo-btn"
+                    disabled={uploadingPhoto}
+                  >
+                    {uploadingPhoto ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div> : <Camera weight="fill" className="w-4 h-4 text-white" />}
+                  </button>
+                  {showPhotoMenu && !uploadingPhoto && (
+                    <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50 w-48" data-testid="profile-photo-menu-popup">
+                      <button
+                        type="button"
+                        onClick={() => { cameraInputRef.current?.click(); setShowPhotoMenu(false); }}
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
+                        data-testid="profile-photo-menu-camera"
+                      >
+                        <Camera className="w-4 h-4 text-orange-500" />
+                        Vyfotit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { galleryInputRef.current?.click(); setShowPhotoMenu(false); }}
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors border-t border-gray-100"
+                        data-testid="profile-photo-menu-gallery"
+                      >
+                        <ImageIcon className="w-4 h-4 text-orange-500" />
+                        Vybrat z galerie
+                      </button>
+                    </div>
+                  )}
+                  <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                  <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                </>
               )}
             </div>
             <div className="flex-1">

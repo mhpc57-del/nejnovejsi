@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import axios from 'axios';
@@ -8,7 +8,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Eye, EyeSlash, ArrowLeft, ArrowRight, User, Briefcase, 
-  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X
+  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X, Image as ImageIcon
 } from '@phosphor-icons/react';
 
 // Leaflet marker fix
@@ -37,6 +37,9 @@ const RegisterPage = () => {
   const [aresLoading, setAresLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const galleryInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -64,6 +67,14 @@ const RegisterPage = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Close photo menu on outside click
+  useEffect(() => {
+    if (!showPhotoMenu) return;
+    const close = () => setShowPhotoMenu(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showPhotoMenu]);
 
   // Address autocomplete state
   const [addressSuggestions, setAddressSuggestions] = useState({});
@@ -437,14 +448,43 @@ const RegisterPage = () => {
                     <UserCircle className="w-10 h-10 text-gray-400" />
                   </div>
                 )}
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors" data-testid="upload-profile-photo-btn">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setShowPhotoMenu(!showPhotoMenu); }}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors"
+                  data-testid="upload-profile-photo-btn"
+                  disabled={uploadingPhoto}
+                >
                   {uploadingPhoto ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
                   ) : (
                     <Camera weight="fill" className="w-4 h-4 text-white" />
                   )}
-                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
-                </label>
+                </button>
+                {showPhotoMenu && !uploadingPhoto && (
+                  <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50 w-48" data-testid="photo-menu-popup">
+                    <button
+                      type="button"
+                      onClick={() => { cameraInputRef.current?.click(); setShowPhotoMenu(false); }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
+                      data-testid="photo-menu-camera"
+                    >
+                      <Camera className="w-4 h-4 text-orange-500" />
+                      Vyfotit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { galleryInputRef.current?.click(); setShowPhotoMenu(false); }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors border-t border-gray-100"
+                      data-testid="photo-menu-gallery"
+                    >
+                      <ImageIcon className="w-4 h-4 text-orange-500" />
+                      Vybrat z galerie
+                    </button>
+                  </div>
+                )}
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
               </div>
             </div>
             <p className="text-center text-xs text-gray-400 -mt-2 mb-2">
