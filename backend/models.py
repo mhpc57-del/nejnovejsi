@@ -121,6 +121,9 @@ class DemandResponse(BaseModel):
     completed_at: Optional[str] = None
     supplier_arrived: bool = False
     supplier_arrived_at: Optional[str] = None
+    invoiced_amount: Optional[float] = None
+    progress_photos: List[str] = []
+    cancellation_reason: Optional[str] = None
 
 
 class MessageCreate(BaseModel):

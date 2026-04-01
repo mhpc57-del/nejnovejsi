@@ -278,3 +278,74 @@ async def cancel_demand(demand_id: str, current_user: dict = Depends(get_current
         logger.error(f"Failed to send cancellation notification: {str(e)}")
     
     return {"message": "Demand cancelled"}
+
+
+
+@router.post("/demands/{demand_id}/progress-photo")
+async def add_progress_photo(demand_id: str, photo_url: str, current_user: dict = Depends(get_current_user)):
+    """Add a progress photo to an ongoing demand."""
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if current_user["id"] != demand.get("assigned_supplier_id") and current_user["id"] != demand.get("customer_id"):
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$push": {"progress_photos": photo_url}}
+    )
+    return {"message": "Foto přidáno"}
+
+
+@router.post("/demands/{demand_id}/invoice")
+async def set_invoice_amount(demand_id: str, amount: float, current_user: dict = Depends(get_current_user)):
+    """Set the invoiced amount for a demand."""
+    if current_user["role"] != UserRole.SUPPLIER:
+        raise HTTPException(status_code=403, detail="Pouze dodavatel")
+    
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("assigned_supplier_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nejste přiřazený dodavatel")
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$set": {"invoiced_amount": amount}}
+    )
+    return {"message": f"Částka {amount} Kč nastavena"}
+
+
+@router.post("/demands/{demand_id}/cancel-reason")
+async def set_cancellation_reason(demand_id: str, reason: str, current_user: dict = Depends(get_current_user)):
+    """Set cancellation reason for a demand."""
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$set": {"cancellation_reason": reason, "status": "cancelled"}}
+    )
+    return {"message": "Důvod uložen"}
+
+
+@router.get("/suppliers/{supplier_id}/finances")
+async def get_supplier_finances(supplier_id: str, current_user: dict = Depends(get_current_user)):
+    """Get financial summary for a supplier."""
+    if current_user["id"] != supplier_id and current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    
+    completed = await db.demands.find({
+        "assigned_supplier_id": supplier_id,
+        "status": "completed",
+        "invoiced_amount": {"$exists": True, "$ne": None}
+    }, {"_id": 0, "invoiced_amount": 1, "completed_at": 1}).to_list(500)
+    
+    total_income = sum(d.get("invoiced_amount", 0) for d in completed)
+    
+    return {
+        "total_income": total_income,
+        "completed_jobs": len(completed),
+        "transactions": completed
+    }
