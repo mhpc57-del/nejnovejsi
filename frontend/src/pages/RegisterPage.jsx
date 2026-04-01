@@ -589,9 +589,45 @@ const RegisterPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Datum narození</label>
-                  <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                    data-testid="register-dob-input" />
+                  <div className="grid grid-cols-3 gap-2">
+                    <select name="dob_day" value={formData.date_of_birth ? parseInt(formData.date_of_birth.split('-')[2]) || '' : ''}
+                      onChange={(e) => {
+                        const parts = (formData.date_of_birth || '--').split('-');
+                        parts[2] = e.target.value.padStart(2, '0');
+                        setFormData(prev => ({ ...prev, date_of_birth: parts.join('-') }));
+                      }}
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                      data-testid="register-dob-day">
+                      <option value="">Den</option>
+                      {Array.from({ length: 31 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
+                    </select>
+                    <select name="dob_month" value={formData.date_of_birth ? parseInt(formData.date_of_birth.split('-')[1]) || '' : ''}
+                      onChange={(e) => {
+                        const parts = (formData.date_of_birth || '--').split('-');
+                        parts[1] = e.target.value.padStart(2, '0');
+                        setFormData(prev => ({ ...prev, date_of_birth: parts.join('-') }));
+                      }}
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                      data-testid="register-dob-month">
+                      <option value="">Měsíc</option>
+                      {['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'].map((m, i) => (
+                        <option key={i + 1} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                    <select name="dob_year" value={formData.date_of_birth ? parseInt(formData.date_of_birth.split('-')[0]) || '' : ''}
+                      onChange={(e) => {
+                        const parts = (formData.date_of_birth || '--').split('-');
+                        parts[0] = e.target.value;
+                        setFormData(prev => ({ ...prev, date_of_birth: parts.join('-') }));
+                      }}
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                      data-testid="register-dob-year">
+                      <option value="">Rok</option>
+                      {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </>
             )}
