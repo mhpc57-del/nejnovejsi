@@ -2,47 +2,40 @@
 
 ## Základní informace
 - **Projekt:** CraftBolt.cz - Platforma pro propojení zákazníků s řemeslníky
-- **Doména:** craftbolt.cz (DNS aktivní)
+- **Doména:** craftbolt.cz
 - **Poslední aktualizace:** 1. 4. 2026
 
-## Architektura (modulární)
+## Architektura
 - Frontend: React.js + Tailwind CSS + Leaflet
-- Backend: FastAPI - modulární routes (auth, users, demands, messages, reviews, uploads, payments, admin, misc)
+- Backend: FastAPI - modulární routes
 - Databáze: MongoDB
-- Integrace: Stripe, Twilio, Wedos SMTP
+- Integrace: Stripe (MOCKED), Twilio, Wedos SMTP
 
 ## Implementováno
 
-### Dashboard dodavatele + zákazníka
-- Stat karty → modal popup, mobilní bottom nav
-- 4 kategorie dodavatele: Dostupné, Rozdělané, Dokončené, Nedokončené
+### Dashboardy
+- Zákazník: stat karty → modal popup, nová poptávka s termínem realizace
+- Dodavatel: 4 kategorie, mapa (h-80, scroll zoom), finanční přehled
+- Mobilní bottom navigation bar na obou
 
-### Deaktivace účtu (1.4.2026)
-- 2-krokový modal: varování → zadání hesla
-- Backend: POST /api/auth/deactivate (vyžaduje heslo)
-- Login blokován pro deaktivované účty (403 + česká hláška)
-- Admin obnovení: PUT /api/admin/users/{id}/reactivate
-- Tlačítko v sidebaru obou dashboardů
+### Deaktivace účtu
+- 2-krokový modal (varování → heslo), backend deaktivace, admin obnovení
+
+### Poptávky
+- CRUD + **požadovaný termín realizace** (deadline)
+- Příjezd, dochvilnost, fotky, fakturace, zrušení
+
+### Email notifikace
+- Oznamovací email dodavatelům nyní obsahuje **iniciály/jméno zákazníka**
+
+### UX vylepšení
+- Větší a černé texty na celé platformě (text-sm, text-gray-900/700)
+- Větší mapa v Dostupných zakázkách + scroll wheel zoom
+- Fotomenu: Vyfotit/Galerie
+- Klikatelné profily v sidebaru zakázky
 
 ### Core
-- JWT auth, 3 role, multi-step registrace, ARES, 61 kategorií
-- Tarify: Zákazník 99 Kč/měsíc, Dodavatel 399 Kč/měsíc
-
-### Poptávky & Zakázky
-- CRUD, stavy, příjezd, dochvilnost, fotky, fakturace, zrušení
-
-### Komunikace
-- Real-time chat (polling 5s) + zvuková notifikace
-
-### Hodnotící systém
-- Hvězdičky + % (80% recenze + 20% dochvilnost), certifikace, trust score
-
-### Upload & Fotky
-- HEIC konverze, fotomenu: Vyfotit/Galerie
-
-### Navigace
-- Klikatelné profily v sidebaru zakázky
-- Mobilní bottom navigation bar
+- JWT auth, 3 role, ARES, 61 kategorií, chat polling, hodnocení + dochvilnost
 
 ## Backlog
 - P3: Mobilní aplikace + push notifikace (odloženo)
