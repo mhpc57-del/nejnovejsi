@@ -28,15 +28,9 @@
         "ACCESS_COARSE_LOCATION",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
-      ],
-      "config": {
-        "googleMaps": {
-          "apiKey": ""
-        }
-      }
+      ]
     },
     "plugins": [
-      "expo-notifications",
       [
         "expo-location",
         {
