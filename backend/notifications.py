@@ -1,6 +1,6 @@
 """
 CraftBolt Notification Service
-Handles SMS (Twilio) and Email (SMTP) notifications
+Handles SMS (Twilio), Email (SMTP), and Push notifications
 """
 
 import os
@@ -13,6 +13,8 @@ from twilio.base.exceptions import TwilioRestException
 from typing import Optional, List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
+from push_notifications import send_expo_push
+from database import db
 
 load_dotenv()
 
@@ -431,10 +433,16 @@ class NotificationService:
         if len(suppliers) > 20:
             logger.info(f"Limiting new demand notifications from {len(suppliers)} to 20 suppliers")
         
+        push_tokens = []
         for supplier in limited_suppliers:
             await self.email_service.send_email(supplier["email"], subject, html)
             if supplier.get("phone"):
                 self.sms_service.send_sms(supplier["phone"], sms_text)
+            if supplier.get("push_token"):
+                push_tokens.append(supplier["push_token"])
+        
+        if push_tokens:
+            await send_expo_push(push_tokens, f"Nová poptávka: {demand_category}", f"{demand_title} — {demand_address}", {"type": "new_demand"})
     
     async def notify_new_offer(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str):
         """Notify customer about new offer"""
@@ -444,6 +452,11 @@ class NotificationService:
         if customer_phone:
             sms_text = self.templates.new_offer_sms(supplier_name)
             self.sms_service.send_sms(customer_phone, sms_text)
+        
+        # Push to customer
+        user = await db.users.find_one({"email": customer_email}, {"_id": 0, "push_token": 1})
+        if user and user.get("push_token"):
+            await send_expo_push([user["push_token"]], "Nová nabídka", f"{supplier_name} nabízí služby na '{demand_title}'", {"type": "new_offer"})
     
     async def notify_new_message(self, recipient_email: str, recipient_phone: Optional[str], sender_name: str, demand_title: str, message: str):
         """Notify about new chat message (rate limited: max 1 per 15 min per conversation)"""
@@ -453,6 +466,10 @@ class NotificationService:
         
         if now - last_sent < CHAT_NOTIFY_COOLDOWN_SECONDS:
             logger.info(f"Chat notification throttled for {recipient_email} on '{demand_title}' (cooldown active)")
+            # Still send push even when email is throttled
+            user = await db.users.find_one({"email": recipient_email}, {"_id": 0, "push_token": 1})
+            if user and user.get("push_token"):
+                await send_expo_push([user["push_token"]], f"Zpráva od {sender_name}", message[:100], {"type": "message", "demand_title": demand_title})
             return
         
         _chat_notification_cache[cache_key] = now
@@ -462,6 +479,11 @@ class NotificationService:
         if recipient_phone:
             sms_text = self.templates.new_message_sms(sender_name)
             self.sms_service.send_sms(recipient_phone, sms_text)
+        
+        # Push notification
+        user = await db.users.find_one({"email": recipient_email}, {"_id": 0, "push_token": 1})
+        if user and user.get("push_token"):
+            await send_expo_push([user["push_token"]], f"Zpráva od {sender_name}", message[:100], {"type": "message", "demand_title": demand_title})
     
     async def notify_status_change(self, user_email: str, user_phone: Optional[str], demand_title: str, old_status: str, new_status: str):
         """Notify about demand status change"""
@@ -471,6 +493,13 @@ class NotificationService:
         if user_phone:
             sms_text = self.templates.status_change_sms(demand_title, new_status)
             self.sms_service.send_sms(user_phone, sms_text)
+        
+        # Push notification
+        status_labels = {"in_progress": "přijata", "completed": "dokončena", "cancelled": "zrušena"}
+        label = status_labels.get(new_status, new_status)
+        user = await db.users.find_one({"email": user_email}, {"_id": 0, "push_token": 1})
+        if user and user.get("push_token"):
+            await send_expo_push([user["push_token"]], f"Zakázka {label}", demand_title, {"type": "status_change", "new_status": new_status})
     
     async def notify_payment_success(self, user_email: str, plan_name: str, amount: float):
         """Notify about successful payment"""
@@ -485,6 +514,11 @@ class NotificationService:
         if customer_phone:
             sms_text = self.templates.soft_accept_sms(supplier_name, demand_title)
             self.sms_service.send_sms(customer_phone, sms_text)
+        
+        # Push notification
+        user = await db.users.find_one({"email": customer_email}, {"_id": 0, "push_token": 1})
+        if user and user.get("push_token"):
+            await send_expo_push([user["push_token"]], f"Nezávazná nabídka od {supplier_name}", f"Na zakázku '{demand_title}': {reason[:80]}", {"type": "soft_accept"})
 
 
 # Global notification service instance

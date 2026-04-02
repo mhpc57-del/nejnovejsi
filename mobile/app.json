@@ -13,7 +13,8 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "cz.craftbolt.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +22,46 @@
         "backgroundColor": "#f97316"
       },
       "package": "cz.craftbolt.app",
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
+    "plugins": [
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "CraftBolt potřebuje přístup k vaší poloze pro zobrazení zakázek v okolí."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CraftBolt potřebuje přístup k fotkám pro nahrávání fotek k zakázkám.",
+          "cameraPermission": "CraftBolt potřebuje přístup k fotoaparátu pro fotografování zakázek."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "CraftBolt potřebuje přístup k fotoaparátu."
+        }
+      ]
+    ],
     "extra": {
-      "apiUrl": "https://craftbolt.cz/api"
+      "apiUrl": "https://craftbolt.cz/api",
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }

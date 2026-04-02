@@ -52,7 +52,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
             "role": "supplier",
             "categories": demand_data.category,
             "subscription_active": True
-        }, {"_id": 0, "email": 1, "phone": 1}).to_list(100)
+        }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1}).to_list(100)
         
         if suppliers:
             await notification_service.notify_new_demand(

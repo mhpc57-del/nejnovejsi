@@ -54,6 +54,23 @@ async def update_location(location: LocationUpdate, current_user: dict = Depends
     return {"message": "Location updated"}
 
 
+from pydantic import BaseModel as PushTokenModel
+
+class PushTokenData(PushTokenModel):
+    push_token: str
+
+@router.post("/users/push-token")
+async def save_push_token(data: PushTokenData, current_user: dict = Depends(get_current_user)):
+    """Store the user's Expo push notification token."""
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"push_token": data.push_token, "push_token_updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    logger.info(f"Push token saved for user {current_user['id']}")
+    return {"message": "Push token saved"}
+
+
+
 @router.get("/suppliers", response_model=List[UserResponse])
 async def get_suppliers(category: str = None):
     query = {"role": UserRole.SUPPLIER, "is_verified": True}
