@@ -32,7 +32,8 @@ export default function ProfileScreen() {
       setProfile(res.data);
       setForm(res.data);
       if (res.data.profile_image) {
-        setAvatarUri(res.data.profile_image);
+        const img = res.data.profile_image;
+        setAvatarUri(img.startsWith('http') ? img : `https://craftbolt.cz${img}`);
       }
       // Fetch reviews
       const reviewRes = await reviewService.getByUser(user.id).catch(() => ({ data: [] }));
@@ -85,17 +86,21 @@ export default function ProfileScreen() {
         : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
 
       if (!result.canceled && result.assets?.[0]) {
-        setAvatarUri(result.assets[0].uri);
+        const pickedUri = result.assets[0].uri;
+        setAvatarUri(pickedUri);
         setUploading(true);
         try {
-          const uploadRes = await uploadService.upload(result.assets[0].uri);
-          const imageUrl = uploadRes.data.url;
-          await userService.updateProfile({ profile_image: imageUrl });
-          setAvatarUri(imageUrl);
+          const uploadRes = await uploadService.upload(pickedUri);
+          const relativeUrl = uploadRes.data.url;
+          // Convert relative URL to absolute for mobile display
+          const fullUrl = relativeUrl.startsWith('http') ? relativeUrl : `https://craftbolt.cz${relativeUrl}`;
+          await userService.updateProfile({ profile_image: relativeUrl });
+          setAvatarUri(fullUrl);
           Alert.alert('Hotovo', 'Profilová fotka nastavena a uložena');
         } catch (uploadErr) {
-          console.error('Upload error:', uploadErr);
-          Alert.alert('Fotka vybrána', 'Fotka nastavena lokálně (upload na server selhal)');
+          console.error('Upload error:', JSON.stringify(uploadErr?.response?.data || uploadErr.message));
+          Alert.alert('Chyba uploadu', uploadErr?.response?.data?.detail || 'Nepodařilo se nahrát fotku na server');
+          setAvatarUri(null);
         } finally {
           setUploading(false);
         }

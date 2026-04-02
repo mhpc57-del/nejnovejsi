@@ -55,9 +55,10 @@ export const uploadService = {
     const filename = uri.split('/').pop();
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
-    formData.append('file', { uri, name: filename, type });
+    formData.append('file', { uri, name: filename || 'photo.jpg', type });
     const res = await api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      transformRequest: (data) => data,
     });
     return res;
   },
