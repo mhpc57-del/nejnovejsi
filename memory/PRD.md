@@ -1,46 +1,50 @@
-# CraftBolt - PRD & Project Status
+# CraftBolt - PRD & Architecture
 
-## Popis projektu
-CraftBolt.cz — webová a mobilní platforma propojující řemeslníky/dodavatele se zákazníky v ČR.
-
-## Architektura
-- **Frontend Web:** React, Tailwind CSS, Vite
-- **Frontend Mobilní:** React Native, Expo SDK 54
-- **Backend:** FastAPI, MongoDB
-- **Integrace:** Wedos SMTP, Twilio SMS, ARES, OpenStreetMap Geocoding, Stripe (MOCKED)
+## Popis
+Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 
 ## Implementováno
+- JWT autentizace s emailovou verifikací
+- Registrace (podnikatel/nepodnikatel, zákazník/dodavatel)
+- SMS notifikace při registraci (Twilio)
+- SMTP emaily přes Wedos (denní limit 400)
+- Tvorba/editace poptávek s mapou
+- Real-time chat s toast notifikacemi
+- Profily s fotkami (upload, conditional fields)
+- Zkušební doba 14 dní (sidebar)
+- Quick Demand (rychlá poptávka bez registrace)
+- Notifikace na dashboardu (nepřečtené zprávy badges + banner)
+- Mapy na dashboardech (zákazník i dodavatel) s barevnými markery
+- Claim quick demand po registraci (automatické propojení)
+- Notifikace dodavatele reagujícího na quick demand → email s registračním odkazem
+- Soft-accept quick demands s notifikací zákazníkovi
 
-### Web
-- Registrace (4-5 kroků) + email verifikace + SMS notifikace
-- Login s ověřením emailu (admin bypass)
-- Dashboard zákazníka/dodavatele/admina
-- Detail zakázky s editací a chatem
-- Chat: zákazník vidí chat jakmile dodavatel napíše zprávu (i na otevřených)
-- Chat notifikace: zvuk + toast bublinka + email + SMS
-- Jména: zákazník zobrazen jménem (ne emailem) v chatu i v sidebar
-- Soft-accept workflow, Geocoding + ARES, Mapa, Hodnocení
-- Upload fotek s robustním getImageUrl()
-- Emergent badge + PostHog kompletně odstraněny
+## Architektura
+- Frontend: React + Vite + Tailwind + Leaflet mapy
+- Backend: FastAPI + MongoDB + Twilio + SMTP Wedos
+- Komponenty: /app/frontend/src/components/ui/ (Shadcn)
 
-### Klíčové opravy (2026-04-04)
-- Chat viditelný pro zákazníka když dodavatel napíše (i na open demands)
-- Chat notifikace: zvuk + vyskakovací toast + email + SMS
-- Jméno zákazníka místo emailu (demands.customer_name + sender_name)
-- Migrace 29 existujících demands s emailem -> jméno
-- getImageUrl() pro správné zobrazení fotek
-- Email verifikace, SMS při registraci
-- Úprava zakázky zákazníkem
+## Klíčové endpointy
+- POST /api/demands/quick (bez auth)
+- POST /api/demands/claim (po registraci)
+- GET /api/messages/unread-summary
+- POST /api/messages
+- POST /api/demands/{id}/soft-accept
 
-## Testování
-- Iteration 8-12: Všechny testy 100%
-
-## Zbývající úkoly
-### P1
-- Mobilní app synchronizace
-- Push notifikace pro APK
-
-### P2
-- Dark mode, Date picker
+## Databáze
+- users: role, is_verified, account_type, push_token
+- demands: customer_name, status, is_quick, customer_email, customer_phone
+- messages: demand_id, sender_id, sender_name, content
 
 ## Mocked: Stripe (platby)
+
+## Známé problémy
+- Twilio SMS: 401 auth error (neplatný token - uživatel musí aktualizovat)
+- Wedos email limit: 500/den (safety limit 400/den v kódu)
+
+## Backlog
+- P1: Opravit Twilio SMS (nový auth token)
+- P1: Řešení emailového limitu (alternativní provider?)
+- P2: Mobilní aplikace (React Native) - PAUSOVÁNO
+- P3: Dark mode, date picker
+- P3: Stripe platby (aktuálně MOCKED)
