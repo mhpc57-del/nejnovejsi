@@ -584,6 +584,36 @@ class NotificationService:
         if phone:
             self.sms_service.send_sms(phone, "CraftBolt: Vaše rychlá poptávka byla přijata. Ozveme se, jakmile dodavatel zareaguje. Děkujeme. CraftBolt.")
 
+    async def notify_quick_demand_supplier_reply(self, email: str, phone: str, customer_name: str, supplier_name: str, demand_title: str, demand_id: str):
+        """Notify quick demand customer when a supplier replies — urge them to register"""
+        import os
+        frontend_url = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
+        register_url = f"{frontend_url}/registrace?claim_demand={demand_id}&email={email}"
+        
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel reagoval na vaši poptávku!</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den {customer_name},</p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{supplier_name}</strong> reagoval na vaši poptávku „<strong>{demand_title}</strong>".
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Pro zobrazení zprávy a komunikaci s dodavatelem je nutné <strong>dokončit registraci</strong>. Je to zdarma na 14 dní a zabere to méně než minutu.
+            </p>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{register_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Dokončit registraci a zobrazit zprávu
+                </a>
+            </div>
+            <p style="color: #9ca3af; line-height: 1.6; margin: 0; font-size: 13px;">
+                Po registraci bude vaše poptávka automaticky propojena s vaším novým účtem.
+            </p>
+        """
+        subject = f"CraftBolt — {supplier_name} reagoval na vaši poptávku"
+        html = self.templates.email_base(content, subject)
+        await self.email_service.send_email(email, subject, html)
+        if phone:
+            self.sms_service.send_sms(phone, f"CraftBolt: Dodavatel {supplier_name} reagoval na vaši poptávku. Zaregistrujte se na craftbolt.cz pro zobrazeni detailu.")
+
 
 # Global notification service instance
 notification_service = NotificationService()

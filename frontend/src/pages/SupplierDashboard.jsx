@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   House, Briefcase, User, SignOut, MapPin, Calendar, ArrowRight, 
   Check, Clock, Star, Camera, X, CurrencyDollar, Warning,
-  CaretDown, CaretUp, Plus, Trash, Eye, List
+  CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -23,6 +23,21 @@ const demandIcon = new L.Icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const greyIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const orangeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
 
 const SupplierDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -36,6 +51,7 @@ const SupplierDashboard = () => {
   const [myLocation, setMyLocation] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
+  const [unreadDemands, setUnreadDemands] = useState([]);
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
   const completed = myDemands.filter(d => d.status === 'completed');
@@ -59,8 +75,21 @@ const SupplierDashboard = () => {
     }
   };
 
+  const fetchUnread = async () => {
+    try {
+      const res = await axios.get(`${API}/messages/unread-summary`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadDemands(res.data.unread_demands || []);
+    } catch (err) {
+      console.error('Error fetching unread:', err);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -72,6 +101,7 @@ const SupplierDashboard = () => {
         () => {}
       );
     }
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleAcceptDemand = async (demandId) => {
@@ -380,24 +410,62 @@ const SupplierDashboard = () => {
         </header>
 
         <div className="p-6">
+          {/* Unread messages notification */}
+          {unreadDemands.length > 0 && (
+            <div className="mb-6 bg-orange-50 border border-orange-200 rounded-xl p-4" data-testid="supplier-unread-messages-banner">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <ChatCircle weight="fill" className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-orange-800">Nové zprávy ({unreadDemands.length})</p>
+                  <p className="text-sm text-orange-600">Máte nepřečtené zprávy v následujících zakázkách</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {unreadDemands.slice(0, 5).map((item) => (
+                  <Link key={item.demand_id} to={`/zakazka/${item.demand_id}`}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-orange-50 transition-colors border border-orange-100"
+                    data-testid={`supplier-unread-${item.demand_id}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate text-sm">{item.demand_title}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.last_sender}: {item.last_message}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="p-10 text-center">
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
             </div>
           ) : (
             <div className="space-y-4">
-              {tabs.map(tab => (
+              {tabs.map(tab => {
+                const tabUnread = unreadDemands.filter(u => {
+                  if (tab.id === 'available') return u.demand_status === 'open';
+                  return u.demand_status === tab.id;
+                }).length;
+                return (
                 <div key={tab.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden" data-testid={`tab-section-${tab.id}`}>
                   {/* Tab header - clickable */}
                   <button onClick={() => toggleTab(tab.id)}
                     className={`w-full flex items-center justify-between p-5 transition-colors ${activeTab === tab.id ? tab.bgLight : 'hover:bg-gray-50'}`}
                     data-testid={`tab-${tab.id}`}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${tab.color} rounded-lg flex items-center justify-center`}>
+                      <div className={`w-10 h-10 ${tab.color} rounded-lg flex items-center justify-center relative`}>
                         {tab.id === 'available' && <Briefcase weight="bold" className="w-5 h-5 text-white" />}
                         {tab.id === 'in_progress' && <Clock weight="bold" className="w-5 h-5 text-white" />}
                         {tab.id === 'completed' && <Check weight="bold" className="w-5 h-5 text-white" />}
                         {tab.id === 'cancelled' && <Warning weight="bold" className="w-5 h-5 text-white" />}
+                        {tabUnread > 0 && (
+                          <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse" data-testid={`tab-unread-${tab.id}`}>
+                            {tabUnread}
+                          </span>
+                        )}
                       </div>
                       <div className="text-left">
                         <p className={`font-semibold ${tab.textColor}`}>{tab.label}</p>
@@ -420,7 +488,55 @@ const SupplierDashboard = () => {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
+
+              {/* Overview map of all demands */}
+              {(() => {
+                const allDemands = [...availableDemands, ...myDemands];
+                const withCoords = allDemands.filter(d => d.latitude && d.longitude);
+                const uniqueMap = {};
+                withCoords.forEach(d => { uniqueMap[d.id] = d; });
+                const unique = Object.values(uniqueMap);
+                if (unique.length === 0) return null;
+                return (
+                  <div className="bg-white rounded-xl border border-gray-100 p-5 mt-4" data-testid="supplier-overview-map">
+                    <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <MapPin weight="fill" className="w-5 h-5 text-orange-500" />
+                      Mapa zakázek
+                    </h2>
+                    <div className="flex items-center gap-4 mb-3 text-xs flex-wrap">
+                      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Dostupné</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Rozdělané</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Nedokončené</span>
+                    </div>
+                    <div className="rounded-xl overflow-hidden border border-gray-200 h-80">
+                      <MapContainer
+                        center={myLocation ? [myLocation.lat, myLocation.lng] : [unique[0].latitude, unique[0].longitude]}
+                        zoom={8} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                        {unique.map(d => {
+                          let icon = demandIcon;
+                          let statusLabel = 'Dostupná';
+                          if (d.status === 'in_progress') { icon = redIcon; statusLabel = 'Probíhá'; }
+                          else if (d.status === 'completed') { icon = greyIcon; statusLabel = 'Dokončeno'; }
+                          else if (d.status === 'cancelled') { icon = orangeIcon; statusLabel = 'Nedokončeno'; }
+                          return (
+                            <Marker key={d.id} position={[d.latitude, d.longitude]} icon={icon}>
+                              <Popup>
+                                <strong>{d.title}</strong><br/>
+                                <small>{d.category} — {d.address}</small><br/>
+                                <small>{statusLabel}</small>
+                              </Popup>
+                            </Marker>
+                          );
+                        })}
+                      </MapContainer>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

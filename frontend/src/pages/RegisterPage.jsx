@@ -43,7 +43,7 @@ const RegisterPage = () => {
   const galleryInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
-    email: '',
+    email: searchParams.get('email') || '',
     password: '',
     phone: '',
     role: searchParams.get('role') || '',
@@ -65,6 +65,8 @@ const RegisterPage = () => {
     custom_categories: [],
     custom_category_input: ''
   });
+
+  const claimDemandId = searchParams.get('claim_demand');
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -853,6 +855,14 @@ const RegisterPage = () => {
               <p className="text-gray-500 mb-8">
                 Klikněte na odkaz v emailu pro dokončení registrace.
               </p>
+              
+              {claimDemandId && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6" data-testid="claim-demand-info">
+                  <p className="text-sm text-green-700 font-medium">
+                    Po ověření emailu bude vaše rychlá poptávka automaticky propojena s vaším novým účtem.
+                  </p>
+                </div>
+              )}
               
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <p className="text-sm text-gray-500 mb-1">Nedostali jste email?</p>

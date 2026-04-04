@@ -76,6 +76,24 @@ async def _notify_quick_demand(email: str, phone: str, name: str):
         logger.error(f"Failed to send quick demand notification: {e}")
 
 
+@router.post("/demands/claim")
+async def claim_quick_demand(current_user: dict = Depends(get_current_user)):
+    """Claim all quick demands matching the user's email after registration"""
+    user_email = current_user["email"]
+    user_id = current_user["id"]
+    user_name = current_user.get("company_name") or f"{current_user.get('first_name', '')} {current_user.get('last_name', '')}".strip() or user_email
+    
+    result = await db.demands.update_many(
+        {"is_quick": True, "customer_email": user_email},
+        {"$set": {
+            "customer_id": user_id,
+            "customer_name": user_name,
+        }}
+    )
+    
+    return {"claimed": result.modified_count}
+
+
 @router.post("/demands", response_model=DemandResponse)
 async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != UserRole.CUSTOMER and current_user["role"] != UserRole.ADMIN:
@@ -515,15 +533,31 @@ async def soft_accept_demand(demand_id: str, reason: str = "", current_user: dic
     
     # Notify customer
     try:
-        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
-        if customer:
-            await notification_service.notify_soft_accept(
-                customer_email=customer["email"],
-                customer_phone=customer.get("phone"),
-                supplier_name=supplier_name.strip(),
-                demand_title=demand["title"],
-                reason=reason
-            )
+        is_quick = demand.get("is_quick", False)
+        if is_quick:
+            # Notify quick demand customer directly via stored contacts
+            customer_email = demand.get("customer_email", "")
+            customer_phone = demand.get("customer_phone", "")
+            customer_name = demand.get("customer_name", "Zákazník")
+            if customer_email:
+                await notification_service.notify_quick_demand_supplier_reply(
+                    email=customer_email,
+                    phone=customer_phone,
+                    customer_name=customer_name,
+                    supplier_name=supplier_name.strip(),
+                    demand_title=demand["title"],
+                    demand_id=demand_id
+                )
+        else:
+            customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
+            if customer:
+                await notification_service.notify_soft_accept(
+                    customer_email=customer["email"],
+                    customer_phone=customer.get("phone"),
+                    supplier_name=supplier_name.strip(),
+                    demand_title=demand["title"],
+                    reason=reason
+                )
     except Exception as e:
         logger.error(f"Failed to send soft-accept notification: {str(e)}")
     

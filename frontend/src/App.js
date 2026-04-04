@@ -56,6 +56,12 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem('token', access_token);
     setToken(access_token);
     setUser(userData);
+    // Auto-claim any quick demands matching this user's email
+    try {
+      await axios.post(`${API}/demands/claim`, {}, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+    } catch (e) { /* ignore claim errors */ }
     return userData;
   };
 

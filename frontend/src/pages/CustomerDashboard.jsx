@@ -4,9 +4,36 @@ import { useAuth, API } from '../App';
 import axios from 'axios';
 import { 
   House, Plus, List, User, SignOut, Bell, MapPin, 
-  Calendar, Clock, ArrowRight, X, Check, Image as ImageIcon, Trash, Warning
+  Calendar, Clock, ArrowRight, X, Check, Image as ImageIcon, Trash, Warning,
+  ChatCircle, Envelope
 } from '@phosphor-icons/react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import DraggableMap from '../components/DraggableMap';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const orangeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const greyIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
 
 const CustomerDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -17,6 +44,7 @@ const CustomerDashboard = () => {
   const [showNewDemand, setShowNewDemand] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
+  const [unreadDemands, setUnreadDemands] = useState([]);
 
   const fetchDemands = async () => {
     try {
@@ -31,8 +59,22 @@ const CustomerDashboard = () => {
     }
   };
 
+  const fetchUnread = async () => {
+    try {
+      const res = await axios.get(`${API}/messages/unread-summary`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadDemands(res.data.unread_demands || []);
+    } catch (err) {
+      console.error('Error fetching unread:', err);
+    }
+  };
+
   useEffect(() => {
     fetchDemands();
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleLogout = () => {
@@ -151,22 +193,98 @@ const CustomerDashboard = () => {
               { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-green-500', filter: 'open' },
               { label: 'Probíhající', value: demands.filter(d => d.status === 'in_progress').length, color: 'bg-orange-500', filter: 'in_progress' },
               { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-gray-500', filter: 'completed' },
-            ].map((stat, i) => (
+            ].map((stat, i) => {
+              const unreadCount = stat.filter === 'all' 
+                ? unreadDemands.length
+                : unreadDemands.filter(u => u.demand_status === stat.filter).length;
+              return (
               <button key={i} 
                 onClick={() => setActiveFilter(activeFilter === stat.filter ? null : stat.filter)}
-                className={`bg-white rounded-xl p-5 border transition-all text-left ${
+                className={`bg-white rounded-xl p-5 border transition-all text-left relative ${
                   activeFilter === stat.filter ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
                 }`}
                 data-testid={`stat-card-${stat.filter}`}
               >
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`unread-badge-${stat.filter}`}>
+                    {unreadCount}
+                  </span>
+                )}
                 <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
                   <List weight="bold" className="w-5 h-5 text-white" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 <p className="text-sm text-gray-500">{stat.label}</p>
               </button>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Unread messages notification */}
+          {unreadDemands.length > 0 && (
+            <div className="mb-6 bg-orange-50 border border-orange-200 rounded-xl p-4" data-testid="unread-messages-banner">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <ChatCircle weight="fill" className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-orange-800">Nové zprávy ({unreadDemands.length})</p>
+                  <p className="text-sm text-orange-600">Máte nepřečtené zprávy v následujících poptávkách</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {unreadDemands.slice(0, 5).map((item) => (
+                  <Link key={item.demand_id} to={`/zakazka/${item.demand_id}`}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-orange-50 transition-colors border border-orange-100"
+                    data-testid={`unread-${item.demand_id}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate text-sm">{item.demand_title}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.last_sender}: {item.last_message}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Map overview of demands */}
+          {demands.length > 0 && demands.some(d => d.latitude && d.longitude) && (
+            <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6" data-testid="customer-demands-map">
+              <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <MapPin weight="fill" className="w-5 h-5 text-orange-500" />
+                Mapa poptávek
+              </h2>
+              <div className="flex items-center gap-4 mb-3 text-xs">
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Otevřené</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Probíhající</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
+              </div>
+              <div className="rounded-xl overflow-hidden border border-gray-200 h-80">
+                <MapContainer 
+                  center={(() => {
+                    const withCoords = demands.filter(d => d.latitude && d.longitude);
+                    if (withCoords.length > 0) return [withCoords[0].latitude, withCoords[0].longitude];
+                    return [49.8, 15.5];
+                  })()}
+                  zoom={8} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                  {demands.filter(d => d.latitude && d.longitude).map(d => (
+                    <Marker key={d.id} position={[d.latitude, d.longitude]}
+                      icon={d.status === 'open' ? greenIcon : d.status === 'in_progress' ? orangeIcon : greyIcon}>
+                      <Popup>
+                        <strong>{d.title}</strong><br/>
+                        <small>{d.category} — {d.address}</small><br/>
+                        <small style={{color: d.status === 'open' ? '#16a34a' : d.status === 'in_progress' ? '#ea580c' : '#6b7280'}}>
+                          {d.status === 'open' ? 'Otevřená' : d.status === 'in_progress' ? 'Probíhá' : 'Dokončeno'}
+                        </small>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+            </div>
+          )}
 
           {/* Filtered Demands Modal - shown when a stat card is clicked */}
           {activeFilter && (
