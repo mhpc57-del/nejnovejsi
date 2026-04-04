@@ -45,7 +45,8 @@ async def get_all_demands(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin only")
     demands = await db.demands.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return [DemandResponse(**d) for d in demands]
+    from routes.demands import _fix_demand_data
+    return [DemandResponse(**_fix_demand_data(d)) for d in demands]
 
 
 @router.put("/admin/users/{user_id}/reactivate")
