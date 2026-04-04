@@ -851,7 +851,7 @@ const DemandDetail = () => {
                 <div className="flex flex-wrap gap-3">
                   {(editForm.images || []).map((img, i) => (
                     <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                      <img src={img.startsWith('http') ? img : `${API.replace('/api', '')}${img}`} alt="" className="w-full h-full object-cover" />
+                      <img src={(() => { const u = img; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="" className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeEditPhoto(i)}

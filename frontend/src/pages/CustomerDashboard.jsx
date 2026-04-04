@@ -529,7 +529,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 value={formData.address}
                 onChange={(e) => handleAddressChange(e.target.value)}
                 onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 400)}
                 placeholder="Začněte psát adresu..."
                 required
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
@@ -618,7 +618,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
             <div className="flex flex-wrap gap-2 mb-2">
               {uploadedImages.map((url, i) => (
                 <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
-                  <img src={`${API.replace('/api', '')}${url}`} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+                  <img src={(() => { const u = url; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(i)}

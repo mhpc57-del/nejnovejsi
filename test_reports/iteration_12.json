@@ -1,0 +1,112 @@
+{
+  "summary": "Iteration 12 - Image URL handling, Profile features, Address autocomplete testing complete. All 20 backend tests passed (1 skipped - supplier login). All frontend E2E tests passed. Key features verified: getImageUrl() helper properly handles /api/uploads/, /uploads/, and full URLs. Profile page correctly hides IČO/DIČ/Company fields for nepodnikatel customers. Address autocomplete works with 400ms debounce. Demand edit modal has all fields. Chat button hidden for customers on open demands. Email verification flow working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/admin/demands",
+        "issue": "Returns 500 when demand has empty string budget_min/budget_max (Pydantic validation error)",
+        "priority": "LOW",
+        "note": "This was fixed in iteration 11 for regular demand endpoints but admin endpoint may still have issue"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Date picker in profile edit and demand forms",
+        "issues": ["Uses browser's default date picker instead of custom shadcn calendar component - minor UX inconsistency (carried over from previous iterations)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration12_image_and_features.py",
+    "/app/test_reports/pytest/pytest_results_iteration12.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration12_image_and_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (20/20 tests passed, 1 skipped)",
+    "frontend": "100% (all E2E flows passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "verified_customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "info@craftbolt.cz / Kostkodisc1132@"
+  },
+  "seed_data_creation": "Multiple test demands created during testing with TEST_ prefix",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All image URL handling features tested and working. Key behaviors: 1) getImageUrl() in ProfilePage.jsx and imageUrl.js handles /api/uploads/x.jpg, /uploads/x.jpg, and full https:// URLs correctly. 2) Profile page for nepodnikatel customers hides IČO, DIČ, Název firmy, Sídlo, Pobočka fields and shows Trvalý pobyt, Skutečná adresa, Datum narození. 3) Address autocomplete uses 400ms debounce and works correctly. 4) Demand edit modal has all fields: title, description, address, budget_min, budget_max, deadline, photos. 5) Chat button hidden for customers on open demands. 6) Photo upload in profile uses dropdown menu with Vyfotit/Vybrat z galerie options. 7) Registration photo upload uses direct file input (label). 8) Email verification flow: registration shows verification screen, unverified login shows orange message with resend link. 9) Admin login bypasses verification.",
+  "features_tested": {
+    "IMAGE_URL_HANDLING": {
+      "status": "PASSED",
+      "details": "getImageUrl() properly handles /api/uploads/, /uploads/, and full URLs"
+    },
+    "PROFILE_NEPODNIKATEL_FIELDS": {
+      "status": "PASSED",
+      "details": "IČO/DIČ/Company hidden, Trvalý pobyt/Skutečná adresa/Datum narození visible"
+    },
+    "PROFILE_PHOTO_UPLOAD": {
+      "status": "PASSED",
+      "details": "Photo upload button shows menu with Vyfotit/Vybrat z galerie options"
+    },
+    "ADDRESS_AUTOCOMPLETE": {
+      "status": "PASSED",
+      "details": "Geocode search works with 400ms debounce, suggestions appear and can be selected"
+    },
+    "DEMAND_EDIT_MODAL": {
+      "status": "PASSED",
+      "details": "All fields present: title, description, address, budget_min, budget_max, deadline, photos, save button"
+    },
+    "CHAT_BUTTON_HIDDEN_OPEN_DEMAND": {
+      "status": "PASSED",
+      "details": "Chat button not present for customers on open demands"
+    },
+    "REGISTRATION_PHOTO_UPLOAD": {
+      "status": "PASSED",
+      "details": "Photo upload is a label with hidden file input - opens file dialog directly"
+    },
+    "EMAIL_VERIFICATION_FLOW": {
+      "status": "PASSED",
+      "details": "Registration shows verification screen, unverified login shows orange message"
+    },
+    "ADMIN_LOGIN_BYPASSES_VERIFICATION": {
+      "status": "PASSED",
+      "details": "Admin login works and redirects to /admin"
+    },
+    "VERIFIED_CUSTOMER_LOGIN": {
+      "status": "PASSED",
+      "details": "Verified customer can login and access dashboard"
+    },
+    "HOMEPAGE_NO_EMERGENT_BADGE": {
+      "status": "PASSED",
+      "details": "No Emergent badge on homepage, title is 'CraftBolt | Platforma pro řemeslníky'"
+    },
+    "DEMAND_CREATION": {
+      "status": "PASSED",
+      "details": "New demand modal opens, categories load, form can be filled"
+    },
+    "IMAGE_UPLOAD_PUBLIC": {
+      "status": "PASSED",
+      "details": "POST /api/upload/public works without auth"
+    },
+    "IMAGE_UPLOAD_AUTHENTICATED": {
+      "status": "PASSED",
+      "details": "POST /api/upload works with auth token"
+    },
+    "UPLOADED_IMAGE_ACCESSIBLE": {
+      "status": "PASSED",
+      "details": "Uploaded images are accessible via returned URL"
+    }
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - uses sk_test_emergent"
+  },
+  "rca_of_the_issue": "No critical issues found. All requested features working correctly."
+}

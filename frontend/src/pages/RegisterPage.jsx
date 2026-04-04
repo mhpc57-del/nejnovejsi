@@ -422,7 +422,7 @@ const RegisterPage = () => {
               <div className="relative">
                 {formData.profile_image ? (
                   <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-orange-200">
-                    <img src={`${API.replace('/api', '')}${formData.profile_image}`} alt="Profil" className="w-full h-full object-cover" />
+                    <img src={(() => { const u = formData.profile_image; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="Profil" className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">

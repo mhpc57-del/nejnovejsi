@@ -290,13 +290,19 @@ const ProfilePage = () => {
   const getRoleName = (role) => ({ customer: 'Zákazník', supplier: 'Dodavatel', admin: 'Administrátor' }[role] || role);
   const getTypeName = (type) => ({ osvc: 'OSVČ', nepodnikatel: 'Nepodnikatel', company: 'Firma' }[type] || type);
 
+  const getImageUrl = (url) => {
+    if (!url || url === 'None' || url === 'null') return null;
+    if (url.startsWith('http')) return url;
+    const path = url.startsWith('/api/') ? url : url.startsWith('/') ? `/api${url}` : `/api/${url}`;
+    return `${API.replace('/api', '')}${path}`;
+  };
+
   const accountType = profile.account_type || profile.supplier_type;
   const isCustomer = profile.role === 'customer';
   const isSupplier = profile.role === 'supplier';
   const isNepodnikatel = accountType === 'nepodnikatel' || (isCustomer && accountType !== 'osvc' && accountType !== 'company');
 
-  const profileImageUrl = (editing ? formData.profile_image : profile.profile_image)
-    ? `${API.replace('/api', '')}${editing ? formData.profile_image : profile.profile_image}` : null;
+  const profileImageUrl = getImageUrl(editing ? formData.profile_image : profile.profile_image);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -582,7 +588,7 @@ const ProfilePage = () => {
                 <div className="flex flex-wrap gap-2 mb-3">
                   {formData.reference_photos.map((url, i) => (
                     <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group">
-                      <img src={`${API.replace('/api', '')}${url}`} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(url)} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
                       <button type="button" onClick={() => removeRefPhoto(i)}
                         className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`remove-ref-photo-${i}`}>
                         <X className="w-3 h-3" />
@@ -706,7 +712,7 @@ const ProfilePage = () => {
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                   {profile.reference_photos.map((url, i) => (
                     <div key={i} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                      <img src={`${API.replace('/api', '')}${url}`} alt={`Reference ${i + 1}`} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(url)} alt={`Reference ${i + 1}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
@@ -873,7 +879,7 @@ const CertificationsSection = ({ userId, isOwnProfile, token }) => {
                 </span>
               )}
               {cert.file_url && (
-                <a href={`${API.replace('/api', '')}${cert.file_url}`} target="_blank" rel="noreferrer" className="text-orange-500 hover:text-orange-600 text-xs font-medium">
+                <a href={getImageUrl(cert.file_url)} target="_blank" rel="noreferrer" className="text-orange-500 hover:text-orange-600 text-xs font-medium">
                   Zobrazit
                 </a>
               )}

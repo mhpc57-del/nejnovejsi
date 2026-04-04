@@ -240,7 +240,7 @@ const SupplierDashboard = () => {
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               {(demand.progress_photos || []).map((url, i) => (
                 <div key={i} className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
-                  <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
+                  <img src={(() => { const u = url; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="" className="w-full h-full object-cover" />
                 </div>
               ))}
               <label className={`w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors ${uploadingPhoto === demand.id ? 'opacity-50' : ''}`}>
