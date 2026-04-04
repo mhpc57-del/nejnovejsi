@@ -35,7 +35,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
         "deadline": demand_data.deadline,
         "status": "open",
         "customer_id": current_user["id"],
-        "customer_name": current_user.get("company_name") or current_user["email"],
+        "customer_name": current_user.get("company_name") or f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip() or current_user["email"],
         "assigned_supplier_id": None,
         "assigned_supplier_name": None,
         "created_at": now.isoformat(),

@@ -15,36 +15,32 @@ CraftBolt.cz — webová a mobilní platforma propojující řemeslníky/dodavat
 - Registrace (4-5 kroků) + email verifikace + SMS notifikace
 - Login s ověřením emailu (admin bypass)
 - Dashboard zákazníka/dodavatele/admina
-- Detail zakázky s editací (zákazník upraví název, popis, adresu, rozpočet, termín, fotky)
-- Chat (zákazník vidí až po přijetí dodavatelem)
-- Soft-accept workflow
-- Geocoding + ARES + adresní autocomplete
-- Mapa, hodnocení, upload fotek, deaktivace účtu
-- Email + SMS notifikace s rate limitem
-- Emergent badge + PostHog odstraněny
-- Logo ve více rozlišeních (PNG, SVG)
-- Robustní getImageUrl() pro správné zobrazení fotek
+- Detail zakázky s editací a chatem
+- Chat: zákazník vidí chat jakmile dodavatel napíše zprávu (i na otevřených)
+- Chat notifikace: zvuk + toast bublinka + email + SMS
+- Jména: zákazník zobrazen jménem (ne emailem) v chatu i v sidebar
+- Soft-accept workflow, Geocoding + ARES, Mapa, Hodnocení
+- Upload fotek s robustním getImageUrl()
+- Emergent badge + PostHog kompletně odstraněny
 
 ### Klíčové opravy (2026-04-04)
-- Email verifikace kompletní flow
-- SMS "Registrace proběhla úspěšně" při registraci
-- getImageUrl() - řeší /api/uploads/, /uploads/, full URLs, None
-- Profil nepodnikatel - skryty firemní pole
-- Úprava zakázky zákazníkem (PUT /api/demands/{id})
-- Chat skryt na otevřených poptávkách
-- Admin demands endpoint - fix empty budget strings
+- Chat viditelný pro zákazníka když dodavatel napíše (i na open demands)
+- Chat notifikace: zvuk + vyskakovací toast + email + SMS
+- Jméno zákazníka místo emailu (demands.customer_name + sender_name)
+- Migrace 29 existujících demands s emailem -> jméno
+- getImageUrl() pro správné zobrazení fotek
+- Email verifikace, SMS při registraci
+- Úprava zakázky zákazníkem
 
-## Testování (2026-04-04)
+## Testování
 - Iteration 8-12: Všechny testy 100%
 
 ## Zbývající úkoly
 ### P1
-- Synchronizace mobilní app s webem
-- Service Area Map v mobilní registraci
-- Push notifikace pro produkční APK
+- Mobilní app synchronizace
+- Push notifikace pro APK
 
 ### P2
-- Date picker (shadcn calendar)
-- Dark mode, Biometrické přihlášení
+- Dark mode, Date picker
 
 ## Mocked: Stripe (platby)

@@ -22,6 +22,7 @@ const DemandDetail = () => {
   const [showMap, setShowMap] = useState(false);
   const [customerLocation, setCustomerLocation] = useState(null);
   const [supplierLocation, setSupplierLocation] = useState(null);
+  const [customerDisplayName, setCustomerDisplayName] = useState(null);
   const chatPollRef = useRef(null);
   const prevMessageCountRef = useRef(0);
   const prevDemandStatusRef = useRef(null);
@@ -35,6 +36,8 @@ const DemandDetail = () => {
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingEditPhoto, setUploadingEditPhoto] = useState(false);
+
+  const [notificationToast, setNotificationToast] = useState(null);
 
   // Sound notification for new messages
   const playNotificationSound = useCallback(() => {
@@ -60,11 +63,16 @@ const DemandDetail = () => {
       const res = await axios.get(`${API}/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       const newMessages = res.data;
       
-      // Play sound if new messages arrived from the other user
+      // Play sound and show toast if new messages arrived from the other user
       if (prevMessageCountRef.current > 0 && newMessages.length > prevMessageCountRef.current) {
         const latestMsg = newMessages[newMessages.length - 1];
         if (latestMsg.sender_id !== user?.id) {
           playNotificationSound();
+          setNotificationToast({
+            sender: latestMsg.sender_name,
+            text: latestMsg.content.length > 60 ? latestMsg.content.substring(0, 60) + '...' : latestMsg.content
+          });
+          setTimeout(() => setNotificationToast(null), 5000);
         }
       }
       prevMessageCountRef.current = newMessages.length;
@@ -111,6 +119,18 @@ const DemandDetail = () => {
       setMessages(messagesRes.data);
       prevMessageCountRef.current = messagesRes.data.length;
       prevDemandStatusRef.current = demandRes.data.status;
+      
+      // Fetch customer display name
+      if (demandRes.data.customer_id) {
+        try {
+          const custRes = await axios.get(`${API}/users/${demandRes.data.customer_id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const c = custRes.data;
+          const name = c.company_name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email;
+          setCustomerDisplayName(name);
+        } catch (e) { /* use demand.customer_name as fallback */ }
+      }
       
       // Fetch user locations if demand is in progress
       if (demandRes.data.status === 'in_progress') {
@@ -354,6 +374,13 @@ const DemandDetail = () => {
     );
   };
 
+  // Auto-show chat for customer when new messages arrive (must be before early returns)
+  useEffect(() => {
+    if (demand && user?.id === demand.customer_id && messages.length > 0 && !showChat) {
+      setShowChat(true);
+    }
+  }, [demand, user?.id, messages.length, showChat]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -377,11 +404,10 @@ const DemandDetail = () => {
 
   const isCustomer = user?.id === demand.customer_id;
   const isAssignedSupplier = user?.id === demand.assigned_supplier_id;
-  const canChat = isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open') || (isCustomer && demand.status !== 'open');
+  const canChat = isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open') || (isCustomer && demand.status !== 'open') || (isCustomer && messages.length > 0);
   const canAccept = user?.role === 'supplier' && demand.status === 'open';
   const canComplete = (isCustomer || isAssignedSupplier) && demand.status === 'in_progress';
 
-  // Auto-show chat for assigned users in active demands
   const canEdit = isCustomer && (demand.status === 'open' || demand.status === 'in_progress');
   const autoShowChat = isCustomer || isAssignedSupplier;
   const canCancel = isCustomer && (demand.status === 'open' || demand.status === 'in_progress');
@@ -393,7 +419,31 @@ const DemandDetail = () => {
     : { lat: 49.8175 + (Math.random() * 0.1 - 0.05), lng: 15.4730 + (Math.random() * 0.1 - 0.05) };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Chat notification toast */}
+      {notificationToast && (
+        <div
+          className="fixed top-4 right-4 z-[9999] bg-white rounded-2xl shadow-2xl border border-orange-200 p-4 max-w-sm animate-slide-in cursor-pointer"
+          onClick={() => { setNotificationToast(null); setShowChat(true); }}
+          data-testid="chat-notification-toast"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <ChatCircle weight="fill" className="w-5 h-5 text-orange-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900">{notificationToast.sender}</p>
+              <p className="text-sm text-gray-500 truncate">{notificationToast.text}</p>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); setNotificationToast(null); }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-4 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto flex items-center gap-4">
@@ -439,7 +489,7 @@ const DemandDetail = () => {
               customerLocation={customerLocation}
               supplierLocation={supplierLocation}
               destinationLocation={destinationLocation}
-              customerName={demand.customer_name}
+              customerName={customerDisplayName || demand.customer_name}
               supplierName={demand.assigned_supplier_name}
               destinationName={demand.address}
               onLocationUpdate={handleLocationUpdate}
@@ -701,7 +751,7 @@ const DemandDetail = () => {
                   <User className="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{demand.customer_name}</p>
+                  <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{customerDisplayName || demand.customer_name}</p>
                   <p className="text-sm text-gray-500">Zákazník — zobrazit profil</p>
                 </div>
               </Link>

@@ -25,11 +25,17 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
     message_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
     
+    sender_display = current_user.get("company_name") or ""
+    if not sender_display or sender_display == "None":
+        fn = current_user.get("first_name") or ""
+        ln = current_user.get("last_name") or ""
+        sender_display = f"{fn} {ln}".strip() or current_user["email"]
+    
     message = {
         "id": message_id,
         "demand_id": message_data.demand_id,
         "sender_id": current_user["id"],
-        "sender_name": current_user.get("company_name") or current_user["email"],
+        "sender_name": sender_display,
         "sender_role": current_user["role"],
         "content": message_data.content,
         "created_at": now.isoformat()
@@ -38,6 +44,7 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
     await db.messages.insert_one(message)
     
     try:
+        # Determine recipient - customer or supplier
         if current_user["id"] == demand["customer_id"]:
             recipient_id = demand.get("assigned_supplier_id")
         else:
@@ -49,7 +56,7 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
                 await notification_service.notify_new_message(
                     recipient_email=recipient["email"],
                     recipient_phone=recipient.get("phone"),
-                    sender_name=current_user.get("company_name") or current_user["email"],
+                    sender_name=sender_display,
                     demand_title=demand["title"],
                     message=message_data.content
                 )
