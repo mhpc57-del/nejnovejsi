@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, API } from '../App';
+import axios from 'axios';
 import { 
   UserCircle, 
   Briefcase, 
@@ -27,6 +28,28 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [showCookies, setShowCookies] = useState(true);
   const [activeStep, setActiveStep] = useState(null);
+  const [showQuickDemand, setShowQuickDemand] = useState(false);
+  const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
+  const [quickLoading, setQuickLoading] = useState(false);
+  const [quickSuccess, setQuickSuccess] = useState(false);
+  const [quickError, setQuickError] = useState('');
+
+  const handleQuickDemand = async () => {
+    if (!quickForm.first_name || !quickForm.last_name || !quickForm.phone || !quickForm.email) {
+      setQuickError('Vyplňte všechna povinná pole');
+      return;
+    }
+    setQuickLoading(true);
+    setQuickError('');
+    try {
+      await axios.post(`${API}/demands/quick`, quickForm);
+      setQuickSuccess(true);
+    } catch (err) {
+      setQuickError(err.response?.data?.detail || 'Nepodařilo se odeslat poptávku');
+    } finally {
+      setQuickLoading(false);
+    }
+  };
 
   const advantages = [
     { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost přivýdělku jako zaměstnanec. Nepotřebujete živnostenský list." },
@@ -108,14 +131,14 @@ const HomePage = () => {
             <div className="animate-fade-in-up">
               <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
                 <Lightning weight="fill" className="w-4 h-4" />
-                NOVÁ PLATFORMA PRO ŘEMESLNÍKY
+                BEZKONKURENČNÍ PLATFORMA
               </span>
+              <p className="text-sm font-semibold text-gray-500 tracking-widest uppercase mb-3">PRO ZÁKAZNÍKY I DODAVATELE</p>
               <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
-                Najděte svého dodavatele.{' '}
-                <span className="text-orange-500">Během pár minut!</span>
+                <span className="text-orange-500">BĚHEM PÁR MINUT</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Sjednávání zakázek a služeb jinak, než u konkurence. Rychle, jednoduše, přehledně, levně a online.
+                Vyhledání dodavatele nebo zákazníka z okolí nebylo nikdy jednodušší. Začněte teď hned.
               </p>
               <div className="flex flex-wrap gap-4 mb-12">
                 <Link 
@@ -126,13 +149,13 @@ const HomePage = () => {
                   Začít zdarma — 14 dní
                   <ArrowRight weight="bold" className="w-5 h-5" />
                 </Link>
-                <Link 
-                  to="/dodavatele" 
-                  className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 font-medium px-6 py-3 rounded-full transition-all duration-200"
-                  data-testid="suppliers-btn"
+                <button 
+                  onClick={() => setShowQuickDemand(true)}
+                  className="bg-white border border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 font-medium px-6 py-3 rounded-full transition-all duration-200"
+                  data-testid="quick-demand-btn"
                 >
-                  Prohlédnout dodavatele
-                </Link>
+                  Rychlá poptávka bez registrace
+                </button>
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-center">
@@ -425,6 +448,73 @@ const HomePage = () => {
                 Přijmout vše
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Demand Modal */}
+      {showQuickDemand && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4" onClick={() => !quickLoading && setShowQuickDemand(false)}>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} data-testid="quick-demand-modal">
+            {quickSuccess ? (
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check weight="bold" className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Poptávka odeslána!</h2>
+                <p className="text-gray-500 mb-2">Vaše rychlá poptávka byla úspěšně přijata.</p>
+                <p className="text-gray-500 mb-6 text-sm">Jakmile dodavatel zareaguje, budeme vás informovat emailem a SMS. Pro plný přístup k platformě doporučujeme dokončit registraci.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => { setShowQuickDemand(false); setQuickSuccess(false); setQuickForm({ first_name: '', last_name: '', email: '', phone: '', description: '' }); }} className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    Zavřít
+                  </button>
+                  <Link to="/registrace" className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium text-center">
+                    Dokončit registraci
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-bold text-gray-900 text-lg">Rychlá poptávka</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Bez registrace — stačí základní údaje</p>
+                  </div>
+                  <button onClick={() => setShowQuickDemand(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+                    <X className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+                <div className="p-5 space-y-4">
+                  {quickError && <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">{quickError}</div>}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Jméno *</label>
+                      <input type="text" value={quickForm.first_name} onChange={e => setQuickForm(p => ({...p, first_name: e.target.value}))} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" placeholder="Jan" data-testid="quick-first-name" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Příjmení *</label>
+                      <input type="text" value={quickForm.last_name} onChange={e => setQuickForm(p => ({...p, last_name: e.target.value}))} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" placeholder="Novák" data-testid="quick-last-name" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" value={quickForm.email} onChange={e => setQuickForm(p => ({...p, email: e.target.value}))} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" placeholder="jan@email.cz" data-testid="quick-email" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefon *</label>
+                    <input type="tel" value={quickForm.phone} onChange={e => setQuickForm(p => ({...p, phone: e.target.value}))} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" placeholder="+420" data-testid="quick-phone" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stručný popis poptávky</label>
+                    <textarea value={quickForm.description} onChange={e => setQuickForm(p => ({...p, description: e.target.value}))} rows={3} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none" placeholder="Popište, co potřebujete..." data-testid="quick-description" />
+                  </div>
+                  <button onClick={handleQuickDemand} disabled={quickLoading} className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2" data-testid="quick-submit-btn">
+                    {quickLoading ? 'Odesílám...' : 'Odeslat poptávku'}
+                  </button>
+                  <p className="text-xs text-gray-400 text-center">Odesláním souhlasíte se zpracováním osobních údajů.</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

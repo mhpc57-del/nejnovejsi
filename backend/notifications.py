@@ -563,6 +563,27 @@ class NotificationService:
         if user and user.get("push_token"):
             await send_expo_push([user["push_token"]], f"Nezávazná nabídka od {supplier_name}", f"Na zakázku '{demand_title}': {reason[:80]}", {"type": "soft_accept"})
 
+    async def notify_quick_demand_confirmation(self, email: str, phone: str, name: str):
+        """Send confirmation to quick demand customer"""
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Vaše poptávka byla přijata!</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den {name},</p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Vaše rychlá poptávka na CraftBolt byla úspěšně přijata. Jakmile některý z dodavatelů zareaguje, budeme vás okamžitě informovat emailem a SMS.
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Pro plný přístup doporučujeme <strong>dokončit registraci</strong> — je to zdarma na 14 dní.
+            </p>
+            <a href="https://craftbolt.cz/registrace" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Dokončit registraci
+            </a>
+        """
+        subject = "CraftBolt — Vaše poptávka byla přijata"
+        html = self.templates.email_base(content, subject)
+        await self.email_service.send_email(email, subject, html)
+        if phone:
+            self.sms_service.send_sms(phone, "CraftBolt: Vaše rychlá poptávka byla přijata. Ozveme se, jakmile dodavatel zareaguje. Děkujeme. CraftBolt.")
+
 
 # Global notification service instance
 notification_service = NotificationService()

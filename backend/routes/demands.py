@@ -1,15 +1,79 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from database import db
 from auth import get_current_user
 from models import DemandCreate, DemandResponse, UserRole
 from notifications import notification_service
 from typing import List, Optional
 from datetime import datetime, timezone
+from pydantic import BaseModel
 import uuid
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+class QuickDemandCreate(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    phone: str
+    description: Optional[str] = ""
+
+
+@router.post("/demands/quick")
+async def create_quick_demand(data: QuickDemandCreate, background_tasks: BackgroundTasks):
+    """Create a quick demand without registration - minimal info only"""
+    demand_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+    
+    quick_demand = {
+        "id": demand_id,
+        "title": f"Rychlá poptávka od {data.first_name} {data.last_name}",
+        "description": data.description or "Rychlá poptávka bez registrace",
+        "category": "Ostatní",
+        "address": "",
+        "latitude": None,
+        "longitude": None,
+        "images": [],
+        "budget_min": None,
+        "budget_max": None,
+        "deadline": None,
+        "customer_id": f"quick_{demand_id}",
+        "customer_name": f"{data.first_name} {data.last_name}",
+        "customer_email": data.email,
+        "customer_phone": data.phone,
+        "status": "open",
+        "is_quick": True,
+        "assigned_supplier_id": None,
+        "assigned_supplier_name": None,
+        "soft_accepts": [],
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat(),
+        "progress_photos": [],
+        "reviews": [],
+    }
+    
+    await db.demands.insert_one(quick_demand)
+    
+    # Send confirmation SMS + email in background
+    background_tasks.add_task(
+        _notify_quick_demand,
+        data.email,
+        data.phone,
+        f"{data.first_name} {data.last_name}"
+    )
+    
+    return {"message": "Poptávka byla úspěšně odeslána", "demand_id": demand_id}
+
+
+async def _notify_quick_demand(email: str, phone: str, name: str):
+    try:
+        await notification_service.notify_quick_demand_confirmation(
+            email=email, phone=phone, name=name
+        )
+    except Exception as e:
+        logger.error(f"Failed to send quick demand notification: {e}")
 
 
 @router.post("/demands", response_model=DemandResponse)
