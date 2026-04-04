@@ -22,6 +22,7 @@ import {
 } from '@phosphor-icons/react';
 import HeroSlider from '../components/HeroSlider';
 import StepsSlider from '../components/StepsSlider';
+import ThemeToggle from '../components/ThemeToggle';
 
 const HomePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -73,29 +74,30 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-black/5">
+      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-black/5 dark:border-gray-700 dark:bg-gray-900/80 dark:backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-gray-900">Craft</span>
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">Craft</span>
               <span className="text-2xl font-bold text-orange-500">Bolt</span>
             </Link>
             
             <nav className="flex items-center gap-4">
+              <ThemeToggle />
               {isAuthenticated ? (
                 <>
                   <Link 
                     to="/dashboard" 
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                     data-testid="dashboard-link"
                   >
                     Můj profil
                   </Link>
                   <button 
                     onClick={logout}
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                     data-testid="logout-btn"
                   >
                     Odhlásit
@@ -105,7 +107,7 @@ const HomePage = () => {
                 <>
                   <Link 
                     to="/prihlaseni" 
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                     data-testid="login-link"
                   >
                     Přihlášení
@@ -129,15 +131,15 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in-up">
-              <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+              <span className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
                 <Lightning weight="fill" className="w-4 h-4" />
                 BEZKONKURENČNÍ PLATFORMA
               </span>
-              <p className="text-sm font-semibold text-gray-500 tracking-widest uppercase mb-3">PRO ZÁKAZNÍKY I DODAVATELE</p>
-              <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-widest uppercase mb-3">PRO ZÁKAZNÍKY I DODAVATELE</p>
+              <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-6">
                 <span className="text-orange-500">BĚHEM PÁR MINUT</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 Vyhledání dodavatele nebo zákazníka z okolí nebylo nikdy jednodušší. Začněte teď hned.
               </p>
               <div className="flex flex-wrap gap-4 mb-12">
@@ -151,7 +153,7 @@ const HomePage = () => {
                 </Link>
                 <button 
                   onClick={() => setShowQuickDemand(true)}
-                  className="bg-white border border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 font-medium px-6 py-3 rounded-full transition-all duration-200"
+                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:border-orange-300 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium px-6 py-3 rounded-full transition-all duration-200"
                   data-testid="quick-demand-btn"
                 >
                   Rychlá poptávka bez registrace
@@ -159,27 +161,27 @@ const HomePage = () => {
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <ChatCircle weight="duotone" className="w-6 h-6 text-orange-500" />
                   </div>
-                  <div className="text-sm font-bold text-gray-900">SMS</div>
-                  <div className="text-xs text-gray-500">notifikace</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">SMS</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">notifikace</div>
                 </div>
-                <div className="w-px h-16 bg-gray-200"></div>
+                <div className="w-px h-16 bg-gray-200 dark:bg-gray-700"></div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <CurrencyDollar weight="duotone" className="w-6 h-6 text-orange-500" />
                   </div>
-                  <div className="text-sm font-bold text-gray-900">od 199 Kč</div>
-                  <div className="text-xs text-gray-500">bez dalších poplatků</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">od 199 Kč</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">bez dalších poplatků</div>
                 </div>
-                <div className="w-px h-16 bg-gray-200"></div>
+                <div className="w-px h-16 bg-gray-200 dark:bg-gray-700"></div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <Clock weight="duotone" className="w-6 h-6 text-orange-500" />
                   </div>
-                  <div className="text-sm font-bold text-gray-900">RealTime</div>
-                  <div className="text-xs text-gray-500">sledování příjezdů</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">RealTime</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">sledování příjezdů</div>
                 </div>
               </div>
             </div>
@@ -191,27 +193,27 @@ const HomePage = () => {
       </section>
 
       {/* Advantages Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-orange-500 font-bold text-sm tracking-widest uppercase">Proč si vybrat nás</span>
-            <h2 className="text-4xl font-bold text-gray-900 mt-4">Výhody oproti konkurenčním platformám</h2>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mt-4">Výhody oproti konkurenčním platformám</h2>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             {advantages.map((adv, index) => (
               <div 
                 key={index} 
-                className="bg-white rounded-xl p-6 border border-gray-100 card-hover animate-fade-in-up"
+                className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-100 dark:border-gray-700 card-hover animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                     <adv.icon weight="duotone" className="w-5 h-5 text-orange-500" />
                   </div>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{adv.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{adv.desc}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{adv.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{adv.desc}</p>
               </div>
             ))}
           </div>
@@ -224,8 +226,8 @@ const HomePage = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
               <span className="text-orange-500 font-bold text-sm tracking-widest uppercase">Proces</span>
-              <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-6">Jak to celé funguje</h2>
-              <p className="text-gray-600 text-lg mb-8">
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 mb-6">Jak to celé funguje</h2>
+              <p className="text-gray-600 dark:text-gray-300 text-lg mb-8">
                 Od zadání poptávky po dokončení zakázky. Pět jednoduchých kroků.
               </p>
               <StepsSlider activeStep={activeStep} />
@@ -234,10 +236,10 @@ const HomePage = () => {
               {steps.map((step, index) => (
                 <div 
                   key={index} 
-                  className={`bg-white rounded-xl p-6 border card-hover animate-fade-in-up cursor-pointer transition-all duration-200 ${
+                  className={`bg-white dark:bg-gray-800 rounded-xl p-6 border card-hover animate-fade-in-up cursor-pointer transition-all duration-200 ${
                     activeStep === index 
-                      ? 'border-orange-400 shadow-md ring-1 ring-orange-200' 
-                      : 'border-gray-100 hover:border-orange-200'
+                      ? 'border-orange-400 shadow-md ring-1 ring-orange-200 dark:ring-orange-800' 
+                      : 'border-gray-100 dark:border-gray-700 hover:border-orange-200 dark:hover:border-orange-700'
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                   onMouseEnter={() => setActiveStep(index)}
@@ -247,8 +249,8 @@ const HomePage = () => {
                   <div className="flex gap-4">
                     <span className="text-4xl font-bold text-orange-500">{step.num}</span>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-lg mb-2">{step.title}</h3>
-                      <p className="text-gray-500">{step.desc}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-2">{step.title}</h3>
+                      <p className="text-gray-500 dark:text-gray-400">{step.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -257,9 +259,9 @@ const HomePage = () => {
           </div>
           
           {/* Important Notice */}
-          <div className="mt-16 bg-orange-50 rounded-2xl p-8 border border-orange-100">
-            <h3 className="font-semibold text-gray-900 text-lg mb-4">Důležité upozornění</h3>
-            <div className="space-y-4 text-gray-600 leading-relaxed">
+          <div className="mt-16 bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-8 border border-orange-100 dark:border-orange-800">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-4">Důležité upozornění</h3>
+            <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
               <p>
                 V případě, že si obě smluvní strany předají osobní kontakty z důvodu dalších realizací služeb nebo z důvodu poskytnutí záruk, je jim toto samozřejmě umožněno. Pamatujte však na to, že sjednávání dalších služeb mimo tuto platformu je mnohdy rizikovější a složitější.
               </p>
@@ -278,8 +280,8 @@ const HomePage = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <span className="text-sm tracking-widest uppercase text-gray-500">Podívejte se</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">Jak CraftBolt funguje v praxi</h2>
+            <span className="text-sm tracking-widest uppercase text-gray-500 dark:text-gray-400">Podívejte se</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mt-2">Jak CraftBolt funguje v praxi</h2>
           </div>
           <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-video shadow-2xl">
             <iframe
@@ -296,29 +298,29 @@ const HomePage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-orange-500 font-bold text-sm tracking-widest uppercase">Ceník</span>
-            <h2 className="text-4xl font-bold text-gray-900 mt-4">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mt-4">
               Jednoduchý a férový ceník.
             </h2>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Zákazník */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 card-hover">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 card-hover">
               <div className="mb-6">
-                <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Zákazník</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm uppercase tracking-widest font-bold">Zákazník</span>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-5xl font-bold text-gray-900">199</span>
-                  <span className="text-gray-500">Kč/měsíc</span>
+                  <span className="text-5xl font-bold text-gray-900 dark:text-white">199</span>
+                  <span className="text-gray-500 dark:text-gray-400">Kč/měsíc</span>
                 </div>
                 <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Neomezený počet poptávek", "Výběr z ověřených dodavatelů", "Online chat s dodavateli", "Zamítnutí nabídek", "Úpravy stávajících poptávek", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                  <li key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                     <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     {item}
                   </li>
@@ -334,21 +336,21 @@ const HomePage = () => {
             </div>
 
             {/* Dodavatel */}
-            <div className="bg-white rounded-2xl p-8 border-2 border-orange-500 card-hover relative">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border-2 border-orange-500 card-hover relative">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase">
                 Pro řemeslníky
               </span>
               <div className="mb-6">
-                <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Dodavatel</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm uppercase tracking-widest font-bold">Dodavatel</span>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-5xl font-bold text-gray-900">299</span>
-                  <span className="text-gray-500">Kč/měsíc</span>
+                  <span className="text-5xl font-bold text-gray-900 dark:text-white">299</span>
+                  <span className="text-gray-500 dark:text-gray-400">Kč/měsíc</span>
                 </div>
                 <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Neomezený přístup k zakázkám", "Výběr zakázky dle svých možností", "Online chat se zákazníky", "Ověřený profil nahráním oprávnění", "Volba více kategorií", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                  <li key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                     <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     {item}
                   </li>
@@ -364,18 +366,18 @@ const HomePage = () => {
             </div>
 
             {/* Zákazník i dodavatel */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 card-hover">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 card-hover">
               <div className="mb-6">
-                <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Zákazník i dodavatel</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm uppercase tracking-widest font-bold">Zákazník i dodavatel</span>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-5xl font-bold text-gray-900">399</span>
-                  <span className="text-gray-500">Kč/měsíc</span>
+                  <span className="text-5xl font-bold text-gray-900 dark:text-white">399</span>
+                  <span className="text-gray-500 dark:text-gray-400">Kč/měsíc</span>
                 </div>
                 <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Vše z profilu zákazníka", "Vše z profilu dodavatele", "Zadávání i přijímání zakázek", "Online chat s oběma stranami", "Ověřený profil", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                  <li key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                     <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     {item}
                   </li>
@@ -390,7 +392,7 @@ const HomePage = () => {
               </Link>
             </div>
           </div>
-          <p className="text-center text-gray-600 text-sm mt-8">
+          <p className="text-center text-gray-600 dark:text-gray-400 text-sm mt-8">
             Platba kartou přes zabezpečenou bránu Stripe. <strong>Předplatné můžete kdykoliv zrušit.</strong>
           </p>
         </div>
@@ -399,8 +401,8 @@ const HomePage = () => {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">Připraveni začít?</h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">Připraveni začít?</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Zaregistrujte se ještě dnes a vyzkoušejte CraftBolt 14 dní zcela zdarma.
           </p>
           <Link 
