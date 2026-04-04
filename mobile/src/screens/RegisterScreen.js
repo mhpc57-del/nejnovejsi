@@ -22,7 +22,10 @@ export default function RegisterScreen({ navigation }) {
   });
 
   useEffect(() => {
-    miscService.getCategories().then(r => setCategories(r.data)).catch(() => {});
+    miscService.getCategories().then(r => {
+      const data = r.data;
+      setCategories(Array.isArray(data) ? data : (data.categories || []));
+    }).catch(() => {});
   }, []);
 
   const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));

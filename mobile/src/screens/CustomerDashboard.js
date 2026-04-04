@@ -189,12 +189,41 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [showCats, setShowCats] = useState(false);
   const [images, setImages] = useState([]);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddrSuggestions, setShowAddrSuggestions] = useState(false);
+  const addressTimeout = React.useRef(null);
 
   useEffect(() => {
-    miscService.getCategories().then(r => setCategories(r.data)).catch(() => {});
+    miscService.getCategories().then(r => {
+      const data = r.data;
+      setCategories(Array.isArray(data) ? data : (data.categories || []));
+    }).catch(() => {});
   }, []);
 
   const update = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const onAddressChange = (text) => {
+    update('address', text);
+    if (addressTimeout.current) clearTimeout(addressTimeout.current);
+    if (text.length < 3) { setAddressSuggestions([]); setShowAddrSuggestions(false); return; }
+    addressTimeout.current = setTimeout(async () => {
+      try {
+        const res = await miscService.geocodeSearch(text);
+        const results = res.data || [];
+        setAddressSuggestions(results.slice(0, 5));
+        setShowAddrSuggestions(results.length > 0);
+      } catch (e) {
+        setAddressSuggestions([]);
+        setShowAddrSuggestions(false);
+      }
+    }, 400);
+  };
+
+  const selectAddress = (item) => {
+    update('address', item.display_name);
+    setShowAddrSuggestions(false);
+    setAddressSuggestions([]);
+  };
 
   const pickImages = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -273,23 +302,33 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
                 {form.category || 'Vyberte kategorii'}
               </Text>
             </TouchableOpacity>
-            {showCats && (
+            {showCats && categories.length > 0 && (
               <View style={modalStyles.catList}>
-                <ScrollView style={{ maxHeight: 200 }}>
-                  {categories.map(cat => (
-                    <TouchableOpacity key={cat} style={modalStyles.catItem}
-                      onPress={() => { update('category', cat); setShowCats(false); }}>
-                      <Text style={[modalStyles.catItemText, form.category === cat && { color: COLORS.primary, fontWeight: '600' }]}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                {categories.map((cat, idx) => (
+                  <TouchableOpacity key={idx} style={modalStyles.catItem}
+                    onPress={() => { update('category', cat); setShowCats(false); }}>
+                    <Text style={[modalStyles.catItemText, form.category === cat && { color: COLORS.primary, fontWeight: '600' }]}>{cat}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             )}
 
             <Text style={styles.label}>Adresa *</Text>
-            <TextInput style={styles.modalInput} value={form.address} onChangeText={v => update('address', v)} placeholder="Ulice, město" placeholderTextColor={COLORS.gray300} />
+            <TextInput style={styles.modalInput} value={form.address} onChangeText={onAddressChange} placeholder="Začněte psát adresu..." placeholderTextColor={COLORS.gray300} />
+            {showAddrSuggestions && (
+              <View style={modalStyles.catList}>
+                {addressSuggestions.map((item, idx) => (
+                  <TouchableOpacity key={idx} style={modalStyles.catItem} onPress={() => selectAddress(item)}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Ionicons name="location-outline" size={16} color={COLORS.primary} />
+                      <Text style={modalStyles.catItemText} numberOfLines={2}>{item.display_name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
-            <Text style={styles.label}>Rozpočet (Kč)</Text>
+            <Text style={styles.label}>Předpokládaná cena (Kč)</Text>
             <TextInput style={styles.modalInput} value={form.budget_max} onChangeText={v => update('budget_max', v)} placeholder="Nepovinné" placeholderTextColor={COLORS.gray300} keyboardType="numeric" />
 
             <Text style={styles.label}>Termín realizace</Text>
@@ -322,7 +361,7 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
               )}
             </View>
 
-            <TouchableOpacity style={[styles.submitButton, { marginBottom: 40 }]} onPress={submit} disabled={loading}>
+            <TouchableOpacity style={[styles.submitButton, { marginBottom: 80 }]} onPress={submit} disabled={loading}>
               {loading ? <ActivityIndicator color={COLORS.white} /> : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.white} />
@@ -346,7 +385,7 @@ const modalStyles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '700', color: COLORS.gray900 },
   closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.gray100, justifyContent: 'center', alignItems: 'center' },
   body: { padding: 20 },
-  catList: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: 4 },
+  catList: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: 4, maxHeight: 200 },
   catItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   catItemText: { fontSize: 14, color: COLORS.gray700 },
 });

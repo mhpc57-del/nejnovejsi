@@ -1,32 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView,
+  RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import MapView, { Marker, Callout } from 'react-native-maps';
-import * as Location from 'expo-location';
 import { demandService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS, STATUS_COLORS } from '../utils/theme';
 
-const { width, height } = Dimensions.get('window');
-
-const DEFAULT_REGION = {
-  latitude: 49.8175,
-  longitude: 15.4730,
-  latitudeDelta: 4.5,
-  longitudeDelta: 4.5,
-};
+const DEFAULT_CENTER = { latitude: 49.8175, longitude: 15.4730 };
 
 export default function MapScreen({ navigation }) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState(null);
-  const [region, setRegion] = useState(DEFAULT_REGION);
+  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
 
   const fetchDemands = async () => {
@@ -37,38 +28,19 @@ export default function MapScreen({ navigation }) {
       console.error('Map fetch error:', e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const getUserLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-      setRegion({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-        latitudeDelta: 0.3,
-        longitudeDelta: 0.3,
-      });
-    } catch (e) {
-      console.log('Location not available');
-    }
-  };
+  useFocusEffect(useCallback(() => { fetchDemands(); }, []));
 
-  useFocusEffect(useCallback(() => {
-    fetchDemands();
-    getUserLocation();
-  }, []));
-
-  const getMarkerColor = (status) => {
+  const getStatusIcon = (status) => {
     switch (status) {
-      case 'open': return COLORS.green500;
-      case 'in_progress': return COLORS.blue500;
-      case 'completed': return COLORS.gray500;
-      case 'cancelled': return COLORS.red500;
-      default: return COLORS.primary;
+      case 'open': return { icon: 'radio-button-on', color: COLORS.green500 };
+      case 'in_progress': return { icon: 'time-outline', color: COLORS.blue500 };
+      case 'completed': return { icon: 'checkmark-circle', color: COLORS.gray500 };
+      case 'cancelled': return { icon: 'close-circle', color: COLORS.red500 };
+      default: return { icon: 'ellipse', color: COLORS.primary };
     }
   };
 
@@ -87,14 +59,12 @@ export default function MapScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Ionicons name="map" size={22} color={COLORS.primary} />
         <Text style={styles.headerTitle}>Mapa zakázek</Text>
         <Text style={styles.headerCount}>{filteredDemands.length}</Text>
       </View>
 
-      {/* Filter chips */}
       <View style={styles.filtersRow}>
         {FILTERS.map(f => (
           <TouchableOpacity key={f.key}
@@ -109,62 +79,49 @@ export default function MapScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Map */}
-      {loading ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Načítám zakázky...</Text>
-        </View>
-      ) : (
-        <MapView
-          style={styles.map}
-          region={region}
-          onRegionChangeComplete={setRegion}
-          showsUserLocation={true}
-          showsMyLocationButton={false}
-        >
-          {filteredDemands.map(demand => (
-            <Marker
-              key={demand.id}
-              coordinate={{ latitude: demand.latitude, longitude: demand.longitude }}
-              pinColor={getMarkerColor(demand.status)}
-            >
-              <Callout tooltip onPress={() => navigation.navigate('DemandDetail', { id: demand.id })}>
-                <View style={styles.callout}>
-                  <Text style={styles.calloutTitle} numberOfLines={1}>{demand.title}</Text>
-                  <View style={styles.calloutRow}>
-                    <Ionicons name="pricetag-outline" size={12} color={COLORS.primary} />
-                    <Text style={styles.calloutCat}>{demand.category}</Text>
+      <ScrollView style={styles.list} refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDemands(); }} colors={[COLORS.primary]} />
+      }>
+        {loading ? (
+          <View style={styles.loadingWrap}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Načítám zakázky...</Text>
+          </View>
+        ) : filteredDemands.length === 0 ? (
+          <View style={styles.emptyWrap}>
+            <Ionicons name="map-outline" size={56} color={COLORS.gray300} />
+            <Text style={styles.emptyTitle}>Žádné zakázky na mapě</Text>
+            <Text style={styles.emptyText}>Zakázky s adresou se zobrazí zde</Text>
+          </View>
+        ) : (
+          filteredDemands.map(demand => {
+            const si = getStatusIcon(demand.status);
+            return (
+              <TouchableOpacity key={demand.id} style={styles.card}
+                onPress={() => navigation.navigate('DemandDetail', { id: demand.id })} activeOpacity={0.7}>
+                <View style={styles.cardRow}>
+                  <View style={[styles.statusDot, { backgroundColor: si.color + '20' }]}>
+                    <Ionicons name={si.icon} size={20} color={si.color} />
                   </View>
-                  <View style={styles.calloutRow}>
-                    <Ionicons name="location-outline" size={12} color={COLORS.gray500} />
-                    <Text style={styles.calloutAddr} numberOfLines={1}>{demand.address}</Text>
+                  <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>{demand.title}</Text>
+                    <View style={styles.cardMetaRow}>
+                      <Ionicons name="pricetag-outline" size={12} color={COLORS.primary} />
+                      <Text style={styles.cardCat}>{demand.category}</Text>
+                    </View>
+                    <View style={styles.cardMetaRow}>
+                      <Ionicons name="location-outline" size={12} color={COLORS.gray500} />
+                      <Text style={styles.cardAddr} numberOfLines={1}>{demand.address}</Text>
+                    </View>
                   </View>
-                  <View style={[styles.calloutBadge, { backgroundColor: getMarkerColor(demand.status) + '20' }]}>
-                    <Text style={[styles.calloutStatus, { color: getMarkerColor(demand.status) }]}>
-                      {STATUS_COLORS[demand.status]?.label || demand.status}
-                    </Text>
-                  </View>
-                  <Text style={styles.calloutTap}>Klepněte pro detail</Text>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.gray300} />
                 </View>
-              </Callout>
-            </Marker>
-          ))}
-        </MapView>
-      )}
-
-      {/* My Location Button */}
-      {userLocation && (
-        <TouchableOpacity style={[styles.myLocBtn, { bottom: 24 }]}
-          onPress={() => setRegion({
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
-            latitudeDelta: 0.15,
-            longitudeDelta: 0.15,
-          })}>
-          <Ionicons name="navigate" size={22} color={COLORS.primary} />
-        </TouchableOpacity>
-      )}
+              </TouchableOpacity>
+            );
+          })
+        )}
+        <View style={{ height: 20 }} />
+      </ScrollView>
     </View>
   );
 }
@@ -190,23 +147,22 @@ const styles = StyleSheet.create({
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterText: { fontSize: 12, fontWeight: '600', color: COLORS.gray700 },
   filterTextActive: { color: COLORS.white },
-  map: { flex: 1 },
-  loadingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  list: { flex: 1, padding: 16 },
+  card: {
+    backgroundColor: COLORS.white, borderRadius: 16, padding: 14, marginBottom: 10,
+    borderWidth: 1, borderColor: COLORS.gray100,
+    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4,
+  },
+  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  statusDot: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: COLORS.gray900, marginBottom: 4 },
+  cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  cardCat: { fontSize: 12, color: COLORS.primary, fontWeight: '500' },
+  cardAddr: { fontSize: 12, color: COLORS.gray500, flex: 1 },
+  loadingWrap: { alignItems: 'center', paddingVertical: 60 },
   loadingText: { fontSize: 14, color: COLORS.gray500, marginTop: 12 },
-  callout: {
-    backgroundColor: COLORS.white, borderRadius: 14, padding: 14, width: 220,
-    elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6,
-  },
-  calloutTitle: { fontSize: 15, fontWeight: '700', color: COLORS.gray900, marginBottom: 6 },
-  calloutRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
-  calloutCat: { fontSize: 12, color: COLORS.primary, fontWeight: '500' },
-  calloutAddr: { fontSize: 12, color: COLORS.gray500, flex: 1 },
-  calloutBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10, alignSelf: 'flex-start', marginTop: 6 },
-  calloutStatus: { fontSize: 11, fontWeight: '600' },
-  calloutTap: { fontSize: 11, color: COLORS.gray500, textAlign: 'center', marginTop: 8, fontStyle: 'italic' },
-  myLocBtn: {
-    position: 'absolute', right: 16, width: 48, height: 48, borderRadius: 24,
-    backgroundColor: COLORS.white, justifyContent: 'center', alignItems: 'center',
-    elevation: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 6,
-  },
+  emptyWrap: { alignItems: 'center', paddingVertical: 60 },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: COLORS.gray900, marginTop: 16 },
+  emptyText: { fontSize: 14, color: COLORS.gray500, marginTop: 4 },
 });

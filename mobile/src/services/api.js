@@ -66,6 +66,7 @@ export const uploadService = {
 
 export const miscService = {
   getCategories: () => api.get('/categories'),
+  geocodeSearch: (q) => api.get('/geocode/search', { params: { q } }),
 };
 
 export default api;
