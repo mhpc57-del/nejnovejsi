@@ -297,7 +297,7 @@ const RegisterPage = () => {
         for (const cat of formData.custom_categories) {
           try {
             await axios.post(`${API}/categories/suggest`, 
-              { category_name: cat },
+              { name: cat },
               { headers: { Authorization: `Bearer ${token}` } }
             );
           } catch (e) { console.error('Failed to suggest category:', e); }

@@ -12,61 +12,58 @@ CraftBolt.cz — webová a mobilní platforma propojující řemeslníky/dodavat
 ## Co je implementováno
 
 ### Web (HOTOVO)
-- Registrace/přihlášení (zákazník, dodavatel, admin)
+- Registrace/přihlášení (zákazník nepodnikatel/OSVČ/firma, dodavatel nepodnikatel/OSVČ/firma, admin)
+- 4-5 krokový registrační proces s ARES, geocodingem, kategoriemi
 - Dashboard zákazníka s poptávkami, stat kartami
-- Dashboard dodavatele s filtry
+- Dashboard dodavatele s filtry, 4 taby
 - Detail zakázky s chatem, závazným/nezávazným přijetím
-- Soft-accept workflow (5 důvodů)
+- Soft-accept workflow
 - Geocoding + ARES integrace
 - Mapa s lokacemi
 - Systém hodnocení
 - Skóre dochvilnosti dodavatelů
-- Upload dokumentů a fotek
+- Upload dokumentů a fotek (public i auth endpoint)
 - Deaktivace účtu s admin restore
 - Emailové + SMS notifikace s rate limitem
+- Landing page s konzistentními stat ikonami (SMS/99Kč/RealTime)
+
+### Opravy (2026-04-04)
+- **Backend registrace:** Email notifikace přesunuta do BackgroundTasks - okamžitá odpověď
+- **Landing page:** Tři stat ikony přepracovány na konzistentní styl s ikonami (SMS notifikace, 99 Kč/měs. bez dalších poplatků, RealTime sledování příjezdů)
+- **Custom category suggest:** Opraven field name `category_name` -> `name` v RegisterPage i ProfilePage
+- **API timeout mobile:** Zvýšen z 15s na 30s
+- **Mobile adresní našeptávač:** FlatList s elevation a zIndex
+- **Mobile kategorie:** nestedScrollEnabled
+- **Mobile app ikona:** CB černé/oranžové na bílém pozadí
 
 ### Mobilní aplikace (HOTOVO)
-- **Login/Register:** Ionicons, 4-krokový registrační proces (dodavatel: login údaje -> typ účtu -> osobní + firemní údaje -> kategorie)
-- **Dashboard zákazníka:** Stat karty, FAB, nová poptávka s fotkami (kamera + galerie)
-- **Dashboard dodavatele:** 4 taby, badge počty, celkové příjmy
-- **Mapa zakázek:** react-native-maps, filtrování podle stavu, GPS lokace uživatele, callout s detailem
-- **Detail zakázky:** Závazné/nezávazné přijetí, chat, dorazil jsem, dokončit, zrušit, fotky, hodnocení
-- **Oznámení:** Soft-accepty, přijaté zakázky, dokončené, příjezdy
-- **Profil:** Upload fotky -> backend, editace, hodnocení, dochvilnost, kategorie, recenze
-- **Navigace:** 4 bottom taby (Přehled, Mapa, Oznámení, Profil)
-- **EAS Build:** Konfigurace pro preview APK a production AAB
-
-### Opravy bugů (2026-04-04)
-- **Registrace:** Email notifikace přesunuta do BackgroundTasks - odpověď se neblokuje SMTP odesíláním
-- **Registrace:** Vylepšený error handling - rozlišení duplicitního emailu, validačních chyb, obecných chyb
-- **Adresní našeptávač:** FlatList s nestedScrollEnabled, elevation, správný zIndex v RegisterScreen i CustomerDashboard
-- **Kategorie:** FlatList s nestedScrollEnabled pro plynulé scrollování v modalu
-- **API timeout:** Zvýšen z 15s na 30s pro spolehlivější spojení
-- **App ikona:** Nová ikona CB (černé C, oranžové B na bílém pozadí)
-
-### Backend push notifications (HOTOVO)
-- Endpoint `POST /api/users/push-token` pro ukládání push tokenů
-- `push_notifications.py` — Expo Push API sender
-- Integrace do všech notification metod
+- Login/Register, Dashboard zákazníka/dodavatele
+- Mapa zakázek, Detail zakázky
+- Profil, Push notifikace (deaktivovány pro Expo Go)
+- EAS Build konfigurace
 
 ### Email rate limiting (HOTOVO)
-- Chat notifikace: max 1 email za 15 min na konverzaci
+- Chat: max 1 email za 15 min na konverzaci
 - Nové poptávky: max 20 dodavatelů
 - Denní limit: 400 emailů
+
+## Testování (2026-04-04)
+- Iteration 8: 17/17 backend API testů prošlo (100%)
+- Iteration 9: Kompletní E2E frontend testování - všechny flows prošly (registrace, login, dashboardy, poptávky, profil, admin)
 
 ## Zbývající úkoly
 
 ### P0 (Kritické)
-- Uživatel otestuje opravy na telefonu (registrace, našeptávač, kategorie)
+- Uživatel otestuje opravy na telefonu a PC
+- Uživatel aktualizuje produkční deployment na craftbolt.cz (EMAIL_NOT_VERIFIED chyba nereprodukována na preview)
 
 ### P1 (Důležité)
-- Service Area Map selection v registraci dodavatele (IN PROGRESS)
-- Push notifikace re-integrace pro produkční APK (Expo Go crash v SDK 54)
-- Google Maps API klíč pro mapu na Androidu (nutné pro produkci)
+- Service Area Map selection v registraci dodavatele (mobilní app)
+- Push notifikace re-integrace pro produkční APK
+- Synchronizace mobilní app s webovou platformou
 
 ### P2 (Nice to have)
-- Crop screen text ("Oříznout") špatně viditelný
-- Offline podpora v mobilní app
+- Crop screen text viditelnost (mobilní)
 - Dark mode
 - Biometrické přihlášení
 
@@ -78,9 +75,9 @@ CraftBolt.cz — webová a mobilní platforma propojující řemeslníky/dodavat
 - POST /api/auth/login
 - GET /api/auth/me
 - GET /api/geocode/search?q={query}
-- GET /api/geocode/reverse?lat={lat}&lon={lon}
 - GET /api/categories
-- POST /api/categories/suggest
+- POST /api/categories/suggest (field: name)
 - GET /api/ares/{ico}
+- POST /api/upload (auth), POST /api/upload/public (no auth)
 - POST /api/demands
-- GET /api/demands
+- GET /api/demands/my

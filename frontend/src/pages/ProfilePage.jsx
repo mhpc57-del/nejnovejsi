@@ -258,7 +258,7 @@ const ProfilePage = () => {
     if (!cat || formData.custom_categories.includes(cat)) return;
     setFormData(prev => ({ ...prev, custom_categories: [...prev.custom_categories, cat] }));
     try {
-      await axios.post(`${API}/categories/suggest`, { category_name: cat }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${API}/categories/suggest`, { name: cat }, { headers: { Authorization: `Bearer ${token}` } });
     } catch (e) { console.error('Suggest error:', e); }
     setCustomCatInput('');
   };
