@@ -1,0 +1,124 @@
+{
+  "summary": "Iteration 11 - Demand Edit Feature Testing Complete. All 17 backend tests passed. All frontend E2E tests passed. Fixed a bug where empty strings in budget fields caused Pydantic validation errors. Key features verified: PUT /api/demands/{id} allows customer to edit title, description, address, budget, deadline, photos. Chat button correctly hidden for customers on open demands. Emergent badge completely removed from index.html. Page title is 'CraftBolt | Platforma pro řemeslníky'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Date picker in edit modal and demand form",
+        "issues": ["Uses browser's default date picker instead of custom shadcn calendar component - minor UX inconsistency (carried over from previous iterations)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration11_demand_edit.py",
+    "/app/test_reports/pytest/pytest_results_iteration11.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration11_demand_edit.py",
+    "/app/backend/routes/demands.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (all E2E flows passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "verified_customer": "testvendulka@test.cz / TestHeslo123!"
+  },
+  "seed_data_creation": "Multiple test demands created during testing with TEST_ prefix",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Demand edit feature fully tested and working. Key behaviors: 1) PUT /api/demands/{id} accepts dict with allowed_fields (title, description, address, latitude, longitude, images, budget_min, budget_max, deadline). 2) Customer can only edit their own demands in 'open' or 'in_progress' status. 3) Admin can edit any demand. 4) Chat button is hidden for customers on 'open' demands (canChat = isCustomer && demand.status !== 'open'). 5) Edit modal has all fields with data-testid attributes. 6) Fixed bug: empty strings in budget fields now converted to null to prevent Pydantic validation errors.",
+  "features_tested": {
+    "PUT_DEMANDS_EDIT_TITLE": {
+      "status": "PASSED",
+      "details": "Customer can edit demand title via PUT /api/demands/{id}"
+    },
+    "PUT_DEMANDS_EDIT_DESCRIPTION": {
+      "status": "PASSED",
+      "details": "Customer can edit demand description"
+    },
+    "PUT_DEMANDS_EDIT_ADDRESS": {
+      "status": "PASSED",
+      "details": "Customer can edit demand address"
+    },
+    "PUT_DEMANDS_EDIT_BUDGET": {
+      "status": "PASSED",
+      "details": "Customer can edit budget_min and budget_max"
+    },
+    "PUT_DEMANDS_EDIT_DEADLINE": {
+      "status": "PASSED",
+      "details": "Customer can edit deadline"
+    },
+    "PUT_DEMANDS_EDIT_IMAGES": {
+      "status": "PASSED",
+      "details": "Customer can edit images array"
+    },
+    "PUT_DEMANDS_EDIT_MULTIPLE_FIELDS": {
+      "status": "PASSED",
+      "details": "Customer can edit multiple fields at once"
+    },
+    "PUT_DEMANDS_ADMIN_CAN_EDIT": {
+      "status": "PASSED",
+      "details": "Admin can edit any demand"
+    },
+    "PUT_DEMANDS_404_NONEXISTENT": {
+      "status": "PASSED",
+      "details": "Returns 404 for non-existent demand"
+    },
+    "PUT_DEMANDS_OPEN_STATUS": {
+      "status": "PASSED",
+      "details": "Can edit demands with 'open' status"
+    },
+    "EMERGENT_BADGE_REMOVED": {
+      "status": "PASSED",
+      "details": "No 'emergent', 'Made with', or badge elements in index.html source"
+    },
+    "PAGE_TITLE_CRAFTBOLT": {
+      "status": "PASSED",
+      "details": "Page title is 'CraftBolt | Platforma pro řemeslníky'"
+    },
+    "CUSTOMER_LOGIN_VERIFIED": {
+      "status": "PASSED",
+      "details": "Verified customer can login successfully"
+    },
+    "ADMIN_LOGIN_BYPASSES_VERIFICATION": {
+      "status": "PASSED",
+      "details": "Admin login works (bypasses email verification)"
+    },
+    "CHAT_BUTTON_HIDDEN_OPEN_DEMAND": {
+      "status": "PASSED",
+      "details": "Chat button ('Spustit chat') is hidden for customers on open demands"
+    },
+    "EDIT_BUTTON_VISIBLE_OPEN_DEMAND": {
+      "status": "PASSED",
+      "details": "Edit button ('Upravit zakázku') is visible for customers on open demands"
+    },
+    "EDIT_MODAL_ALL_FIELDS": {
+      "status": "PASSED",
+      "details": "Edit modal has all fields: title, description, address, budget_min, budget_max, deadline, photos, save button"
+    },
+    "HOMEPAGE_STAT_ICONS": {
+      "status": "PASSED",
+      "details": "Three stat icons visible: SMS, 99 Kč/měs., RealTime"
+    }
+  },
+  "bugs_fixed": {
+    "EMPTY_STRING_BUDGET_VALIDATION": {
+      "description": "Fixed Pydantic validation error when budget_min/budget_max were empty strings instead of null",
+      "root_cause": "Frontend was sending empty strings for budget fields, which Pydantic couldn't parse as float",
+      "fix": "Added _fix_demand_data() helper function to convert empty strings to None for numeric fields in all demand endpoints"
+    }
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - uses sk_test_emergent"
+  },
+  "rca_of_the_issue": "No critical issues found. Minor bug fixed: empty string budget fields causing validation errors."
+}

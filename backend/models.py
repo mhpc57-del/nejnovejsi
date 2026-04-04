@@ -105,6 +105,18 @@ class DemandCreate(BaseModel):
     deadline: Optional[str] = None
 
 
+class DemandUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    images: Optional[List[str]] = None
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    deadline: Optional[str] = None
+
+
 class DemandResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str

@@ -93,7 +93,7 @@ async def get_demands(status: Optional[str] = None, category: Optional[str] = No
         query["category"] = category
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return [DemandResponse(**d) for d in demands]
+    return [DemandResponse(**_fix_demand_data(d)) for d in demands]
 
 
 @router.get("/demands/available", response_model=List[DemandResponse])
@@ -109,7 +109,7 @@ async def get_available_demands(category: Optional[str] = None, current_user: di
         query["category"] = category
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return [DemandResponse(**d) for d in demands]
+    return [DemandResponse(**_fix_demand_data(d)) for d in demands]
 
 
 @router.get("/demands/my", response_model=List[DemandResponse])
@@ -121,7 +121,7 @@ async def get_my_demands(current_user: dict = Depends(get_current_user)):
         query["assigned_supplier_id"] = current_user["id"]
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return [DemandResponse(**d) for d in demands]
+    return [DemandResponse(**_fix_demand_data(d)) for d in demands]
 
 
 @router.get("/demands/{demand_id}", response_model=DemandResponse)
@@ -129,7 +129,55 @@ async def get_demand(demand_id: str, current_user: dict = Depends(get_current_us
     demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
     if not demand:
         raise HTTPException(status_code=404, detail="Demand not found")
-    return DemandResponse(**demand)
+    fixed_demand = _fix_demand_data(demand)
+    return DemandResponse(**fixed_demand)
+
+
+@router.put("/demands/{demand_id}", response_model=DemandResponse)
+async def update_demand(demand_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    """Allow customer to edit their own demand"""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Demand not found")
+    if demand["customer_id"] != current_user["id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění upravovat tuto poptávku")
+    if demand["status"] not in ("open", "in_progress"):
+        raise HTTPException(status_code=400, detail="Zakázku v tomto stavu nelze upravovat")
+    
+    allowed_fields = {"title", "description", "address", "latitude", "longitude", "images", "budget_min", "budget_max", "deadline"}
+    updates = {}
+    for k, v in update_data.items():
+        if k not in allowed_fields:
+            continue
+        # Convert empty strings to None for numeric fields
+        if k in ("budget_min", "budget_max", "latitude", "longitude"):
+            if v == "" or v is None:
+                updates[k] = None
+            else:
+                try:
+                    updates[k] = float(v)
+                except (ValueError, TypeError):
+                    updates[k] = None
+        elif v is not None:
+            updates[k] = v
+    
+    if not updates:
+        # Fix any existing corrupted data in the demand before returning
+        fixed_demand = _fix_demand_data(demand)
+        return DemandResponse(**fixed_demand)
+    
+    await db.demands.update_one({"id": demand_id}, {"$set": updates})
+    updated = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    fixed_updated = _fix_demand_data(updated)
+    return DemandResponse(**fixed_updated)
+
+
+def _fix_demand_data(demand: dict) -> dict:
+    """Fix corrupted data in demand (empty strings to None for numeric fields)"""
+    for field in ("budget_min", "budget_max", "latitude", "longitude"):
+        if field in demand and demand[field] == "":
+            demand[field] = None
+    return demand
 
 
 @router.post("/demands/{demand_id}/accept")

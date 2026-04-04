@@ -81,7 +81,8 @@ class EmailService:
                 port=self.port,
                 username=self.user,
                 password=self.password,
-                start_tls=True
+                start_tls=True,
+                timeout=30
             )
             
             logger.info(f"Email sent to {to_email}: {subject} (daily count: {_daily_email_count + 1})")
@@ -459,6 +460,11 @@ class NotificationService:
         verification_url = f"{frontend_url}/overit-email/{verification_token}"
         subject, html = self.templates.verification_email(user_name, verification_url)
         await self.email_service.send_email(user_email, subject, html)
+        
+        # Send SMS notification about registration
+        if user_phone:
+            sms_text = "Registrace na CraftBolt proběhla úspěšně. Nyní ověř svůj registrační email, který ti byl zaslán. Děkuji. CraftBolt."
+            self.sms_service.send_sms(user_phone, sms_text)
     
     async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str, customer_name: str = ""):
         """Notify suppliers about new demand in their category (max 20 suppliers)"""

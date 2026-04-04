@@ -4,7 +4,8 @@ import { useAuth, API } from '../App';
 import axios from 'axios';
 import { 
   ArrowLeft, MapPin, Calendar, User, Clock, Check, X,
-  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving
+  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving,
+  PencilSimple, ImageSquare, Plus
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
 
@@ -30,6 +31,10 @@ const DemandDetail = () => {
   const [showChat, setShowChat] = useState(false);
   const [showSoftAcceptModal, setShowSoftAcceptModal] = useState(false);
   const [softAccepting, setSoftAccepting] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [uploadingEditPhoto, setUploadingEditPhoto] = useState(false);
 
   // Sound notification for new messages
   const playNotificationSound = useCallback(() => {
@@ -120,7 +125,6 @@ const DemandDetail = () => {
 
   const fetchLocations = async (demandData) => {
     try {
-      // Fetch customer location
       if (demandData.customer_id) {
         const customerRes = await axios.get(`${API}/users/${demandData.customer_id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -129,8 +133,6 @@ const DemandDetail = () => {
           setCustomerLocation(customerRes.data.location);
         }
       }
-      
-      // Fetch supplier location
       if (demandData.assigned_supplier_id) {
         const supplierRes = await axios.get(`${API}/users/${demandData.assigned_supplier_id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -142,6 +144,59 @@ const DemandDetail = () => {
     } catch (error) {
       console.error('Error fetching locations:', error);
     }
+  };
+
+  const openEditModal = () => {
+    setEditForm({
+      title: demand.title,
+      description: demand.description,
+      address: demand.address,
+      budget_min: demand.budget_min || '',
+      budget_max: demand.budget_max || '',
+      deadline: demand.deadline || '',
+      images: demand.images || [],
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSave = async () => {
+    setSaving(true);
+    try {
+      const res = await axios.put(`${API}/demands/${id}`, editForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDemand(res.data);
+      setShowEditModal(false);
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Nepodařilo se uložit změny');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingEditPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      setEditForm(prev => ({ ...prev, images: [...(prev.images || []), res.data.url] }));
+    } catch (err) {
+      alert('Nepodařilo se nahrát fotografii');
+    } finally {
+      setUploadingEditPhoto(false);
+    }
+  };
+
+  const removeEditPhoto = (index) => {
+    setEditForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   useEffect(() => {
@@ -322,11 +377,12 @@ const DemandDetail = () => {
 
   const isCustomer = user?.id === demand.customer_id;
   const isAssignedSupplier = user?.id === demand.assigned_supplier_id;
-  const canChat = isCustomer || isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open');
+  const canChat = isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open') || (isCustomer && demand.status !== 'open');
   const canAccept = user?.role === 'supplier' && demand.status === 'open';
   const canComplete = (isCustomer || isAssignedSupplier) && demand.status === 'in_progress';
 
   // Auto-show chat for assigned users in active demands
+  const canEdit = isCustomer && (demand.status === 'open' || demand.status === 'in_progress');
   const autoShowChat = isCustomer || isAssignedSupplier;
   const canCancel = isCustomer && (demand.status === 'open' || demand.status === 'in_progress');
   const showMapButton = demand.status === 'in_progress' && (isCustomer || isAssignedSupplier);
@@ -523,6 +579,16 @@ const DemandDetail = () => {
                     Zrušit zakázku
                   </button>
                 )}
+                {canEdit && (
+                  <button
+                    onClick={openEditModal}
+                    className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-gray-700 transition-colors flex items-center gap-2"
+                    data-testid="edit-demand-btn"
+                  >
+                    <PencilSimple weight="bold" className="w-5 h-5" />
+                    Upravit zakázku
+                  </button>
+                )}
                 {/* Supplier arrived button */}
                 {isAssignedSupplier && demand.status === 'in_progress' && !demand.supplier_arrived && (
                   <button
@@ -703,6 +769,138 @@ const DemandDetail = () => {
           onClose={() => setShowSoftAcceptModal(false)}
           loading={softAccepting}
         />
+      )}
+
+      {/* Edit Demand Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setShowEditModal(false)}>
+          <div className="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="edit-demand-modal">
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <h2 className="font-bold text-gray-900 text-lg">Upravit zakázku</h2>
+              <button onClick={() => setShowEditModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-edit-modal-btn">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Název</label>
+                <input
+                  type="text"
+                  value={editForm.title || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="edit-demand-title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Popis</label>
+                <textarea
+                  value={editForm.description || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                  data-testid="edit-demand-description"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Adresa</label>
+                <input
+                  type="text"
+                  value={editForm.address || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="edit-demand-address"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rozpočet od (Kč)</label>
+                  <input
+                    type="number"
+                    value={editForm.budget_min || ''}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, budget_min: e.target.value ? parseFloat(e.target.value) : null }))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    data-testid="edit-demand-budget-min"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rozpočet do (Kč)</label>
+                  <input
+                    type="number"
+                    value={editForm.budget_max || ''}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, budget_max: e.target.value ? parseFloat(e.target.value) : null }))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    data-testid="edit-demand-budget-max"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Termín</label>
+                <input
+                  type="date"
+                  value={editForm.deadline || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, deadline: e.target.value }))}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  data-testid="edit-demand-deadline"
+                />
+              </div>
+
+              {/* Photos */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Fotografie</label>
+                <div className="flex flex-wrap gap-3">
+                  {(editForm.images || []).map((img, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                      <img src={img.startsWith('http') ? img : `${API.replace('/api', '')}${img}`} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeEditPhoto(i)}
+                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        data-testid={`remove-edit-photo-${i}`}
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-edit-photo-btn">
+                    {uploadingEditPhoto ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div>
+                    ) : (
+                      <>
+                        <Plus className="w-5 h-5 text-gray-400" />
+                        <span className="text-xs text-gray-400 mt-1">Přidat</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                      onChange={handleEditPhotoUpload}
+                      className="hidden"
+                      disabled={uploadingEditPhoto}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Zrušit
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  disabled={saving}
+                  className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  data-testid="save-edit-demand-btn"
+                >
+                  {saving ? 'Ukládám...' : 'Uložit změny'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
