@@ -170,7 +170,7 @@ const HomePage = () => {
                   <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <CurrencyDollar weight="duotone" className="w-6 h-6 text-orange-500" />
                   </div>
-                  <div className="text-sm font-bold text-gray-900">99 Kč/měs.</div>
+                  <div className="text-sm font-bold text-gray-900">od 199 Kč</div>
                   <div className="text-xs text-gray-500">bez dalších poplatků</div>
                 </div>
                 <div className="w-px h-16 bg-gray-200"></div>
@@ -305,21 +305,21 @@ const HomePage = () => {
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Customer */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Zákazník */}
             <div className="bg-white rounded-2xl p-8 border border-gray-200 card-hover">
               <div className="mb-6">
                 <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Zákazník</span>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-5xl font-bold text-gray-900">99</span>
-                  <span className="text-gray-500">Kč/měsíc bez DPH</span>
+                  <span className="text-5xl font-bold text-gray-900">199</span>
+                  <span className="text-gray-500">Kč/měsíc</span>
                 </div>
                 <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
-                {["Neomezený počet zadání", "Výběr z ověřených dodavatelů", "Online chat s dodavateli", "Zamítnutí nabídek", "Úpravy stávajících nabídek", "Vkládání fotografií", "Notifikace (APP, E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-600">
-                    <Check weight="bold" className="w-5 h-5 text-orange-500" />
+                {["Neomezený počet poptávek", "Výběr z ověřených dodavatelů", "Online chat s dodavateli", "Zamítnutí nabídek", "Úpravy stávajících poptávek", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -341,15 +341,15 @@ const HomePage = () => {
               <div className="mb-6">
                 <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Dodavatel</span>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-5xl font-bold text-gray-900">399</span>
-                  <span className="text-gray-500">Kč/měsíc bez DPH</span>
+                  <span className="text-5xl font-bold text-gray-900">299</span>
+                  <span className="text-gray-500">Kč/měsíc</span>
                 </div>
                 <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
-                {["Neomezený přístup k zakázkám", "Výběr zakázky dle svých možností", "Online chat se zákazníky", "Ověřený profil nahráním oprávnění", "Volba více kategorií", "Vkládání fotografií", "Notifikace (APP, E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-600">
-                    <Check weight="bold" className="w-5 h-5 text-orange-500" />
+                {["Neomezený přístup k zakázkám", "Výběr zakázky dle svých možností", "Online chat se zákazníky", "Ověřený profil nahráním oprávnění", "Volba více kategorií", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -360,6 +360,33 @@ const HomePage = () => {
                 data-testid="pricing-dodavatel-btn"
               >
                 Začít jako dodavatel
+              </Link>
+            </div>
+
+            {/* Zákazník i dodavatel */}
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 card-hover">
+              <div className="mb-6">
+                <span className="text-gray-500 text-sm uppercase tracking-widest font-bold">Zákazník i dodavatel</span>
+                <div className="flex items-baseline gap-1 mt-2">
+                  <span className="text-5xl font-bold text-gray-900">399</span>
+                  <span className="text-gray-500">Kč/měsíc</span>
+                </div>
+                <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {["Vše z profilu zákazníka", "Vše z profilu dodavatele", "Zadávání i přijímání zakázek", "Online chat s oběma stranami", "Ověřený profil", "Vkládání fotografií", "Notifikace (E-mail, SMS)"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Check weight="bold" className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link 
+                to="/registrace?role=customer_supplier" 
+                className="block w-full text-center py-3 px-6 bg-gray-900 hover:bg-gray-800 rounded-full font-medium text-white transition-colors"
+                data-testid="pricing-both-btn"
+              >
+                Začít jako obojí
               </Link>
             </div>
           </div>

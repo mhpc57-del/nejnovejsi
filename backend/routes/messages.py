@@ -93,10 +93,21 @@ async def get_unread_summary(current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
     
     # Get all demand IDs relevant to this user
-    if current_user["role"] == UserRole.CUSTOMER:
+    if current_user["role"] in [UserRole.CUSTOMER, UserRole.CUSTOMER_SUPPLIER]:
         user_demands = await db.demands.find(
             {"customer_id": user_id}, {"_id": 0, "id": 1, "title": 1, "status": 1}
         ).to_list(200)
+        if current_user["role"] == UserRole.CUSTOMER_SUPPLIER:
+            supplier_demands = await db.demands.find(
+                {"$or": [
+                    {"assigned_supplier_id": user_id},
+                    {"status": "open"}
+                ]}, {"_id": 0, "id": 1, "title": 1, "status": 1}
+            ).to_list(200)
+            existing_ids = {d["id"] for d in user_demands}
+            for d in supplier_demands:
+                if d["id"] not in existing_ids:
+                    user_demands.append(d)
     elif current_user["role"] == UserRole.SUPPLIER:
         user_demands = await db.demands.find(
             {"$or": [

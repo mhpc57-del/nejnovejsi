@@ -73,7 +73,7 @@ async def save_push_token(data: PushTokenData, current_user: dict = Depends(get_
 
 @router.get("/suppliers", response_model=List[UserResponse])
 async def get_suppliers(category: str = None):
-    query = {"role": UserRole.SUPPLIER, "is_verified": True}
+    query = {"role": {"$in": [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]}, "is_verified": True}
     if category:
         query["categories"] = category
     suppliers = await db.users.find(query, {"_id": 0, "password": 0}).sort("rating", -1).to_list(100)
@@ -85,7 +85,7 @@ async def get_suppliers(category: str = None):
 @router.post("/users/certifications")
 async def upload_certification(data: CertificationUpload, current_user: dict = Depends(get_current_user)):
     """Upload a certification/document for supplier profile."""
-    if current_user["role"] != UserRole.SUPPLIER:
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
         raise HTTPException(status_code=403, detail="Pouze dodavatelé mohou nahrávat certifikace")
     
     cert = {

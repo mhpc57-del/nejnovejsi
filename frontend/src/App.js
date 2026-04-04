@@ -125,6 +125,8 @@ const DashboardRouter = () => {
       return <Navigate to="/admin" replace />;
     case 'supplier':
       return <Navigate to="/dodavatel" replace />;
+    case 'customer_supplier':
+      return <Navigate to="/zakaznik" replace />;
     case 'customer':
     default:
       return <Navigate to="/zakaznik" replace />;
@@ -161,14 +163,14 @@ function App() {
           
           {/* Customer routes */}
           <Route path="/zakaznik/*" element={
-            <ProtectedRoute roles={['customer', 'admin']}>
+            <ProtectedRoute roles={['customer', 'customer_supplier', 'admin']}>
               <CustomerDashboard />
             </ProtectedRoute>
           } />
           
           {/* Supplier routes */}
           <Route path="/dodavatel/*" element={
-            <ProtectedRoute roles={['supplier', 'admin']}>
+            <ProtectedRoute roles={['supplier', 'customer_supplier', 'admin']}>
               <SupplierDashboard />
             </ProtectedRoute>
           } />

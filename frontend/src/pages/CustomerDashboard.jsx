@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   House, Plus, List, User, SignOut, Bell, MapPin, 
   Calendar, Clock, ArrowRight, X, Check, Image as ImageIcon, Trash, Warning,
-  ChatCircle, Envelope
+  ChatCircle, Envelope, Briefcase
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -130,6 +130,16 @@ const CustomerDashboard = () => {
             <User className="w-5 h-5" />
             Profil
           </Link>
+          {user?.role === 'customer_supplier' && (
+            <Link 
+              to="/dodavatel" 
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors font-medium"
+              data-testid="nav-switch-to-supplier"
+            >
+              <Briefcase className="w-5 h-5" />
+              Dodavatel
+            </Link>
+          )}
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">

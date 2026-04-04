@@ -1,0 +1,88 @@
+{
+  "summary": "Iteration 14 - Comprehensive testing of new pricing (199/299/399 Kč) and registration features. All 18 backend tests passed. All frontend E2E tests passed. Key features verified: 1) Homepage pricing section shows 3 columns with correct prices (Zákazník 199, Dodavatel 299, Zákazník i dodavatel 399), 2) Pricing buttons link to /registrace?role=customer|supplier|customer_supplier, 3) Registration flow has 3 role options with prices, 4) IČO choice step (Mám IČO / Nemám IČO) works correctly, 5) 'Mám IČO' path shows OSVČ/Firma choice then IČO, DIČ, address, branches, 6) 'Nemám IČO' path shows name (required), addresses, phone, 7) Preferred languages multi-select (CZ, EN, DE) visible on details step, 8) ARES lookup button present, 9) Branch addresses input with add button, 10) customer_supplier role registration works with preferred_languages and branch_addresses fields, 11) Dashboard switcher links correctly hidden for regular customer/supplier users.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration14_pricing_registration.py",
+    "/app/test_reports/pytest/pytest_results_iteration14.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration14_pricing_registration.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (all E2E flows passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "verified_customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "Multiple test registrations created with TEST_ prefix during backend testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new pricing and registration features tested and working: 1) Homepage pricing section has 3 columns (199/299/399 Kč) with correct links to /registrace?role=customer|supplier|customer_supplier. 2) Registration flow: Step 1 (email+password) -> Step 2 (role selection with prices) -> Step 3 (IČO choice: Mám IČO/Nemám IČO) -> Step 4 (if Mám IČO: OSVČ/Firma choice) -> Step 5 (details with IČO/DIČ/address/branches OR name/addresses depending on IČO choice) -> Step 6 (categories for supplier/customer_supplier). 3) New fields: preferred_languages (multi-select CZ/EN/DE), branch_addresses (multiple with add button). 4) Backend accepts customer_supplier role with all new fields. 5) Dashboard switcher links (nav-switch-to-supplier, nav-switch-to-customer) are conditionally shown only for customer_supplier users. 6) Quick demand flow works from homepage. 7) Unread messages summary endpoint works for all roles including customer_supplier. Note: No customer_supplier user exists in test data yet - registration creates unverified users.",
+  "features_tested": {
+    "HOMEPAGE_PRICING_SECTION": {
+      "status": "PASSED",
+      "details": "3 columns with 199/299/399 Kč prices, correct button links"
+    },
+    "REGISTRATION_ROLE_SELECTION": {
+      "status": "PASSED",
+      "details": "3 role options (customer/supplier/customer_supplier) with prices shown"
+    },
+    "REGISTRATION_ICO_CHOICE": {
+      "status": "PASSED",
+      "details": "Mám IČO / Nemám IČO buttons work correctly"
+    },
+    "REGISTRATION_ICO_TYPE": {
+      "status": "PASSED",
+      "details": "OSVČ / Firma choice shown after selecting Mám IČO"
+    },
+    "REGISTRATION_DETAILS_WITH_ICO": {
+      "status": "PASSED",
+      "details": "IČO, DIČ, address, branches, phone, languages, ARES lookup"
+    },
+    "REGISTRATION_DETAILS_WITHOUT_ICO": {
+      "status": "PASSED",
+      "details": "Name (required), addresses, phone, languages - IČO field hidden"
+    },
+    "PREFERRED_LANGUAGES_MULTISELECT": {
+      "status": "PASSED",
+      "details": "CZ, EN, DE language buttons visible and toggleable"
+    },
+    "BRANCH_ADDRESSES_INPUT": {
+      "status": "PASSED",
+      "details": "Input with add button for multiple branch addresses"
+    },
+    "BACKEND_CUSTOMER_SUPPLIER_REGISTRATION": {
+      "status": "PASSED",
+      "details": "POST /api/auth/register accepts customer_supplier role with preferred_languages and branch_addresses"
+    },
+    "DASHBOARD_SWITCHER_LINKS": {
+      "status": "PASSED",
+      "details": "nav-switch-to-supplier and nav-switch-to-customer links correctly hidden for regular users"
+    },
+    "QUICK_DEMAND_FLOW": {
+      "status": "PASSED",
+      "details": "Homepage quick demand modal works, creates demand without auth"
+    },
+    "UNREAD_MESSAGES_SUMMARY": {
+      "status": "PASSED",
+      "details": "GET /api/messages/unread-summary works for customer, supplier, and customer_supplier roles"
+    }
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - uses sk_test_emergent",
+    "Twilio_SMS": "SMS notifications configured but cannot verify delivery in test environment"
+  }
+}

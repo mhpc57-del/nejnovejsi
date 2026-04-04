@@ -5,6 +5,7 @@ from typing import List, Optional, Dict
 class UserRole:
     CUSTOMER = "customer"
     SUPPLIER = "supplier"
+    CUSTOMER_SUPPLIER = "customer_supplier"
     ADMIN = "admin"
 
 ADMIN_EMAIL = "m.schwarzer@email.cz"
@@ -39,6 +40,8 @@ class UserCreate(BaseModel):
     custom_categories: Optional[List[str]] = []
     reference_photos: Optional[List[str]] = []
     service_areas: Optional[List[dict]] = []
+    preferred_languages: Optional[List[str]] = []
+    branch_addresses: Optional[List[str]] = []
 
 
 class UserLogin(BaseModel):
@@ -83,6 +86,8 @@ class UserResponse(BaseModel):
     trust_score: int = 0
     punctuality_score: Optional[float] = None
     avg_arrival_minutes: Optional[float] = None
+    preferred_languages: List[str] = []
+    branch_addresses: List[str] = []
 
 
 class TokenResponse(BaseModel):

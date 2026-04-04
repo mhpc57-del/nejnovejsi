@@ -53,6 +53,8 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
         "custom_categories": user_data.custom_categories or [],
         "reference_photos": user_data.reference_photos or [],
         "service_areas": user_data.service_areas or [],
+        "preferred_languages": user_data.preferred_languages or [],
+        "branch_addresses": user_data.branch_addresses or [],
         "is_verified": False,
         "verification_token": verification_token,
         "trial_ends_at": trial_end.isoformat(),

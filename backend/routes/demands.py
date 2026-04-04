@@ -96,7 +96,7 @@ async def claim_quick_demand(current_user: dict = Depends(get_current_user)):
 
 @router.post("/demands", response_model=DemandResponse)
 async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != UserRole.CUSTOMER and current_user["role"] != UserRole.ADMIN:
+    if current_user["role"] not in [UserRole.CUSTOMER, UserRole.CUSTOMER_SUPPLIER, UserRole.ADMIN]:
         raise HTTPException(status_code=403, detail="Only customers can create demands")
     
     demand_id = str(uuid.uuid4())
@@ -154,7 +154,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
 async def get_demands(status: Optional[str] = None, category: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     query = {}
     
-    if current_user["role"] == UserRole.CUSTOMER:
+    if current_user["role"] in [UserRole.CUSTOMER, UserRole.CUSTOMER_SUPPLIER]:
         query["customer_id"] = current_user["id"]
     elif current_user["role"] == UserRole.SUPPLIER:
         if status:
@@ -180,7 +180,7 @@ async def get_demands(status: Optional[str] = None, category: Optional[str] = No
 
 @router.get("/demands/available", response_model=List[DemandResponse])
 async def get_available_demands(category: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != UserRole.SUPPLIER:
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
         raise HTTPException(status_code=403, detail="Only suppliers can view available demands")
     
     query = {"status": "open"}
@@ -201,6 +201,11 @@ async def get_my_demands(current_user: dict = Depends(get_current_user)):
         query["customer_id"] = current_user["id"]
     elif current_user["role"] == UserRole.SUPPLIER:
         query["assigned_supplier_id"] = current_user["id"]
+    elif current_user["role"] == UserRole.CUSTOMER_SUPPLIER:
+        query["$or"] = [
+            {"customer_id": current_user["id"]},
+            {"assigned_supplier_id": current_user["id"]}
+        ]
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return [DemandResponse(**_fix_demand_data(d)) for d in demands]
@@ -264,7 +269,7 @@ def _fix_demand_data(demand: dict) -> dict:
 
 @router.post("/demands/{demand_id}/accept")
 async def accept_demand(demand_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != UserRole.SUPPLIER:
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
         raise HTTPException(status_code=403, detail="Only suppliers can accept demands")
     
     demand = await db.demands.find_one({"id": demand_id})
@@ -302,7 +307,7 @@ async def accept_demand(demand_id: str, current_user: dict = Depends(get_current
 @router.post("/demands/{demand_id}/arrive")
 async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_current_user)):
     """Mark that the supplier has arrived at the customer's location."""
-    if current_user["role"] != UserRole.SUPPLIER:
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
         raise HTTPException(status_code=403, detail="Pouze dodavatel může potvrdit příjezd")
     
     demand = await db.demands.find_one({"id": demand_id})
@@ -453,7 +458,7 @@ async def add_progress_photo(demand_id: str, photo_url: str, current_user: dict 
 @router.post("/demands/{demand_id}/invoice")
 async def set_invoice_amount(demand_id: str, amount: float, current_user: dict = Depends(get_current_user)):
     """Set the invoiced amount for a demand."""
-    if current_user["role"] != UserRole.SUPPLIER:
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
         raise HTTPException(status_code=403, detail="Pouze dodavatel")
     
     demand = await db.demands.find_one({"id": demand_id})
@@ -508,7 +513,7 @@ async def get_supplier_finances(supplier_id: str, current_user: dict = Depends(g
 @router.post("/demands/{demand_id}/soft-accept")
 async def soft_accept_demand(demand_id: str, reason: str = "", current_user: dict = Depends(get_current_user)):
     """Supplier conditionally accepts a demand with a predefined reason"""
-    if current_user["role"] != "supplier":
+    if current_user["role"] not in ["supplier", "customer_supplier"]:
         raise HTTPException(status_code=403, detail="Pouze dodavatelé mohou nezávazně přijmout zakázku")
     
     demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})

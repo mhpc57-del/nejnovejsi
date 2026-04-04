@@ -362,6 +362,13 @@ const SupplierDashboard = () => {
           <Link to="/profil" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-profile">
             <User className="w-5 h-5" /> Profil
           </Link>
+          {user?.role === 'customer_supplier' && (
+            <Link to="/zakaznik"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors font-medium"
+              data-testid="nav-switch-to-customer">
+              <User className="w-5 h-5" /> Zákazník
+            </Link>
+          )}
         </nav>
         <div className="absolute bottom-6 left-6 right-6">
           {/* Finance widget */}
