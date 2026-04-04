@@ -1,0 +1,55 @@
+{
+  "summary": "Iteration 8 backend API testing completed. All 17 tests passed. Verified: registration returns immediately (BackgroundTasks for email), duplicate email handling, supplier registration with all fields, geocoding, categories (61 items), ARES lookup, and login.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration8_registration_apis.py",
+    "/app/test_reports/pytest/pytest_results_iteration8.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration8_registration_apis.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "N/A - backend only testing requested"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!"
+  },
+  "seed_data_creation": "Multiple test users created during testing with unique emails (test-*@example.com)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 8 backend APIs tested successfully. Registration endpoint uses BackgroundTasks for email notification - response time verified < 2 seconds. Stripe payment is MOCKED.",
+  "features_tested": {
+    "HEALTH_ENDPOINT": "PASSED - GET /api/health returns {status: 'healthy'}",
+    "ROOT_ENDPOINT": "PASSED - GET /api/ returns CraftBolt API info",
+    "REGISTER_FAST_RESPONSE": "PASSED - POST /api/auth/register returns in < 2 seconds (email sent in background)",
+    "REGISTER_DUPLICATE_EMAIL": "PASSED - POST /api/auth/register with duplicate email returns 400 with 'Email already registered'",
+    "REGISTER_SUPPLIER_ALL_FIELDS": "PASSED - POST /api/auth/register with supplier role saves ico, dic, company_name, categories, service_areas",
+    "LOGIN_VALID_CREDENTIALS": "PASSED - POST /api/auth/login returns token for admin user",
+    "LOGIN_INVALID_CREDENTIALS": "PASSED - POST /api/auth/login returns 401 for invalid credentials",
+    "GEOCODE_PRAHA": "PASSED - GET /api/geocode/search?q=Praha returns array with display_name, lat, lon",
+    "GEOCODE_BRNO": "PASSED - GET /api/geocode/search?q=Brno returns results",
+    "GEOCODE_SPECIFIC_ADDRESS": "PASSED - GET /api/geocode/search with specific address works",
+    "CATEGORIES_LIST": "PASSED - GET /api/categories returns {categories: [...]} with 61 items",
+    "CATEGORIES_SUGGEST_AUTH": "PASSED - POST /api/categories/suggest requires authentication",
+    "CATEGORIES_SUGGEST_SUCCESS": "PASSED - POST /api/categories/suggest accepts category name with auth token",
+    "ARES_VALID_ICO": "PASSED - GET /api/ares/27082440 returns Alza.cz company info",
+    "ARES_INVALID_ICO": "PASSED - GET /api/ares/00000000 returns 404",
+    "ARES_ANOTHER_COMPANY": "PASSED - GET /api/ares/25788001 returns company info",
+    "MULTIPLE_REGISTRATIONS_FAST": "PASSED - 3 consecutive registrations all complete in < 2 seconds average"
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - uses sk_test_emergent"
+  },
+  "rca_of_the_issue": "No issues found. The P0 bug fix (registration showing false error) was verified - registration now uses FastAPI BackgroundTasks for email notification, so the HTTP response returns immediately without waiting for SMTP."
+}

@@ -322,16 +322,23 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
             <Text style={styles.label}>Adresa *</Text>
             <TextInput style={styles.modalInput} value={form.address} onChangeText={onAddressChange} placeholder="Začněte psát adresu..." placeholderTextColor={COLORS.gray300} />
             {addressSuggestions.length > 0 && (
-              <View style={{ borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: 4, backgroundColor: COLORS.white, zIndex: 10 }}>
-                {addressSuggestions.map((item, idx) => (
-                  <TouchableOpacity key={idx} style={{ paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: idx < addressSuggestions.length - 1 ? 1 : 0, borderBottomColor: COLORS.gray100 }}
-                    onPress={() => selectAddress(item)}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Ionicons name="location-outline" size={16} color={COLORS.primary} />
-                      <Text style={{ fontSize: 14, color: COLORS.gray700, flex: 1 }} numberOfLines={2}>{item.display_name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+              <View style={{ borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: 4, marginBottom: 8, backgroundColor: COLORS.white, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, zIndex: 100, maxHeight: 200 }}>
+                <FlatList
+                  data={addressSuggestions}
+                  keyExtractor={(_, idx) => idx.toString()}
+                  keyboardShouldPersistTaps="handled"
+                  nestedScrollEnabled
+                  renderItem={({ item, index }) => (
+                    <TouchableOpacity
+                      style={{ paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: index < addressSuggestions.length - 1 ? 1 : 0, borderBottomColor: COLORS.gray100 }}
+                      onPress={() => selectAddress(item)}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Ionicons name="location-outline" size={16} color={COLORS.primary} />
+                        <Text style={{ fontSize: 14, color: COLORS.gray700, flex: 1 }} numberOfLines={2}>{item.display_name}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
               </View>
             )}
 
@@ -414,6 +421,7 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
               keyExtractor={(item, index) => index.toString()}
               style={{ paddingHorizontal: 20, marginTop: 8 }}
               keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: COLORS.gray100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}

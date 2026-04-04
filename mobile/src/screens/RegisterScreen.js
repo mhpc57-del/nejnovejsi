@@ -77,17 +77,23 @@ export default function RegisterScreen({ navigation }) {
       Alert.alert('Chyba', 'Vyplňte všechna povinná pole');
       return;
     }
+    if (form.password.length < 8) {
+      Alert.alert('Chyba', 'Heslo musí mít alespoň 8 znaků');
+      return;
+    }
     setLoading(true);
     try {
       await register(form);
-      // If register succeeds, AuthContext automatically logs user in
-      // So we don't need to show success alert — user will see dashboard
+      // AuthContext sets user + token → auto-navigation to dashboard
     } catch (e) {
+      const status = e.response?.status;
       const detail = e.response?.data?.detail || '';
-      if (detail === 'Email already registered') {
-        Alert.alert('Registrace proběhla', 'Registrace proběhla úspěšně. Na váš email byl odeslán potvrzovací email.');
+      if (status === 400 && detail === 'Email already registered') {
+        Alert.alert('Chyba', 'Tento email je již zaregistrován. Zkuste se přihlásit.');
+      } else if (status === 422) {
+        Alert.alert('Chyba', 'Nesprávný formát dat. Zkontrolujte email a telefon.');
       } else {
-        Alert.alert('Chyba', detail || 'Registrace se nezdařila');
+        Alert.alert('Chyba', detail || 'Registrace se nezdařila. Zkuste to znovu.');
       }
     } finally {
       setLoading(false);
@@ -318,12 +324,18 @@ const InputField = ({ icon, value, onChange, placeholder, ...props }) => (
 // Address suggestion list
 const SuggestionList = ({ items, onSelect }) => (
   <View style={styles.suggestList}>
-    {items.map((item, idx) => (
-      <TouchableOpacity key={idx} style={styles.suggestItem} onPress={() => onSelect(item)}>
-        <Ionicons name="location-outline" size={16} color={COLORS.primary} />
-        <Text style={styles.suggestText} numberOfLines={2}>{item.display_name}</Text>
-      </TouchableOpacity>
-    ))}
+    <FlatList
+      data={items}
+      keyExtractor={(_, idx) => idx.toString()}
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled
+      renderItem={({ item }) => (
+        <TouchableOpacity style={styles.suggestItem} onPress={() => onSelect(item)}>
+          <Ionicons name="location-outline" size={16} color={COLORS.primary} />
+          <Text style={styles.suggestText} numberOfLines={2}>{item.display_name}</Text>
+        </TouchableOpacity>
+      )}
+    />
   </View>
 );
 
@@ -388,7 +400,7 @@ const styles = StyleSheet.create({
   catChipText: { fontSize: 14, color: COLORS.gray700 },
   catChipTextActive: { color: COLORS.primary, fontWeight: '600' },
   selectedCount: { fontSize: 13, color: COLORS.primary, fontWeight: '600', marginTop: 8 },
-  suggestList: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: -8, marginBottom: 12, backgroundColor: COLORS.white },
+  suggestList: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: -8, marginBottom: 12, backgroundColor: COLORS.white, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, zIndex: 100, maxHeight: 200 },
   suggestItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   suggestText: { fontSize: 14, color: COLORS.gray700, flex: 1 },
   linkContainer: { alignItems: 'center', marginTop: 24, paddingVertical: 8 },

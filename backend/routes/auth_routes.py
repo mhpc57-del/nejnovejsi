@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from database import db
 from auth import hash_password, verify_password, create_token, get_current_user
 from models import UserCreate, UserLogin, UserResponse, TokenResponse, UserRole
@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.post("/auth/register", response_model=TokenResponse)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -62,18 +62,26 @@ async def register(user_data: UserCreate):
     
     await db.users.insert_one(user)
     
-    try:
-        await notification_service.notify_registration(
-            user_email=user_data.email,
-            user_name=user_data.company_name or user_data.email.split('@')[0],
-            user_role=user_data.role,
-            user_phone=user_data.phone
-        )
-    except Exception as e:
-        logger.error(f"Failed to send registration notification: {str(e)}")
+    # Send email in background - don't block the registration response
+    background_tasks.add_task(
+        _send_registration_notification,
+        user_data.email,
+        user_data.company_name or user_data.email.split('@')[0],
+        user_data.role,
+        user_data.phone
+    )
     
     token = create_token(user_id, user_data.email, user_data.role)
     return TokenResponse(access_token=token, user=user_to_response(user))
+
+
+async def _send_registration_notification(email: str, name: str, role: str, phone: str):
+    try:
+        await notification_service.notify_registration(
+            user_email=email, user_name=name, user_role=role, user_phone=phone
+        )
+    except Exception as e:
+        logger.error(f"Failed to send registration notification: {str(e)}")
 
 
 @router.post("/auth/login", response_model=TokenResponse)
