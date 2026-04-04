@@ -291,9 +291,9 @@ const ProfilePage = () => {
   const getTypeName = (type) => ({ osvc: 'OSVČ', nepodnikatel: 'Nepodnikatel', company: 'Firma' }[type] || type);
 
   const accountType = profile.account_type || profile.supplier_type;
-  const isNepodnikatel = accountType === 'nepodnikatel';
   const isCustomer = profile.role === 'customer';
   const isSupplier = profile.role === 'supplier';
+  const isNepodnikatel = accountType === 'nepodnikatel' || (isCustomer && accountType !== 'osvc' && accountType !== 'company');
 
   const profileImageUrl = (editing ? formData.profile_image : profile.profile_image)
     ? `${API.replace('/api', '')}${editing ? formData.profile_image : profile.profile_image}` : null;

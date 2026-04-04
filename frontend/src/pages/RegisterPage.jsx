@@ -37,9 +37,10 @@ const RegisterPage = () => {
   const [aresLoading, setAresLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resending, setResending] = useState(false);
   const galleryInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -67,14 +68,6 @@ const RegisterPage = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
-
-  // Close photo menu on outside click
-  useEffect(() => {
-    if (!showPhotoMenu) return;
-    const close = () => setShowPhotoMenu(false);
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [showPhotoMenu]);
 
   // Address autocomplete state
   const [addressSuggestions, setAddressSuggestions] = useState({});
@@ -280,39 +273,27 @@ const RegisterPage = () => {
       const submitData = { ...formData };
       delete submitData.custom_category_input;
       
-      // Submit custom categories suggestions
-      if (submitData.custom_categories.length > 0) {
-        for (const cat of submitData.custom_categories) {
-          try {
-            // We'll submit these after registration with the token
-          } catch (e) {}
-        }
-      }
+      await register(submitData);
       
-      const user = await register(submitData);
-      
-      // Now submit custom category suggestions with token
-      if (formData.custom_categories.length > 0) {
-        const token = localStorage.getItem('token');
-        for (const cat of formData.custom_categories) {
-          try {
-            await axios.post(`${API}/categories/suggest`, 
-              { name: cat },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-          } catch (e) { console.error('Failed to suggest category:', e); }
-        }
-      }
-      
-      if (user.role === 'supplier') {
-        navigate('/dodavatel');
-      } else {
-        navigate('/zakaznik');
-      }
+      // Show verification screen
+      setRegisteredEmail(formData.email);
+      setRegistrationComplete(true);
     } catch (err) {
       setError(err.response?.data?.detail || 'Registrace se nezdařila');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await axios.post(`${API}/auth/resend-verification`, { email: registeredEmail });
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Nepodařilo se odeslat email');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -448,47 +429,28 @@ const RegisterPage = () => {
                     <UserCircle className="w-10 h-10 text-gray-400" />
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setShowPhotoMenu(!showPhotoMenu); }}
+                <label
                   className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors"
                   data-testid="upload-profile-photo-btn"
-                  disabled={uploadingPhoto}
                 >
                   {uploadingPhoto ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
                   ) : (
                     <Camera weight="fill" className="w-4 h-4 text-white" />
                   )}
-                </button>
-                {showPhotoMenu && !uploadingPhoto && (
-                  <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50 w-48" data-testid="photo-menu-popup">
-                    <button
-                      type="button"
-                      onClick={() => { cameraInputRef.current?.click(); setShowPhotoMenu(false); }}
-                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
-                      data-testid="photo-menu-camera"
-                    >
-                      <Camera className="w-4 h-4 text-orange-500" />
-                      Vyfotit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { galleryInputRef.current?.click(); setShowPhotoMenu(false); }}
-                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors border-t border-gray-100"
-                      data-testid="photo-menu-gallery"
-                    >
-                      <ImageIcon className="w-4 h-4 text-orange-500" />
-                      Vybrat z galerie
-                    </button>
-                  </div>
-                )}
-                <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
-                <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/bmp,image/tiff,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff" onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                  />
+                </label>
               </div>
             </div>
             <p className="text-center text-xs text-gray-400 -mt-2 mb-2">
-              {isNepodnikatel ? 'Vaše fotografie' : 'Logo nebo fotografie'}
+              {isNepodnikatel ? 'Klikněte na ikonu pro nahrání fotografie' : 'Logo nebo fotografie firmy'}
             </p>
 
             {/* IČO + ARES — only for OSVČ/firma */}
@@ -875,6 +837,46 @@ const RegisterPage = () => {
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
+          {registrationComplete ? (
+            /* ========= VERIFICATION SCREEN ========= */
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center" data-testid="verification-pending-screen">
+              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 4L12 13L2 4" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-3">Ověřte svůj email</h1>
+              <p className="text-gray-500 mb-2">
+                Na adresu <strong className="text-gray-900">{registeredEmail}</strong> jsme odeslali ověřovací email.
+              </p>
+              <p className="text-gray-500 mb-8">
+                Klikněte na odkaz v emailu pro dokončení registrace.
+              </p>
+              
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <p className="text-sm text-gray-500 mb-1">Nedostali jste email?</p>
+                <p className="text-xs text-gray-400 mb-3">Zkontrolujte složku SPAM nebo si nechte email poslat znovu.</p>
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="text-orange-500 hover:text-orange-600 font-medium text-sm transition-colors disabled:opacity-50"
+                  data-testid="resend-verification-btn"
+                >
+                  {resending ? 'Odesílám...' : 'Odeslat znovu'}
+                </button>
+              </div>
+
+              <Link
+                to="/prihlaseni"
+                className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm transition-colors"
+                data-testid="go-to-login-link"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Zpět na přihlášení
+              </Link>
+            </div>
+          ) : (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             {/* Progress */}
             <div className="flex items-center gap-2 mb-8">
@@ -943,6 +945,7 @@ const RegisterPage = () => {
               </p>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

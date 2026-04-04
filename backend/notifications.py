@@ -213,6 +213,35 @@ class NotificationTemplates:
         """
         subject = "Vítejte v CraftBolt!"
         return subject, NotificationTemplates.email_base(content, subject)
+
+    @staticmethod
+    def verification_email(user_name: str, verification_url: str) -> tuple:
+        """Email template for email verification"""
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Ověřte svůj email</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dobrý den {user_name},
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Děkujeme za registraci na CraftBolt! Pro dokončení registrace prosím ověřte svůj email kliknutím na tlačítko níže.
+            </p>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{verification_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Ověřit email
+                </a>
+            </div>
+            <p style="color: #9ca3af; line-height: 1.6; margin: 0 0 8px 0; font-size: 13px;">
+                Pokud tlačítko nefunguje, zkopírujte tento odkaz do prohlížeče:
+            </p>
+            <p style="color: #6b7280; line-height: 1.6; margin: 0 0 16px 0; font-size: 12px; word-break: break-all;">
+                {verification_url}
+            </p>
+            <p style="color: #9ca3af; line-height: 1.6; margin: 0; font-size: 12px;">
+                Pokud jste se neregistrovali na CraftBolt, tento email ignorujte.
+            </p>
+        """
+        subject = "CraftBolt — Ověřte svůj email"
+        return subject, NotificationTemplates.email_base(content, subject)
     
     # ============ NEW DEMAND ============
     
@@ -421,6 +450,14 @@ class NotificationService:
     async def notify_registration(self, user_email: str, user_name: str, user_role: str, user_phone: Optional[str] = None):
         """Send registration success notification"""
         subject, html = self.templates.registration_success_email(user_name, user_role)
+        await self.email_service.send_email(user_email, subject, html)
+    
+    async def notify_registration_verification(self, user_email: str, user_name: str, user_role: str, user_phone: Optional[str] = None, verification_token: str = ""):
+        """Send email verification link after registration"""
+        import os
+        frontend_url = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
+        verification_url = f"{frontend_url}/overit-email/{verification_token}"
+        subject, html = self.templates.verification_email(user_name, verification_url)
         await self.email_service.send_email(user_email, subject, html)
     
     async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str, customer_name: str = ""):

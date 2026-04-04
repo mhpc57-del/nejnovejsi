@@ -6,13 +6,17 @@ from helpers import user_to_response
 from notifications import notification_service
 from datetime import datetime, timezone, timedelta
 import uuid
+import secrets
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
 
-@router.post("/auth/register", response_model=TokenResponse)
+
+@router.post("/auth/register")
 async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
@@ -22,6 +26,7 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     now = datetime.now(timezone.utc)
     trial_end = now + timedelta(days=14)
     account_type = user_data.account_type or user_data.supplier_type
+    verification_token = secrets.token_urlsafe(32)
     
     user = {
         "id": user_id,
@@ -49,6 +54,7 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
         "reference_photos": user_data.reference_photos or [],
         "service_areas": user_data.service_areas or [],
         "is_verified": False,
+        "verification_token": verification_token,
         "trial_ends_at": trial_end.isoformat(),
         "subscription_active": True,
         "created_at": now.isoformat(),
@@ -62,26 +68,79 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     
     await db.users.insert_one(user)
     
-    # Send email in background - don't block the registration response
+    # Send verification email in background
     background_tasks.add_task(
-        _send_registration_notification,
+        _send_verification_email,
         user_data.email,
-        user_data.company_name or user_data.email.split('@')[0],
+        user_data.company_name or user_data.first_name or user_data.email.split('@')[0],
         user_data.role,
-        user_data.phone
+        user_data.phone,
+        verification_token
     )
     
-    token = create_token(user_id, user_data.email, user_data.role)
-    return TokenResponse(access_token=token, user=user_to_response(user))
+    return {
+        "message": "Registrace proběhla úspěšně. Na váš email byl odeslán ověřovací odkaz.",
+        "email": user_data.email,
+        "requires_verification": True
+    }
 
 
-async def _send_registration_notification(email: str, name: str, role: str, phone: str):
+async def _send_verification_email(email: str, name: str, role: str, phone: str, token: str):
     try:
-        await notification_service.notify_registration(
-            user_email=email, user_name=name, user_role=role, user_phone=phone
+        await notification_service.notify_registration_verification(
+            user_email=email, user_name=name, user_role=role, 
+            user_phone=phone, verification_token=token
         )
     except Exception as e:
-        logger.error(f"Failed to send registration notification: {str(e)}")
+        logger.error(f"Failed to send verification email: {str(e)}")
+
+
+@router.get("/auth/verify-email/{token}")
+async def verify_email(token: str):
+    """Verify user email with token"""
+    user = await db.users.find_one({"verification_token": token}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=400, detail="Neplatný nebo expirovaný ověřovací odkaz")
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"is_verified": True}, "$unset": {"verification_token": ""}}
+    )
+    
+    return {"message": "Email byl úspěšně ověřen. Nyní se můžete přihlásit.", "verified": True}
+
+
+@router.post("/auth/resend-verification")
+async def resend_verification(data: dict, background_tasks: BackgroundTasks):
+    """Resend verification email"""
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email je povinný")
+    
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Uživatel nenalezen")
+    
+    if user.get("is_verified"):
+        return {"message": "Email je již ověřen"}
+    
+    # Generate new token
+    new_token = secrets.token_urlsafe(32)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"verification_token": new_token}}
+    )
+    
+    background_tasks.add_task(
+        _send_verification_email,
+        email,
+        user.get("company_name") or user.get("first_name") or email.split('@')[0],
+        user.get("role", "customer"),
+        user.get("phone"),
+        new_token
+    )
+    
+    return {"message": "Ověřovací email byl znovu odeslán"}
 
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -93,6 +152,8 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if user.get("is_deactivated"):
         raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Kontaktujte administrátora pro obnovení.")
+    if not user.get("is_verified") and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="EMAIL_NOT_VERIFIED")
     
     token = create_token(user["id"], user["email"], user["role"])
     return TokenResponse(access_token=token, user=user_to_response(user))

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../App';
+import { useAuth, API } from '../App';
+import axios from 'axios';
 import { Eye, EyeSlash, ArrowLeft } from '@phosphor-icons/react';
 
 const LoginPage = () => {
@@ -9,6 +10,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [resending, setResending] = useState(false);
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setShowVerificationMessage(false);
     setLoading(true);
 
     try {
@@ -32,9 +36,28 @@ const LoginPage = () => {
         navigate('/zakaznik');
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Neplatné přihlašovací údaje');
+      const detail = err.response?.data?.detail || '';
+      if (detail === 'EMAIL_NOT_VERIFIED') {
+        setShowVerificationMessage(true);
+        setError('');
+      } else if (detail === 'Invalid credentials') {
+        setError('Neplatný email nebo heslo');
+      } else {
+        setError(detail || 'Přihlášení se nezdařilo');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await axios.post(`${API}/auth/resend-verification`, { email });
+    } catch (err) {
+      // silently ignore
+    } finally {
+      setResending(false);
     }
   };
 
@@ -66,6 +89,23 @@ const LoginPage = () => {
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm" data-testid="login-error">
                 {error}
+              </div>
+            )}
+
+            {showVerificationMessage && (
+              <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg" data-testid="login-verification-message">
+                <p className="text-orange-700 text-sm font-medium mb-2">Email nebyl ověřen</p>
+                <p className="text-orange-600 text-sm mb-3">
+                  Pro přihlášení musíte nejprve ověřit svůj email. Zkontrolujte svou emailovou schránku (včetně složky SPAM).
+                </p>
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="text-orange-600 hover:text-orange-700 font-medium text-sm underline transition-colors disabled:opacity-50"
+                  data-testid="login-resend-verification-btn"
+                >
+                  {resending ? 'Odesílám...' : 'Odeslat ověřovací email znovu'}
+                </button>
               </div>
             )}
 

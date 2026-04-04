@@ -1,0 +1,96 @@
+{
+  "summary": "Iteration 10 - Email Verification Flow Testing Complete. All 15 backend tests passed. All frontend E2E tests passed. Email verification flow working correctly: registration returns requires_verification:true (not token), unverified users see orange verification message on login (not red error), admin bypasses verification, profile page hides business fields for nepodnikatel customers.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Date picker in demand form",
+        "issues": ["Uses browser's default date picker instead of custom shadcn calendar component - minor UX inconsistency (carried over from iteration 9)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration10_email_verification.py",
+    "/app/test_reports/pytest/pytest_results_iteration10.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration10_email_verification.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 tests passed)",
+    "frontend": "100% (all E2E flows passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "verified_customer": "testvendulka@test.cz / TestHeslo123!"
+  },
+  "seed_data_creation": "Multiple test users created during testing with unique emails (test-*@example.com) - all unverified",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Email verification flow fully tested and working. Key behaviors: 1) POST /api/auth/register returns {message, email, requires_verification:true} - NO token. 2) POST /api/auth/login returns 403 with detail='EMAIL_NOT_VERIFIED' for unverified users. 3) Admin users bypass verification check. 4) Frontend shows orange verification message (not red error) when EMAIL_NOT_VERIFIED. 5) Profile page hides IČO, DIČ, Název firmy, Sídlo, Pobočka for nepodnikatel customers. 6) Photo upload in registration uses direct label+hidden-input (no dropdown menu).",
+  "features_tested": {
+    "REGISTRATION_RETURNS_REQUIRES_VERIFICATION": {
+      "status": "PASSED",
+      "details": "POST /api/auth/register returns {message, email, requires_verification:true} - NOT access_token"
+    },
+    "LOGIN_UNVERIFIED_RETURNS_403": {
+      "status": "PASSED",
+      "details": "POST /api/auth/login with unverified email returns 403 with detail='EMAIL_NOT_VERIFIED'"
+    },
+    "LOGIN_VERIFIED_RETURNS_TOKEN": {
+      "status": "PASSED",
+      "details": "POST /api/auth/login with verified email returns access_token and user data"
+    },
+    "ADMIN_BYPASSES_VERIFICATION": {
+      "status": "PASSED",
+      "details": "Admin login works regardless of is_verified status"
+    },
+    "VERIFY_EMAIL_ENDPOINT": {
+      "status": "PASSED",
+      "details": "GET /api/auth/verify-email/{token} returns 400 for invalid token"
+    },
+    "RESEND_VERIFICATION_ENDPOINT": {
+      "status": "PASSED",
+      "details": "POST /api/auth/resend-verification accepts email and returns success"
+    },
+    "FRONTEND_VERIFICATION_SCREEN": {
+      "status": "PASSED",
+      "details": "After registration, verification-pending-screen is displayed with 'Ověřte svůj email' message"
+    },
+    "FRONTEND_LOGIN_VERIFICATION_MESSAGE": {
+      "status": "PASSED",
+      "details": "When EMAIL_NOT_VERIFIED, login page shows orange verification message with resend button (not red error)"
+    },
+    "PROFILE_NEPODNIKATEL_HIDES_BUSINESS_FIELDS": {
+      "status": "PASSED",
+      "details": "Profile edit mode for nepodnikatel customer hides IČO, DIČ, Název firmy, Sídlo, Pobočka fields"
+    },
+    "PHOTO_UPLOAD_DIRECT_FILE_DIALOG": {
+      "status": "PASSED",
+      "details": "Photo upload button is a <label> with hidden file input - opens file dialog directly (no dropdown menu)"
+    },
+    "CUSTOMER_DASHBOARD": {
+      "status": "PASSED",
+      "details": "4 stat cards visible, new demand button works, demand form modal opens with all fields"
+    },
+    "SUPPLIER_REGISTRATION_VERIFICATION": {
+      "status": "PASSED",
+      "details": "Supplier OSVČ registration shows verification screen after submit"
+    },
+    "LANDING_PAGE_STAT_ICONS": {
+      "status": "PASSED",
+      "details": "Three stat icons visible: SMS, 99 Kč/měs., RealTime"
+    }
+  },
+  "mocked_apis": {
+    "Stripe": "Payment integration is MOCKED - uses sk_test_emergent"
+  },
+  "rca_of_the_issue": "No issues found. All email verification features implemented correctly."
+}

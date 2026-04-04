@@ -16,6 +16,7 @@ import { PaymentSuccess, PaymentCancelled, PricingPage } from './pages/PaymentPa
 import TermsPage from './pages/TermsPage';
 import ContactPage from './pages/ContactPage';
 import RecurringPaymentsPage from './pages/RecurringPaymentsPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -60,11 +61,8 @@ const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const response = await axios.post(`${API}/auth/register`, userData);
-    const { access_token, user: newUser } = response.data;
-    localStorage.setItem('token', access_token);
-    setToken(access_token);
-    setUser(newUser);
-    return newUser;
+    // Registration now returns verification info, not a token
+    return response.data;
   };
 
   const logout = () => {
@@ -136,6 +134,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/prihlaseni" element={<LoginPage />} />
           <Route path="/registrace" element={<RegisterPage />} />
+          <Route path="/overit-email/:token" element={<EmailVerificationPage />} />
           <Route path="/cenik" element={<PricingPage />} />
           
           {/* Payment routes */}
