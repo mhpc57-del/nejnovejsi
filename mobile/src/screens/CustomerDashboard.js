@@ -187,10 +187,11 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({ title: '', description: '', category: '', address: '', deadline: '', budget_max: '' });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showCats, setShowCats] = useState(false);
+  const [showCatModal, setShowCatModal] = useState(false);
+  const [catSearch, setCatSearch] = useState('');
+  const [customCat, setCustomCat] = useState('');
   const [images, setImages] = useState([]);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
-  const [showAddrSuggestions, setShowAddrSuggestions] = useState(false);
   const addressTimeout = React.useRef(null);
 
   useEffect(() => {
@@ -205,30 +206,45 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
   const onAddressChange = (text) => {
     update('address', text);
     if (addressTimeout.current) clearTimeout(addressTimeout.current);
-    if (text.length < 3) { setAddressSuggestions([]); setShowAddrSuggestions(false); return; }
+    if (text.length < 3) { setAddressSuggestions([]); return; }
     addressTimeout.current = setTimeout(async () => {
       try {
         const res = await miscService.geocodeSearch(text);
-        const results = res.data || [];
+        const results = Array.isArray(res.data) ? res.data : [];
         setAddressSuggestions(results.slice(0, 5));
-        setShowAddrSuggestions(results.length > 0);
       } catch (e) {
+        console.log('Geocode error:', e.message);
         setAddressSuggestions([]);
-        setShowAddrSuggestions(false);
       }
-    }, 400);
+    }, 500);
   };
 
   const selectAddress = (item) => {
     update('address', item.display_name);
-    setShowAddrSuggestions(false);
     setAddressSuggestions([]);
+  };
+
+  const filteredCats = catSearch
+    ? categories.filter(c => c.toLowerCase().includes(catSearch.toLowerCase()))
+    : categories;
+
+  const submitCustomCategory = async () => {
+    if (!customCat.trim()) return;
+    try {
+      await miscService.suggestCategory(customCat.trim());
+      Alert.alert('Odesláno', 'Návrh kategorie byl odeslán ke schválení administrátorem.');
+      update('category', customCat.trim());
+      setCustomCat('');
+      setShowCatModal(false);
+    } catch (e) {
+      Alert.alert('Chyba', 'Nepodařilo se odeslat návrh kategorie');
+    }
   };
 
   const pickImages = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) { Alert.alert('Oprávnění', 'Pro výběr fotek je potřeba přístup ke galerii'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ allowsMultipleSelection: true, quality: 0.7 });
+    const result = await ImagePicker.launchImageLibraryAsync({ allowsMultipleSelection: true, quality: 0.7, allowsEditing: false });
     if (!result.canceled && result.assets?.length > 0) {
       setImages(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, 5));
     }
@@ -250,7 +266,6 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
     }
     setLoading(true);
     try {
-      // Upload images first
       const uploadedUrls = [];
       for (const uri of images) {
         try {
@@ -289,7 +304,7 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
               <Ionicons name="close" size={22} color={COLORS.gray700} />
             </TouchableOpacity>
           </View>
-          <ScrollView style={modalStyles.body} keyboardShouldPersistTaps="handled">
+          <ScrollView style={modalStyles.body} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
             <Text style={styles.label}>Název *</Text>
             <TextInput style={styles.modalInput} value={form.title} onChangeText={v => update('title', v)} placeholder="Např. Elektromontážní práce" placeholderTextColor={COLORS.gray300} />
 
@@ -297,31 +312,23 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
             <TextInput style={[styles.modalInput, { height: 80, textAlignVertical: 'top' }]} value={form.description} onChangeText={v => update('description', v)} placeholder="Podrobný popis zakázky" placeholderTextColor={COLORS.gray300} multiline />
 
             <Text style={styles.label}>Kategorie *</Text>
-            <TouchableOpacity style={styles.modalInput} onPress={() => setShowCats(!showCats)}>
-              <Text style={{ color: form.category ? COLORS.gray900 : COLORS.gray300, fontSize: 16 }}>
+            <TouchableOpacity style={[styles.modalInput, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]} onPress={() => setShowCatModal(true)}>
+              <Text style={{ color: form.category ? COLORS.gray900 : COLORS.gray300, fontSize: 16, flex: 1 }} numberOfLines={1}>
                 {form.category || 'Vyberte kategorii'}
               </Text>
+              <Ionicons name="chevron-down" size={20} color={COLORS.gray500} />
             </TouchableOpacity>
-            {showCats && categories.length > 0 && (
-              <View style={modalStyles.catList}>
-                {categories.map((cat, idx) => (
-                  <TouchableOpacity key={idx} style={modalStyles.catItem}
-                    onPress={() => { update('category', cat); setShowCats(false); }}>
-                    <Text style={[modalStyles.catItemText, form.category === cat && { color: COLORS.primary, fontWeight: '600' }]}>{cat}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
 
             <Text style={styles.label}>Adresa *</Text>
             <TextInput style={styles.modalInput} value={form.address} onChangeText={onAddressChange} placeholder="Začněte psát adresu..." placeholderTextColor={COLORS.gray300} />
-            {showAddrSuggestions && (
-              <View style={modalStyles.catList}>
+            {addressSuggestions.length > 0 && (
+              <View style={{ borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, marginTop: 4, backgroundColor: COLORS.white, zIndex: 10 }}>
                 {addressSuggestions.map((item, idx) => (
-                  <TouchableOpacity key={idx} style={modalStyles.catItem} onPress={() => selectAddress(item)}>
+                  <TouchableOpacity key={idx} style={{ paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: idx < addressSuggestions.length - 1 ? 1 : 0, borderBottomColor: COLORS.gray100 }}
+                    onPress={() => selectAddress(item)}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       <Ionicons name="location-outline" size={16} color={COLORS.primary} />
-                      <Text style={modalStyles.catItemText} numberOfLines={2}>{item.display_name}</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.gray700, flex: 1 }} numberOfLines={2}>{item.display_name}</Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -372,6 +379,76 @@ const NewDemandModal = ({ onClose, onSuccess }) => {
           </ScrollView>
         </View>
       </View>
+
+      {/* Category Selection Modal */}
+      <Modal visible={showCatModal} animationType="slide" transparent>
+        <View style={modalStyles.overlay}>
+          <View style={[modalStyles.container, { maxHeight: '80%' }]}>
+            <View style={modalStyles.handle} />
+            <View style={modalStyles.header}>
+              <View style={modalStyles.headerLeft}>
+                <Ionicons name="pricetags-outline" size={22} color={COLORS.primary} />
+                <Text style={modalStyles.title}>Vyberte kategorii</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowCatModal(false)} style={modalStyles.closeBtn}>
+                <Ionicons name="close" size={22} color={COLORS.gray700} />
+              </TouchableOpacity>
+            </View>
+            <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 14, backgroundColor: COLORS.gray50, paddingHorizontal: 12 }}>
+                <Ionicons name="search-outline" size={18} color={COLORS.gray500} />
+                <TextInput
+                  style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 12, fontSize: 15, color: COLORS.gray900 }}
+                  value={catSearch} onChangeText={setCatSearch}
+                  placeholder="Hledat kategorii..." placeholderTextColor={COLORS.gray300} autoFocus
+                />
+                {catSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setCatSearch('')}>
+                    <Ionicons name="close-circle" size={18} color={COLORS.gray400} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <FlatList
+              data={filteredCats}
+              keyExtractor={(item, index) => index.toString()}
+              style={{ paddingHorizontal: 20, marginTop: 8 }}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: COLORS.gray100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                  onPress={() => { update('category', item); setShowCatModal(false); setCatSearch(''); }}>
+                  <Text style={{ fontSize: 15, color: form.category === item ? COLORS.primary : COLORS.gray900, fontWeight: form.category === item ? '600' : '400' }}>{item}</Text>
+                  {form.category === item && <Ionicons name="checkmark" size={20} color={COLORS.primary} />}
+                </TouchableOpacity>
+              )}
+              ListFooterComponent={
+                <View style={{ paddingVertical: 16, borderTopWidth: 1, borderTopColor: COLORS.gray200, marginTop: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: COLORS.gray900, marginBottom: 8 }}>Nenašli jste? Navrhněte vlastní:</Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TextInput
+                      style={{ flex: 1, borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: COLORS.gray900, backgroundColor: COLORS.gray50 }}
+                      value={customCat} onChangeText={setCustomCat}
+                      placeholder="Název nové kategorie" placeholderTextColor={COLORS.gray300}
+                    />
+                    <TouchableOpacity
+                      style={{ backgroundColor: COLORS.primary, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }}
+                      onPress={submitCustomCategory}>
+                      <Text style={{ color: COLORS.white, fontWeight: '600', fontSize: 14 }}>Odeslat</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={{ fontSize: 12, color: COLORS.gray500, marginTop: 6 }}>Admin musí kategorii schválit</Text>
+                </View>
+              }
+              ListEmptyComponent={
+                <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                  <Text style={{ fontSize: 14, color: COLORS.gray500 }}>Žádné výsledky pro "{catSearch}"</Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 };
