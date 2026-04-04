@@ -16,7 +16,8 @@ import {
   ArrowRight,
   Play,
   Check,
-  X
+  X,
+  Clock
 } from '@phosphor-icons/react';
 import HeroSlider from '../components/HeroSlider';
 import StepsSlider from '../components/StepsSlider';
@@ -135,18 +136,27 @@ const HomePage = () => {
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">61</div>
-                  <div className="text-sm text-gray-500">kategorií</div>
+                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <ChatCircle weight="duotone" className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="text-sm font-bold text-gray-900">SMS</div>
+                  <div className="text-xs text-gray-500">notifikace</div>
                 </div>
-                <div className="w-px h-10 bg-gray-200"></div>
+                <div className="w-px h-16 bg-gray-200"></div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">od 99</div>
-                  <div className="text-sm text-gray-500">Kč/měs</div>
+                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <CurrencyDollar weight="duotone" className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="text-sm font-bold text-gray-900">99 Kč/měs.</div>
+                  <div className="text-xs text-gray-500">bez dalších poplatků</div>
                 </div>
-                <div className="w-px h-10 bg-gray-200"></div>
+                <div className="w-px h-16 bg-gray-200"></div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">14</div>
-                  <div className="text-sm text-gray-500">dní zdarma</div>
+                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <Clock weight="duotone" className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="text-sm font-bold text-gray-900">RealTime</div>
+                  <div className="text-xs text-gray-500">sledování příjezdů</div>
                 </div>
               </div>
             </div>
