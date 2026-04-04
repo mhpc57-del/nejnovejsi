@@ -22,14 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#f97316"
       },
-      "package": "cz.craftbolt.app",
-      "permissions": [
-        "CAMERA",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ]
+      "package": "cz.craftbolt.app"
     },
     "plugins": [
       "./plugins/minSdkProjectGradlePatch.js",
