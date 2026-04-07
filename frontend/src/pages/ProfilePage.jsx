@@ -19,6 +19,59 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+const ServiceAreaMapView = ({ areas }) => {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    if (mapInstanceRef.current || !areas?.length) return;
+
+    const map = L.map(mapRef.current, {
+      center: [areas[0].lat, areas[0].lng],
+      zoom: 8,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const bounds = [];
+    areas.forEach(area => {
+      const circle = L.circle([area.lat, area.lng], {
+        radius: (area.radius_km || 20) * 1000,
+        color: '#f97316',
+        fillColor: '#f97316',
+        fillOpacity: 0.12,
+        weight: 2
+      }).addTo(map);
+      bounds.push(circle.getBounds());
+      L.marker([area.lat, area.lng]).addTo(map)
+        .bindPopup(`Poloměr: ${area.radius_km || 20} km`);
+    });
+
+    if (bounds.length > 0) {
+      const combined = bounds[0];
+      bounds.slice(1).forEach(b => combined.extend(b));
+      map.fitBounds(combined, { padding: [30, 30] });
+    }
+
+    mapInstanceRef.current = map;
+    setTimeout(() => map.invalidateSize(), 100);
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, [areas]);
+
+  if (!areas?.length) return null;
+
+  return (
+    <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-xl border border-gray-200" data-testid="service-area-map-view" />
+  );
+};
+
 const ServiceAreaMap = ({ areas, onChange }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -652,13 +705,18 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Supplier: Service Areas Map */}
-            {isSupplier && (
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
-                <h2 className="font-semibold text-gray-900 mb-4">Oblast působení</h2>
-                <ServiceAreaMap areas={formData.service_areas} onChange={(areas) => setFormData(prev => ({ ...prev, service_areas: areas }))} />
-              </div>
-            )}
+            {/* Service Areas Map - all roles */}
+            <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">
+                {isSupplier ? 'Oblast působení' : 'Místa zájmu'}
+              </h2>
+              <p className="text-sm text-gray-500 mb-3">
+                {isSupplier 
+                  ? 'Klikněte na mapu a označte oblasti, kde nabízíte své služby.'
+                  : 'Klikněte na mapu a označte místa, kde hledáte řemeslníky.'}
+              </p>
+              <ServiceAreaMap areas={formData.service_areas} onChange={(areas) => setFormData(prev => ({ ...prev, service_areas: areas }))} />
+            </div>
 
             {/* Save / Cancel */}
             <div className="flex gap-3">
@@ -720,6 +778,16 @@ const ProfilePage = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Service Areas Map - View Mode */}
+            {profile.service_areas?.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-100 p-6 lg:col-span-2" data-testid="service-areas-view">
+                <h2 className="font-semibold text-gray-900 mb-4">
+                  {isSupplier ? 'Oblast působení' : 'Místa zájmu'} ({profile.service_areas.length})
+                </h2>
+                <ServiceAreaMapView areas={profile.service_areas} />
               </div>
             )}
 
