@@ -23,6 +23,7 @@ import {
 import HeroSlider from '../components/HeroSlider';
 import StepsSlider from '../components/StepsSlider';
 import ThemeToggle from '../components/ThemeToggle';
+import HeaderWidget from '../components/HeaderWidget';
 
 const HomePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -79,10 +80,15 @@ const HomePage = () => {
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-black/5 dark:border-gray-700 dark:bg-gray-900/80 dark:backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">Craft</span>
-              <span className="text-2xl font-bold text-orange-500">Bolt</span>
-            </Link>
+            <div className="flex items-center gap-5">
+              <Link to="/" className="flex items-center">
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">Craft</span>
+                <span className="text-2xl font-bold text-orange-500">Bolt</span>
+              </Link>
+              <div className="hidden sm:block">
+                <HeaderWidget />
+              </div>
+            </div>
             
             <nav className="flex items-center gap-4">
               <ThemeToggle />
