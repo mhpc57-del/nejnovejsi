@@ -76,7 +76,10 @@ const ServiceAreaMap = ({ areas, onChange }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const circlesRef = useRef([]);
+  const radiusRef = useRef(20);
+  const selectedRef = useRef(null);
   const [radius, setRadius] = useState(20);
+  const [selectedIdx, setSelectedIdx] = useState(null);
 
   useEffect(() => {
     if (mapInstanceRef.current) return;
@@ -92,31 +95,20 @@ const ServiceAreaMap = ({ areas, onChange }) => {
 
     // Draw existing areas
     if (areas && areas.length > 0) {
-      areas.forEach(area => {
-        const circle = L.circle([area.lat, area.lng], {
-          radius: (area.radius_km || 20) * 1000,
-          color: '#f97316',
-          fillColor: '#f97316',
-          fillOpacity: 0.15,
-          weight: 2
-        }).addTo(map);
-        circlesRef.current.push({ circle, data: area });
+      areas.forEach((area, idx) => {
+        addCircleToMap(map, area, idx);
       });
     }
 
     map.on('click', (e) => {
-      const newArea = { lat: e.latlng.lat, lng: e.latlng.lng, radius_km: radius };
-      const circle = L.circle([e.latlng.lat, e.latlng.lng], {
-        radius: radius * 1000,
-        color: '#f97316',
-        fillColor: '#f97316',
-        fillOpacity: 0.15,
-        weight: 2
-      }).addTo(map);
-      
-      circlesRef.current.push({ circle, data: newArea });
+      const r = radiusRef.current;
+      const newArea = { lat: e.latlng.lat, lng: e.latlng.lng, radius_km: r };
+      const idx = circlesRef.current.length;
+      addCircleToMap(map, newArea, idx);
       const updated = circlesRef.current.map(c => c.data);
       onChange(updated);
+      // Select the new circle
+      selectCircle(idx);
     });
 
     mapInstanceRef.current = map;
@@ -129,10 +121,64 @@ const ServiceAreaMap = ({ areas, onChange }) => {
     };
   }, []);
 
+  const addCircleToMap = (map, area, idx) => {
+    const circle = L.circle([area.lat, area.lng], {
+      radius: (area.radius_km || 20) * 1000,
+      color: '#f97316',
+      fillColor: '#f97316',
+      fillOpacity: 0.15,
+      weight: 2
+    }).addTo(map);
+    circle.on('click', (e) => {
+      L.DomEvent.stopPropagation(e);
+      selectCircle(idx);
+    });
+    circlesRef.current.push({ circle, data: area });
+  };
+
+  const selectCircle = (idx) => {
+    // Deselect previous
+    circlesRef.current.forEach((c, i) => {
+      c.circle.setStyle({ color: i === idx ? '#ea580c' : '#f97316', weight: i === idx ? 3 : 2, fillOpacity: i === idx ? 0.25 : 0.15 });
+    });
+    selectedRef.current = idx;
+    setSelectedIdx(idx);
+    if (circlesRef.current[idx]) {
+      setRadius(circlesRef.current[idx].data.radius_km || 20);
+      radiusRef.current = circlesRef.current[idx].data.radius_km || 20;
+    }
+  };
+
+  const handleRadiusChange = (newRadius) => {
+    setRadius(newRadius);
+    radiusRef.current = newRadius;
+    // If a circle is selected, update it in real-time
+    const idx = selectedRef.current;
+    if (idx !== null && circlesRef.current[idx]) {
+      circlesRef.current[idx].circle.setRadius(newRadius * 1000);
+      circlesRef.current[idx].data = { ...circlesRef.current[idx].data, radius_km: newRadius };
+      const updated = circlesRef.current.map(c => c.data);
+      onChange(updated);
+    }
+  };
+
+  const removeSelected = () => {
+    const idx = selectedRef.current;
+    if (idx === null || !circlesRef.current[idx]) return;
+    mapInstanceRef.current.removeLayer(circlesRef.current[idx].circle);
+    circlesRef.current.splice(idx, 1);
+    selectedRef.current = null;
+    setSelectedIdx(null);
+    const updated = circlesRef.current.map(c => c.data);
+    onChange(updated);
+  };
+
   const removeLastArea = () => {
     if (circlesRef.current.length === 0) return;
     const last = circlesRef.current.pop();
     mapInstanceRef.current.removeLayer(last.circle);
+    selectedRef.current = null;
+    setSelectedIdx(null);
     const updated = circlesRef.current.map(c => c.data);
     onChange(updated);
   };
@@ -140,6 +186,8 @@ const ServiceAreaMap = ({ areas, onChange }) => {
   const clearAreas = () => {
     circlesRef.current.forEach(c => mapInstanceRef.current.removeLayer(c.circle));
     circlesRef.current = [];
+    selectedRef.current = null;
+    setSelectedIdx(null);
     onChange([]);
   };
 
@@ -147,12 +195,18 @@ const ServiceAreaMap = ({ areas, onChange }) => {
     <div>
       <div className="flex items-center gap-3 mb-2">
         <label className="text-sm text-gray-600">Poloměr:</label>
-        <input type="range" min="5" max="100" value={radius} onChange={(e) => setRadius(parseInt(e.target.value))}
+        <input type="range" min="5" max="100" value={radius} onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
           className="flex-1 accent-orange-500" data-testid="radius-slider" />
         <span className="text-sm font-medium text-gray-700 w-14 text-right">{radius} km</span>
       </div>
       <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-xl border border-gray-200" data-testid="service-area-map" />
       <div className="flex gap-2 mt-2">
+        {selectedIdx !== null && (
+          <button type="button" onClick={removeSelected}
+            className="text-xs px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg text-red-600 hover:bg-red-100" data-testid="remove-selected-area-btn">
+            Odebrat vybranou
+          </button>
+        )}
         <button type="button" onClick={removeLastArea}
           className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50" data-testid="remove-last-area-btn">
           Odebrat poslední
@@ -162,7 +216,7 @@ const ServiceAreaMap = ({ areas, onChange }) => {
           Smazat vše
         </button>
       </div>
-      <p className="text-xs text-gray-400 mt-1">Klikněte na mapu pro přidání oblasti působení</p>
+      <p className="text-xs text-gray-400 mt-1">Klikněte na mapu pro přidání oblasti. Klikněte na kruh pro jeho výběr a úpravu poloměru.</p>
     </div>
   );
 };
