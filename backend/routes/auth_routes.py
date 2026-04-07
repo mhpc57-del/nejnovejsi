@@ -178,6 +178,8 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if user.get("is_deactivated"):
         raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Pro obnovení kontaktujte administrátora na info@craftbolt.cz.")
+    if user.get("is_blocked"):
+        raise HTTPException(status_code=403, detail="Váš účet byl zablokován. Pro více informací kontaktujte info@craftbolt.cz.")
     if not user.get("is_verified") and user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="EMAIL_NOT_VERIFIED")
     

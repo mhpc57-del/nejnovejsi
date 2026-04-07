@@ -28,6 +28,8 @@ def user_to_response(user: dict) -> UserResponse:
         reference_photos=user.get("reference_photos", []),
         service_areas=user.get("service_areas", []),
         is_verified=user.get("is_verified", False),
+        is_blocked=user.get("is_blocked", False),
+        is_deactivated=user.get("is_deactivated", False),
         trial_ends_at=user.get("trial_ends_at"),
         subscription_active=user.get("subscription_active", False),
         created_at=user.get("created_at", datetime.now(timezone.utc).isoformat()),

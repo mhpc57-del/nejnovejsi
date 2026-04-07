@@ -75,6 +75,8 @@ class UserResponse(BaseModel):
     reference_photos: List[str] = []
     service_areas: List[dict] = []
     is_verified: bool = False
+    is_blocked: bool = False
+    is_deactivated: bool = False
     trial_ends_at: Optional[str] = None
     subscription_active: bool = False
     created_at: str
