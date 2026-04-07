@@ -53,6 +53,9 @@ const SupplierDashboard = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [unreadDemands, setUnreadDemands] = useState([]);
+  const [cancelDialog, setCancelDialog] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
   const completed = myDemands.filter(d => d.status === 'completed');
@@ -135,6 +138,24 @@ const SupplierDashboard = () => {
   };
 
   const handleLogout = () => { logout(); navigate('/'); };
+
+  const handleCannotComplete = async () => {
+    if (!cancelDialog || !cancelReason.trim()) return;
+    setCancelLoading(true);
+    try {
+      await axios.post(`${API}/demands/${cancelDialog}/cannot-complete`, 
+        { reason: cancelReason.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCancelDialog(null);
+      setCancelReason('');
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Nepodařilo se odeslat');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'available', label: 'Dostupné', count: availableDemands.length, color: 'bg-green-500', textColor: 'text-green-600', borderColor: 'border-green-500', bgLight: 'bg-green-50' },
@@ -267,7 +288,7 @@ const SupplierDashboard = () => {
                 <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
               </div>
             </Link>
-            {/* Progress photos */}
+            {/* Progress photos + cannot complete */}
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               {(demand.progress_photos || []).map((url, i) => (
                 <div key={i} className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
@@ -285,6 +306,16 @@ const SupplierDashboard = () => {
                   data-testid={`progress-photo-${demand.id}`} />
               </label>
               <span className="text-sm text-gray-700">Přidat foto</span>
+              <div className="ml-auto">
+                <button
+                  onClick={(e) => { e.preventDefault(); setCancelDialog(demand.id); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                  data-testid={`cannot-complete-${demand.id}`}
+                >
+                  <Warning weight="bold" className="w-4 h-4" />
+                  Nemohu provést
+                </button>
+              </div>
             </div>
           </div>
         ))
@@ -576,6 +607,49 @@ const SupplierDashboard = () => {
       </nav>
 
       {/* Deactivate Account Modal */}
+      {/* Cannot Complete Dialog */}
+      {cancelDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setCancelDialog(null)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Warning weight="bold" className="w-5 h-5 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Zakázku nemohu provést</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Popište prosím důvod, proč zakázku nemůžete provést. Zákazník bude o tomto informován emailem.
+            </p>
+            <textarea
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              placeholder="Např. Po příjezdu na místo jsem zjistil, že rozsah prací je výrazně větší, než bylo popsáno v poptávce..."
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none mb-4"
+              data-testid="cannot-complete-reason"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setCancelDialog(null); setCancelReason(''); }}
+                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                data-testid="cannot-complete-cancel"
+              >
+                Zpět
+              </button>
+              <button
+                onClick={handleCannotComplete}
+                disabled={cancelLoading || !cancelReason.trim()}
+                className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50"
+                data-testid="cannot-complete-submit"
+              >
+                {cancelLoading ? 'Odesílám...' : 'Odeslat'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showDeactivate && (
         <DeactivateSupplierModal
           token={token}

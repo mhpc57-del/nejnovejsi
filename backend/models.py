@@ -150,6 +150,7 @@ class DemandResponse(BaseModel):
     cancellation_reason: Optional[str] = None
     deadline: Optional[str] = None
     soft_accepts: List[dict] = []
+    cancellations: List[dict] = []
 
 
 class MessageCreate(BaseModel):

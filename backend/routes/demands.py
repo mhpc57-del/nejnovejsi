@@ -48,6 +48,7 @@ async def create_quick_demand(data: QuickDemandCreate, background_tasks: Backgro
         "assigned_supplier_id": None,
         "assigned_supplier_name": None,
         "soft_accepts": [],
+        "cancellations": [],
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
         "progress_photos": [],
@@ -303,6 +304,67 @@ async def accept_demand(demand_id: str, current_user: dict = Depends(get_current
         logger.error(f"Failed to send accept notification: {str(e)}")
     
     return {"message": "Demand accepted"}
+
+
+@router.post("/demands/{demand_id}/cannot-complete")
+async def cannot_complete_demand(demand_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Supplier marks that they cannot complete the demand, with a reason"""
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
+        raise HTTPException(status_code=403, detail="Pouze dodavatel může tuto akci provést")
+    
+    reason = data.get("reason", "").strip()
+    if not reason:
+        raise HTTPException(status_code=400, detail="Důvod je povinný")
+    
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("assigned_supplier_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nejste přiřazený dodavatel")
+    if demand["status"] != "in_progress":
+        raise HTTPException(status_code=400, detail="Zakázka není v probíhajícím stavu")
+    
+    now = datetime.now(timezone.utc)
+    supplier_name = current_user.get("company_name") or current_user.get("first_name") or current_user["email"]
+    
+    cancellation = {
+        "supplier_id": current_user["id"],
+        "supplier_name": supplier_name,
+        "reason": reason,
+        "created_at": now.isoformat()
+    }
+    
+    # Re-open the demand so other suppliers can take it
+    await db.demands.update_one(
+        {"id": demand_id},
+        {
+            "$set": {
+                "status": "open",
+                "assigned_supplier_id": None,
+                "assigned_supplier_name": None,
+                "supplier_arrived": False,
+                "supplier_arrived_at": None,
+            },
+            "$push": {"cancellations": cancellation}
+        }
+    )
+    
+    # Notify customer
+    try:
+        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
+        if customer:
+            await notification_service.notify_cannot_complete(
+                customer_email=customer["email"],
+                customer_phone=customer.get("phone"),
+                supplier_name=supplier_name,
+                demand_title=demand["title"],
+                reason=reason,
+                demand_id=demand_id
+            )
+    except Exception as e:
+        logger.error(f"Failed to send cannot-complete notification: {str(e)}")
+    
+    return {"message": "Zakázka byla vrácena mezi otevřené poptávky"}
 
 
 @router.post("/demands/{demand_id}/arrive")

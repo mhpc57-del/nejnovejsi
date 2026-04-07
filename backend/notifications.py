@@ -562,15 +562,40 @@ class NotificationService:
         """Notify customer about supplier's conditional acceptance"""
         subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
-        
         if customer_phone:
-            sms_text = self.templates.soft_accept_sms(supplier_name, demand_title)
-            self.sms_service.send_sms(customer_phone, sms_text)
-        
-        # Push notification
-        user = await db.users.find_one({"email": customer_email}, {"_id": 0, "push_token": 1})
-        if user and user.get("push_token"):
-            await send_expo_push([user["push_token"]], f"Nezávazná nabídka od {supplier_name}", f"Na zakázku '{demand_title}': {reason[:80]}", {"type": "soft_accept"})
+            self.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} projevil zajem o vasi poptavku '{demand_title}' s podminkou. Prihlas se pro detaily.")
+
+    async def notify_cannot_complete(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str, demand_id: str = ""):
+        """Notify customer that supplier cannot complete the demand"""
+        demand_url = f"https://craftbolt.cz/zakazka/{demand_id}" if demand_id else "https://craftbolt.cz/zakaznik"
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel nemůže provést vaši zakázku</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dobrý den,
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{supplier_name}</strong> bohužel nemůže provést vaši zakázku
+                „<strong>{demand_title}</strong>". Důvod:
+            </p>
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 0 0 24px 0; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; color: #1a1a1a; font-size: 15px;">
+                    {reason}
+                </p>
+            </div>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Vaše poptávka byla znovu zveřejněna a je k dispozici dalším dodavatelům.
+            </p>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{demand_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Zobrazit poptávku
+                </a>
+            </div>
+        """
+        subject = f"Dodavatel nemůže provést zakázku: {demand_title}"
+        _, html = subject, self.templates.email_base(content, subject)
+        await self.email_service.send_email(customer_email, subject, html)
+        if customer_phone:
+            self.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} nemuze provest zakazku '{demand_title}'. Duvod: {reason[:80]}. Poptavka znovu zverejnena.")
 
     async def notify_quick_demand_confirmation(self, email: str, phone: str, name: str):
         """Send confirmation to quick demand customer"""
