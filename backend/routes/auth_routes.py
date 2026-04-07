@@ -273,24 +273,34 @@ async def reset_password(data: dict):
     if len(new_password) < 8:
         raise HTTPException(status_code=400, detail="Heslo musí mít alespoň 8 znaků")
     
-    # Find user with this reset token atomically
-    user = await db.users.find_one_and_update(
-        {
-            "reset_token": token,
-            "reset_token_expires": {"$gt": datetime.now(timezone.utc).isoformat()}
-        },
+    # Find user by reset token first
+    user = await db.users.find_one({"reset_token": token})
+    if not user:
+        logger.warning(f"Password reset failed - token not found")
+        raise HTTPException(status_code=400, detail="Neplatný nebo expirovaný odkaz pro obnovení hesla.")
+    
+    # Check expiration in Python (avoids MongoDB string comparison issues)
+    expires_str = user.get("reset_token_expires", "")
+    if expires_str:
+        try:
+            expires = datetime.fromisoformat(expires_str)
+            if datetime.now(timezone.utc) > expires:
+                logger.warning(f"Password reset failed - token expired for: {user.get('email')}")
+                raise HTTPException(status_code=400, detail="Odkaz pro obnovení hesla vypršel. Vyžádejte si nový.")
+        except (ValueError, TypeError):
+            pass
+    
+    # Update password and remove token
+    await db.users.update_one(
+        {"reset_token": token},
         {
             "$set": {
                 "password": hash_password(new_password),
-                "is_verified": True  # Also verify email if not done
+                "is_verified": True
             },
             "$unset": {"reset_token": "", "reset_token_expires": ""}
-        },
-        return_document=False
+        }
     )
-    
-    if not user:
-        raise HTTPException(status_code=400, detail="Neplatný nebo expirovaný odkaz pro obnovení hesla.")
     
     logger.info(f"Password reset successful for: {user.get('email')}")
     return {"message": "Heslo bylo úspěšně změněno. Nyní se můžete přihlásit."}
