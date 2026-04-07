@@ -52,7 +52,7 @@ const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
+    const response = await axios.post(`${API}/auth/login`, { email: email.trim().toLowerCase(), password });
     const { access_token, user: userData } = response.data;
     localStorage.setItem('token', access_token);
     setToken(access_token);
@@ -67,7 +67,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const response = await axios.post(`${API}/auth/register`, userData);
+    const response = await axios.post(`${API}/auth/register`, { ...userData, email: userData.email.trim().toLowerCase() });
     // Registration now returns verification info, not a token
     return response.data;
   };

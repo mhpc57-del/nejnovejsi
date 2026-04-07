@@ -18,6 +18,9 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
 
 @router.post("/auth/register")
 async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
+    # Normalize email to lowercase
+    user_data.email = user_data.email.strip().lower()
+    
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         if existing.get("is_deactivated"):
@@ -127,6 +130,7 @@ async def resend_verification(data: dict, background_tasks: BackgroundTasks):
     email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email je povinný")
+    email = email.strip().lower()
     
     user = await db.users.find_one({"email": email}, {"_id": 0})
     if not user:
@@ -156,10 +160,15 @@ async def resend_verification(data: dict, background_tasks: BackgroundTasks):
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    # Normalize email to lowercase
+    email = credentials.email.strip().lower()
+    
+    user = await db.users.find_one({"email": email}, {"_id": 0})
     if not user:
+        logger.warning(f"Login failed - user not found: {email}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not verify_password(credentials.password, user["password"]):
+        logger.warning(f"Login failed - wrong password for: {email}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if user.get("is_deactivated"):
         raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Pro obnovení kontaktujte administrátora na info@craftbolt.cz.")
