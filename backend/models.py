@@ -207,6 +207,8 @@ class ProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    ico: Optional[str] = None
+    dic: Optional[str] = None
     address: Optional[str] = None
     branch_address: Optional[str] = None
     permanent_address: Optional[str] = None
@@ -216,8 +218,10 @@ class ProfileUpdate(BaseModel):
     website: Optional[str] = None
     profile_image: Optional[str] = None
     categories: Optional[List[str]] = None
+    custom_categories: Optional[List[str]] = None
     reference_photos: Optional[List[str]] = None
     service_areas: Optional[List[dict]] = None
+    account_type: Optional[str] = None
 
 
 class CertificationUpload(BaseModel):
