@@ -18,6 +18,7 @@ import TermsPage from './pages/TermsPage';
 import ContactPage from './pages/ContactPage';
 import RecurringPaymentsPage from './pages/RecurringPaymentsPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordResetPage';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -144,6 +145,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/prihlaseni" element={<LoginPage />} />
           <Route path="/registrace" element={<RegisterPage />} />
+          <Route path="/zapomenute-heslo" element={<ForgotPasswordPage />} />
+          <Route path="/obnoveni-hesla" element={<ResetPasswordPage />} />
           <Route path="/overit-email/:token" element={<EmailVerificationPage />} />
           <Route path="/cenik" element={<PricingPage />} />
           

@@ -201,3 +201,96 @@ async def deactivate_account(current_user: dict = Depends(get_current_user), pas
         }}
     )
     return {"message": "Účet byl deaktivován"}
+
+
+
+@router.post("/auth/forgot-password")
+async def forgot_password(data: dict, background_tasks: BackgroundTasks):
+    """Send password reset email"""
+    email = data.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email je povinný")
+    
+    user = await db.users.find_one({"email": email})
+    if not user:
+        # Don't reveal if user exists or not
+        return {"message": "Pokud je email registrován, odeslali jsme vám odkaz pro obnovení hesla."}
+    
+    reset_token = secrets.token_urlsafe(32)
+    expires = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    await db.users.update_one(
+        {"email": email},
+        {"$set": {"reset_token": reset_token, "reset_token_expires": expires.isoformat()}}
+    )
+    
+    reset_link = f"{FRONTEND_URL}/obnoveni-hesla?token={reset_token}"
+    user_name = user.get("company_name") or user.get("first_name") or email.split('@')[0]
+    
+    html = f"""
+    <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; background: #ffffff;">
+        <div style="background: #1a1a1a; padding: 24px; text-align: center;">
+            <span style="font-size: 28px; font-weight: 800; color: #ffffff;">Craft</span>
+            <span style="font-size: 28px; font-weight: 800; color: #f97316;">Bolt</span>
+        </div>
+        <div style="padding: 32px 24px;">
+            <h2 style="color: #1a1a1a; margin: 0 0 16px;">Obnovení hesla</h2>
+            <p style="color: #4b5563;">Dobrý den, {user_name}.</p>
+            <p style="color: #4b5563;">Obdrželi jsme žádost o obnovení hesla k vašemu účtu na CraftBolt.cz.</p>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{reset_link}" style="background: #f97316; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block;">
+                    Nastavit nové heslo
+                </a>
+            </div>
+            <p style="color: #9ca3af; font-size: 13px;">Odkaz je platný 1 hodinu. Pokud jste o obnovení hesla nežádali, tento email ignorujte.</p>
+        </div>
+        <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <span style="color: #9ca3af; font-size: 12px;">CraftBolt.cz — Vaše řemeslnická platforma</span>
+        </div>
+    </div>
+    """
+    
+    background_tasks.add_task(
+        notification_service.email_service.send_email,
+        email,
+        "CraftBolt - Obnovení hesla",
+        html
+    )
+    
+    logger.info(f"Password reset requested for: {email}")
+    return {"message": "Pokud je email registrován, odeslali jsme vám odkaz pro obnovení hesla."}
+
+
+@router.post("/auth/reset-password")
+async def reset_password(data: dict):
+    """Reset password with token"""
+    token = data.get("token", "")
+    new_password = data.get("password", "")
+    
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token a nové heslo jsou povinné")
+    
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Heslo musí mít alespoň 8 znaků")
+    
+    # Find user with this reset token atomically
+    user = await db.users.find_one_and_update(
+        {
+            "reset_token": token,
+            "reset_token_expires": {"$gt": datetime.now(timezone.utc).isoformat()}
+        },
+        {
+            "$set": {
+                "password": hash_password(new_password),
+                "is_verified": True  # Also verify email if not done
+            },
+            "$unset": {"reset_token": "", "reset_token_expires": ""}
+        },
+        return_document=False
+    )
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Neplatný nebo expirovaný odkaz pro obnovení hesla.")
+    
+    logger.info(f"Password reset successful for: {user.get('email')}")
+    return {"message": "Heslo bylo úspěšně změněno. Nyní se můžete přihlásit."}
