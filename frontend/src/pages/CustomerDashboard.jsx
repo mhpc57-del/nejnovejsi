@@ -433,6 +433,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [catSearch, setCatSearch] = useState('');
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -640,18 +642,39 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategorie</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              required
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-              data-testid="demand-category-select"
-            >
-              <option value="">Vyberte kategorii</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <input
+                type="text"
+                value={catSearch || formData.category}
+                onChange={(e) => { setCatSearch(e.target.value); setCatDropdownOpen(true); if (!e.target.value) setFormData(prev => ({ ...prev, category: '' })); }}
+                onFocus={() => setCatDropdownOpen(true)}
+                placeholder="Hledat kategorii..."
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                data-testid="demand-category-search"
+              />
+              {formData.category && !catSearch && (
+                <button type="button" onClick={() => { setFormData(prev => ({ ...prev, category: '' })); setCatSearch(''); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">&times;</button>
+              )}
+              {catDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setCatDropdownOpen(false)} />
+                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).map((cat) => (
+                      <button key={cat} type="button" onClick={() => { setFormData(prev => ({ ...prev, category: cat })); setCatSearch(''); setCatDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${formData.category === cat ? 'bg-orange-500 text-white hover:bg-orange-600' : 'text-gray-700'}`}
+                        data-testid={`demand-cat-option-${cat.replace(/\s+/g, '-').toLowerCase()}`}>
+                        {cat}
+                      </button>
+                    ))}
+                    {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).length === 0 && (
+                      <p className="px-4 py-3 text-sm text-gray-400 text-center">Žádná kategorie nenalezena</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            <input type="hidden" value={formData.category} required />
           </div>
 
           <div>
