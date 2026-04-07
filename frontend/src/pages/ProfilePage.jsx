@@ -134,8 +134,8 @@ const ProfilePage = () => {
   const galleryInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  const isOwnProfile = !id || id === currentUser?.id;
-  const userId = id || currentUser?.id;
+  const isOwnProfile = !id || id === 'me' || id === currentUser?.id;
+  const userId = (id && id !== 'me') ? id : currentUser?.id;
 
   // Close photo menu on outside click
   useEffect(() => {
@@ -300,8 +300,8 @@ const ProfilePage = () => {
 
   const accountType = profile.account_type || profile.supplier_type;
   const isCustomer = profile.role === 'customer';
-  const isSupplier = profile.role === 'supplier';
-  const isNepodnikatel = accountType === 'nepodnikatel' || (isCustomer && accountType !== 'osvc' && accountType !== 'company');
+  const isSupplier = profile.role === 'supplier' || profile.role === 'customer_supplier';
+  const isNepodnikatel = accountType === 'nepodnikatel' || (isCustomer && !isSupplier && accountType !== 'osvc' && accountType !== 'company');
 
   const profileImageUrl = getImageUrl(editing ? formData.profile_image : profile.profile_image);
 
@@ -774,6 +774,12 @@ const CertificationsSection = ({ userId, isOwnProfile, token }) => {
   const [certName, setCertName] = useState('');
   const [certDesc, setCertDesc] = useState('');
 
+  const getFileUrl = (url) => {
+    if (!url || url === 'None' || url === 'null') return null;
+    if (url.startsWith('http')) return url;
+    const path = url.startsWith('/api/') ? url : url.startsWith('/') ? `/api${url}` : `/api/${url}`;
+    return `${API.replace('/api', '')}${path}`;
+  };
   useEffect(() => {
     fetchCerts();
   }, [userId]);
@@ -883,7 +889,7 @@ const CertificationsSection = ({ userId, isOwnProfile, token }) => {
                 </span>
               )}
               {cert.file_url && (
-                <a href={getImageUrl(cert.file_url)} target="_blank" rel="noreferrer" className="text-orange-500 hover:text-orange-600 text-xs font-medium">
+                <a href={getFileUrl(cert.file_url)} target="_blank" rel="noreferrer" className="text-orange-500 hover:text-orange-600 text-xs font-medium">
                   Zobrazit
                 </a>
               )}
