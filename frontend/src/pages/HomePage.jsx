@@ -280,6 +280,7 @@ const HomePage = () => {
                   'Reagují jen dodavatelé z vašeho okolí',
                   'Komunikace přes chat — v klidu, kdy se vám hodí',
                   'Přehled všech nabídek na jednom místě',
+                  'Naši administrátoři pracují 24/7 NON-STOP',
                   'Jednoduše, rychle, efektivně',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-gray-600 dark:text-gray-400 text-sm">

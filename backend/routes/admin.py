@@ -30,13 +30,24 @@ class AdminCancelDemand(BaseModel):
     reason: str
 
 class AdminEditUser(BaseModel):
+    email: Optional[str] = None
     company_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    ico: Optional[str] = None
+    dic: Optional[str] = None
+    address: Optional[str] = None
+    branch_address: Optional[str] = None
+    permanent_address: Optional[str] = None
+    actual_address: Optional[str] = None
+    date_of_birth: Optional[str] = None
     bio: Optional[str] = None
+    website: Optional[str] = None
     categories: Optional[List[str]] = None
+    custom_categories: Optional[List[str]] = None
     role: Optional[str] = None
+    account_type: Optional[str] = None
 
 
 # ============ STATS ============
@@ -143,6 +154,50 @@ async def reactivate_user(user_id: str, current_user: dict = Depends(get_current
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Uživatel nenalezen")
     return {"message": "Účet byl obnoven"}
+
+
+@router.post("/admin/users/{user_id}/send-verification-reminder")
+async def send_verification_reminder(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Uživatel nenalezen")
+    if user.get("is_verified"):
+        raise HTTPException(status_code=400, detail="Uživatel je již ověřen")
+    
+    try:
+        await notification_service.email_service.send_email(
+            user["email"],
+            "CraftBolt — Připomínka: Ověřte svůj email",
+            notification_service.templates.email_base(f"""
+                <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Ověřte svůj email pro plné využití CraftBolt</h2>
+                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den,</p>
+                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                    Všimli jsme si, že váš účet na CraftBolt stále není ověřen. 
+                    Ověřením emailu získáte:
+                </p>
+                <ul style="color: #4b5563; line-height: 2; margin: 0 0 16px 16px;">
+                    <li>Plný přístup ke všem funkcím platformy</li>
+                    <li>Lepší hodnocení důvěryhodnosti</li>
+                    <li>Možnost přijímat a reagovat na zakázky</li>
+                </ul>
+                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                    Zkontrolujte prosím svou emailovou schránku (včetně spamu) a klikněte na ověřovací odkaz, 
+                    který jsme vám zaslali při registraci.
+                </p>
+                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                    Pokud jste odkaz nenašli nebo vypršel, kontaktujte nás na 
+                    <a href="mailto:info@craftbolt.cz" style="color: #f97316;">info@craftbolt.cz</a> a my vám pošleme nový.
+                </p>
+            """, "Připomínka ověření emailu")
+        )
+    except Exception as e:
+        logger.error(f"Failed to send verification reminder: {e}")
+        raise HTTPException(status_code=500, detail="Nepodařilo se odeslat email")
+    
+    return {"message": "Připomínka ověření byla odeslána"}
 
 
 @router.put("/admin/users/{user_id}/edit")

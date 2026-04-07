@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [demandFilter, setDemandFilter] = useState('all');
+  const [aresLoading, setAresLoading] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -54,6 +55,27 @@ const AdminDashboard = () => {
 
   const handleLogout = () => { logout(); navigate('/'); };
 
+  const handleAresLookup = async () => {
+    const ico = modalInput.ico?.trim();
+    if (!ico || ico.length < 7) { alert('Zadejte platné IČ (min. 7 znaků)'); return; }
+    setAresLoading(true);
+    try {
+      const res = await axios.get(`${API}/ares/${ico}`);
+      const data = res.data;
+      setModalInput(prev => ({
+        ...prev,
+        company_name: data.company_name || prev.company_name,
+        address: data.address || prev.address,
+        ico: data.ico || prev.ico,
+        dic: data.dic || prev.dic,
+      }));
+    } catch (error) {
+      alert(error.response?.data?.detail || 'IČ nenalezeno v ARES');
+    } finally {
+      setAresLoading(false);
+    }
+  };
+
   const handleTrustScoreUpdate = async (userId, score) => {
     setUpdatingTrust(userId);
     try {
@@ -78,6 +100,12 @@ const AdminDashboard = () => {
           break;
         case 'editUser':
           await axios.put(`${API}/admin/users/${args[0]}/edit`, args[1], { headers });
+          break;
+        case 'reactivate':
+          await axios.put(`${API}/admin/users/${args[0]}/reactivate`, {}, { headers });
+          break;
+        case 'verificationReminder':
+          await axios.post(`${API}/admin/users/${args[0]}/send-verification-reminder`, {}, { headers });
           break;
         case 'messageUser':
           await axios.post(`${API}/admin/users/${args[0]}/message`, args[1], { headers });
@@ -250,23 +278,31 @@ const AdminDashboard = () => {
                   )}
                 </td>
                 <td className="p-3">
-                  {(u.role === 'supplier' || u.role === 'customer_supplier') ? (
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button key={star} onClick={() => handleTrustScoreUpdate(u.id, star)}
-                          disabled={updatingTrust === u.id} className="p-0.5 hover:scale-110 transition-transform disabled:opacity-50">
-                          <Star weight={star <= (u.trust_score || 0) ? 'fill' : 'regular'}
-                            className={`w-3.5 h-3.5 ${star <= (u.trust_score || 0) ? 'text-yellow-500' : 'text-gray-300'}`} />
-                        </button>
-                      ))}
-                    </div>
-                  ) : <span className="text-gray-300 text-xs">-</span>}
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button key={star} onClick={() => handleTrustScoreUpdate(u.id, star)}
+                        disabled={updatingTrust === u.id} className="p-0.5 hover:scale-110 transition-transform disabled:opacity-50">
+                        <Star weight={star <= (u.trust_score || 0) ? 'fill' : 'regular'}
+                          className={`w-3.5 h-3.5 ${star <= (u.trust_score || 0) ? 'text-yellow-500' : 'text-gray-300'}`} />
+                      </button>
+                    ))}
+                  </div>
                 </td>
                 <td className="p-3 text-xs text-gray-500">{new Date(u.created_at).toLocaleDateString('cs-CZ')}</td>
                 <td className="p-3">
                   {u.role !== 'admin' && (
                     <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => { setModal({ type: 'editUser', data: u }); setModalInput({ company_name: u.company_name || '', first_name: u.first_name || '', last_name: u.last_name || '', phone: u.phone || '', bio: u.bio || '' }); }}
+                      <button onClick={() => { 
+                        setModal({ type: 'editUser', data: u }); 
+                        setModalInput({ 
+                          email: u.email || '', company_name: u.company_name || '', first_name: u.first_name || '', 
+                          last_name: u.last_name || '', phone: u.phone || '', ico: u.ico || '', dic: u.dic || '',
+                          address: u.address || '', branch_address: u.branch_address || '', 
+                          permanent_address: u.permanent_address || '', actual_address: u.actual_address || '',
+                          date_of_birth: u.date_of_birth || '', bio: u.bio || '', website: u.website || '',
+                          account_type: u.account_type || '', role: u.role || ''
+                        }); 
+                      }}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Upravit" data-testid={`edit-user-${u.id}`}>
                         <PencilSimple className="w-4 h-4" />
                       </button>
@@ -274,6 +310,18 @@ const AdminDashboard = () => {
                         className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Poslat zprávu" data-testid={`message-user-${u.id}`}>
                         <Envelope className="w-4 h-4" />
                       </button>
+                      {!u.is_verified && (
+                        <button onClick={() => handleAction('verificationReminder', u.id)}
+                          className="p-1.5 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Připomenout ověření" data-testid={`verify-remind-${u.id}`}>
+                          <Warning className="w-4 h-4" />
+                        </button>
+                      )}
+                      {u.is_deactivated && (
+                        <button onClick={() => handleAction('reactivate', u.id)}
+                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Reaktivovat účet" data-testid={`reactivate-user-${u.id}`}>
+                          <ArrowClockwise className="w-4 h-4" />
+                        </button>
+                      )}
                       {u.is_blocked ? (
                         <button onClick={() => handleAction('unblock', u.id)}
                           className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Odblokovat" data-testid={`unblock-user-${u.id}`}>
@@ -465,12 +513,69 @@ const AdminDashboard = () => {
       editUser: {
         title: `Upravit profil: ${data.email}`,
         body: (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-2">
+            <p className="text-xs text-gray-400 uppercase font-medium tracking-wider mb-1">Přihlašovací údaje</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <input type="email" value={modalInput.email || ''} onChange={e => setModalInput(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" data-testid="modal-email" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select value={modalInput.role || ''} onChange={e => setModalInput(prev => ({ ...prev, role: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" data-testid="modal-role">
+                  <option value="customer">Zákazník</option>
+                  <option value="supplier">Dodavatel</option>
+                  <option value="customer_supplier">Zákazník i dodavatel</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Typ účtu</label>
+                <select value={modalInput.account_type || ''} onChange={e => setModalInput(prev => ({ ...prev, account_type: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" data-testid="modal-account-type">
+                  <option value="">-</option>
+                  <option value="osvc">OSVČ</option>
+                  <option value="firma">Firma</option>
+                  <option value="nepodnikatel">Nepodnikatel</option>
+                </select>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 pt-3 mt-3">
+              <p className="text-xs text-gray-400 uppercase font-medium tracking-wider mb-2">Osobní údaje</p>
+            </div>
             {[
               { key: 'company_name', label: 'Firma' },
               { key: 'first_name', label: 'Jméno' },
               { key: 'last_name', label: 'Příjmení' },
               { key: 'phone', label: 'Telefon' },
+              { key: 'ico', label: 'IČ', hasAres: true },
+              { key: 'dic', label: 'DIČ' },
+              { key: 'date_of_birth', label: 'Datum narození' },
+              { key: 'website', label: 'Web' },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                <div className={f.hasAres ? 'flex gap-2' : ''}>
+                  <input type="text" value={modalInput[f.key] || ''} onChange={e => setModalInput(prev => ({ ...prev, [f.key]: e.target.value }))}
+                    className={`${f.hasAres ? 'flex-1' : 'w-full'} px-3 py-2 border border-gray-200 rounded-lg text-sm`} data-testid={`modal-${f.key}`} />
+                  {f.hasAres && (
+                    <button onClick={handleAresLookup} disabled={aresLoading}
+                      className="px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 whitespace-nowrap" data-testid="ares-lookup-btn">
+                      {aresLoading ? 'Hledám...' : 'Načíst z ARES'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            <div className="border-t border-gray-100 pt-3 mt-3">
+              <p className="text-xs text-gray-400 uppercase font-medium tracking-wider mb-2">Adresy</p>
+            </div>
+            {[
+              { key: 'address', label: 'Sídlo firmy' },
+              { key: 'branch_address', label: 'Adresa pobočky' },
+              { key: 'permanent_address', label: 'Trvalé bydliště' },
+              { key: 'actual_address', label: 'Skutečné bydliště' },
             ].map(f => (
               <div key={f.key}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
@@ -478,6 +583,9 @@ const AdminDashboard = () => {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" data-testid={`modal-${f.key}`} />
               </div>
             ))}
+            <div className="border-t border-gray-100 pt-3 mt-3">
+              <p className="text-xs text-gray-400 uppercase font-medium tracking-wider mb-2">Popis</p>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
               <textarea value={modalInput.bio || ''} onChange={e => setModalInput(prev => ({ ...prev, bio: e.target.value }))} rows={3}
