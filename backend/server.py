@@ -11,6 +11,7 @@ from routes.uploads import router as uploads_router
 from routes.payments import router as payments_router
 from routes.admin import router as admin_router
 from routes.misc import router as misc_router
+from routes.ai_chat import router as ai_chat_router
 from models import ADMIN_EMAIL, UserRole
 from auth import hash_password
 from datetime import datetime, timezone, timedelta
@@ -43,6 +44,7 @@ api_router.include_router(uploads_router)
 api_router.include_router(payments_router)
 api_router.include_router(admin_router)
 api_router.include_router(misc_router)
+api_router.include_router(ai_chat_router)
 
 app.include_router(api_router)
 

@@ -15,50 +15,57 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - **customer_supplier**: Obojí — vytváření i přijímání
 - **admin**: Plný přístup
 
-## Registrace — Flow
-1. Email + Heslo
-2. Výběr role (customer / supplier / customer_supplier)
-3. Mám IČO / Nemám IČO
-4. (Pokud Mám IČO) OSVČ / Firma
-5. Detaily s preferred_languages, branch_addresses
-6. Kategorie (pouze supplier / customer_supplier)
-
 ## Implementováno
 - JWT autentizace s emailovou verifikací
+- **Zapomenuté heslo** — email s reset odkazem, nastavení nového hesla
 - 3 role: customer, supplier, customer_supplier
-- Registrace s Mám IČO / Nemám IČO, ARES, pobočky, preferované jazyky
-- Ceník 3 sloupce na HP: 199/299/399 Kč
-- **Dark mode** — toggle na každé stránce, persistence v localStorage
-- SMS notifikace (Twilio)
-- SMTP emaily přes Wedos (denní limit 400)
+- Registrace s Mám IČ / Nemám IČ (opraveno z IČO), ARES, pobočky, preferované jazyky
+- Ceník 3 sloupce na HP a /cenik: 199/299/399 Kč
+- **Dark mode** — toggle na každé stránce
+- SMS notifikace (Twilio) s normalizací tel. čísla
+- SMTP emaily přes Wedos
 - Tvorba/editace poptávek s mapou
 - Chat s toast notifikacemi
 - Profily s fotkami (upload)
 - Zkušební doba 14 dní (sidebar)
 - Quick Demand (rychlá poptávka bez registrace)
-- Notifikace na dashboardu (nepřečtené zprávy badges + banner)
+- Notifikace na dashboardu (nepřečtené zprávy)
 - Mapy na dashboardech s barevnými markery
-- Claim quick demand po registraci
-- Dashboard přepínač pro customer_supplier
-- **Stripe platby** — plně funkční integrace (3 plány: 199/299/399 Kč), checkout, webhook, status polling
+- **Stripe platby** — 3 plány, checkout, webhook, status
 - Re-registrace po deaktivaci účtu
 - Hláška o deaktivaci s admin emailem (info@craftbolt.cz)
-- Normalizace telefonního čísla pro SMS (odstranění mezer, pomlček)
 - Weather & Name Day widget na HomePage
+- **AI Chat podpora** — plovoucí widget na všech stránkách, GPT-powered, odpovídá česky na dotazy o platformě
+- Našeptávač adresy pobočky při registraci
+- Email normalizace na lowercase (registrace + login)
+
+## AI Chat
+- Backend: /api/ai/chat (POST), /api/ai/chat/history/{session_id} (GET)
+- Model: OpenAI GPT přes Emergent LLM Key
+- System message s plnou znalostí o CraftBolt (tarify, registrace, funkce)
+- Historie uložena v MongoDB kolekci ai_chat_history
+- Session ID v localStorage prohlížeče
+- Quick questions: "Jak se zaregistruji?", "Jaké jsou tarify?", "Jak funguje poptávka?"
 
 ## Architektura
 - Frontend: React + Vite + Tailwind + Leaflet mapy
-- Backend: FastAPI + MongoDB + Twilio + SMTP Wedos
+- Backend: FastAPI + MongoDB + Twilio + SMTP Wedos + OpenAI (emergentintegrations)
 - Dark mode: CSS global overrides v App.css + ThemeContext
-- Platby: Stripe via emergentintegrations library
 
 ## Stripe integrace
 - Klíč: STRIPE_API_KEY v backend/.env
 - Plány: zakaznik (199), dodavatel (299), zakaznik_dodavatel (399)
-- Checkout URL: /api/subscription/checkout
+- Checkout: /api/subscription/checkout
 - Status: /api/subscription/status/{session_id}
 - Webhook: /api/webhook/stripe
 - Ceníková stránka: /cenik
+
+## Klíčové soubory
+- /app/frontend/src/components/AiChatWidget.jsx — AI chat widget
+- /app/frontend/src/pages/PasswordResetPage.jsx — Zapomenuté heslo + reset
+- /app/backend/routes/ai_chat.py — AI chat backend
+- /app/backend/routes/auth_routes.py — Auth (login, register, verify, reset)
+- /app/backend/routes/payments.py — Stripe platby
 
 ## Backlog
 - P2: Mobilní aplikace (React Native) - PAUSOVÁNO
