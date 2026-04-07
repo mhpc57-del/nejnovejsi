@@ -19,7 +19,7 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - JWT autentizace s emailovou verifikací
 - **Zapomenuté heslo** — email s reset odkazem, nastavení nového hesla
 - 3 role: customer, supplier, customer_supplier
-- Registrace s Mám IČ / Nemám IČ (opraveno z IČO), ARES, pobočky, preferované jazyky
+- Registrace s Mám IČ / Nemám IČ, ARES, pobočky, preferované jazyky
 - Ceník 3 sloupce na HP a /cenik: 199/299/399 Kč
 - **Dark mode** — toggle na každé stránce
 - SMS notifikace (Twilio) s normalizací tel. čísla
@@ -33,25 +33,30 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - Mapy na dashboardech s barevnými markery
 - **Stripe platby** — 3 plány, checkout, webhook, status
 - Re-registrace po deaktivaci účtu
-- Hláška o deaktivaci s admin emailem (info@craftbolt.cz)
 - Weather & Name Day widget na HomePage
-- **AI Chat podpora** — plovoucí widget na všech stránkách, GPT-powered, odpovídá česky
+- **AI Chat podpora** — plovoucí widget, GPT-powered, česky
 - Našeptávač adresy pobočky při registraci
-- Email normalizace na lowercase (registrace + login)
+- Email normalizace na lowercase
 - **3-option modal dokončení zakázky** (Standard, Navýšení ceny, Blacklist)
 - **Nemohu provést** — dodavatel může zrušit zakázku s důvodem
-- **Finanční přehled** u dokončených poptávek (dohodnutá cena, navýšení, konečná cena, blacklist důvod) - DONE 7.4.2026
+- **Finanční přehled** u dokončených poptávek (dohodnutá cena, navýšení, konečná cena, blacklist důvod) — DONE 7.4.2026
+- **Fotodokumentace** u dokončených zakázek — obě strany mohou nahrávat fotky při dokončení i dodatečně, max 20, lightbox, mazání vlastních fotek — DONE 7.4.2026
 - Přímé odkazy v emailech na konkrétní poptávku + badge na dashboardu
 - Case-insensitive filtrování kategorií a emailů
 - Service Area mapa pro všechny role s read-only zobrazením
 
+## Fotodokumentace
+- Backend: POST /api/demands/{demand_id}/completion-photos (přidání), DELETE (smazání)
+- Fotky se ukládají při dokončení zakázky (v modalu) i dodatečně (na detailu)
+- Obě strany (zákazník i dodavatel) mohou nahrávat
+- Max 20 fotek na zakázku, bez limitu MB
+- Lightbox pro zobrazení plné velikosti s informací o nahrávajícím a datem
+- Mazání: pouze vlastní fotky nebo admin
+
 ## AI Chat
 - Backend: /api/ai/chat (POST), /api/ai/chat/history/{session_id} (GET)
 - Model: OpenAI GPT přes Emergent LLM Key
-- System message s plnou znalostí o CraftBolt (tarify, registrace, funkce)
-- Historie uložena v MongoDB kolekci ai_chat_history
 - Session ID v localStorage prohlížeče
-- Quick questions: "Jak se zaregistruji?", "Jaké jsou tarify?", "Jak funguje poptávka?"
 
 ## Architektura
 - Frontend: React + Vite + Tailwind + Leaflet mapy
@@ -62,19 +67,16 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - Klíč: STRIPE_API_KEY v backend/.env
 - Plány: zakaznik (199), dodavatel (299), zakaznik_dodavatel (399)
 - Checkout: /api/subscription/checkout
-- Status: /api/subscription/status/{session_id}
 - Webhook: /api/webhook/stripe
-- Ceníková stránka: /cenik
 
 ## Klíčové soubory
+- /app/frontend/src/pages/DemandDetail.jsx — Detail poptávky + finanční přehled + fotodokumentace
 - /app/frontend/src/components/AiChatWidget.jsx — AI chat widget
-- /app/frontend/src/pages/PasswordResetPage.jsx — Zapomenuté heslo + reset
-- /app/frontend/src/pages/DemandDetail.jsx — Detail poptávky + finanční přehled
-- /app/backend/routes/ai_chat.py — AI chat backend
-- /app/backend/routes/auth_routes.py — Auth (login, register, verify, reset)
+- /app/backend/routes/demands.py — Poptávky + dokončení + fotky
+- /app/backend/routes/auth_routes.py — Auth
 - /app/backend/routes/payments.py — Stripe platby
-- /app/backend/routes/demands.py — Poptávky + dokončení + zrušení
 
 ## Backlog
 - P1: Přechod Stripe a Twilio na firemní účty CraftBolt
+- P1: Export faktur/přehledů (PDF souhrn dokončených zakázek pro účetní)
 - P2: Mobilní aplikace (React Native) - PAUSOVÁNO
