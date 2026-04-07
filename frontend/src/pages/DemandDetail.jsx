@@ -48,6 +48,9 @@ const DemandDetail = () => {
   const [uploadingCompletePhoto, setUploadingCompletePhoto] = useState(false);
   const [uploadingPostPhoto, setUploadingPostPhoto] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [priceDisputeReason, setPriceDisputeReason] = useState('');
+  const [showDisputeForm, setShowDisputeForm] = useState(false);
+  const [confirmingPrice, setConfirmingPrice] = useState(false);
 
   const [notificationToast, setNotificationToast] = useState(null);
 
@@ -409,6 +412,24 @@ const DemandDetail = () => {
     }
   };
 
+  const handleConfirmPrice = async (confirmed) => {
+    setConfirmingPrice(true);
+    try {
+      const payload = { confirmed };
+      if (!confirmed) payload.reason = priceDisputeReason;
+      await axios.post(`${API}/demands/${id}/confirm-price`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPriceDisputeReason('');
+      setShowDisputeForm(false);
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Chyba při potvrzování ceny');
+    } finally {
+      setConfirmingPrice(false);
+    }
+  };
+
   const handleCancelDemand = async () => {
     if (!window.confirm('Opravdu chcete zrušit tuto zakázku?')) return;
     try {
@@ -723,6 +744,76 @@ const DemandDetail = () => {
               )}
 
               {/* Completion Photos / Fotodokumentace */}
+              {demand.status === 'completed' && (
+                <>
+                  {/* Price Confirmation by Supplier */}
+                  {demand.agreed_price > 0 && user?.id === demand.assigned_supplier_id && demand.price_confirmed_by_supplier === null && (
+                    <div className="mt-6 pt-6 border-t border-gray-100" data-testid="price-confirmation-section">
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-orange-700 uppercase tracking-wider mb-2">Potvrzení ceny</h3>
+                        <p className="text-sm text-gray-700 mb-1">
+                          Zákazník uvedl konečnou cenu za tuto zakázku:
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 mb-4" data-testid="price-to-confirm">
+                          {Number(demand.final_price || demand.agreed_price).toLocaleString('cs-CZ')} Kč
+                        </p>
+                        {!showDisputeForm ? (
+                          <div className="flex gap-3">
+                            <button onClick={() => handleConfirmPrice(true)} disabled={confirmingPrice}
+                              className="px-6 py-2.5 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-colors disabled:opacity-50" data-testid="confirm-price-btn">
+                              {confirmingPrice ? 'Potvrzuji...' : 'Souhlasím s cenou'}
+                            </button>
+                            <button onClick={() => setShowDisputeForm(true)}
+                              className="px-6 py-2.5 bg-white border border-red-300 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors" data-testid="dispute-price-btn">
+                              Nesouhlasím
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <textarea value={priceDisputeReason} onChange={e => setPriceDisputeReason(e.target.value)} rows={3}
+                              placeholder="Uveďte důvod nesouhlasu..." className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500" data-testid="dispute-reason-input" />
+                            <div className="flex gap-3">
+                              <button onClick={() => handleConfirmPrice(false)} disabled={confirmingPrice || !priceDisputeReason.trim()}
+                                className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50" data-testid="submit-dispute-btn">
+                                {confirmingPrice ? 'Odesílám...' : 'Odeslat nesouhlas'}
+                              </button>
+                              <button onClick={() => { setShowDisputeForm(false); setPriceDisputeReason(''); }}
+                                className="px-6 py-2.5 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors">
+                                Zrušit
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price Confirmation Status */}
+                  {demand.agreed_price > 0 && demand.price_confirmed_by_supplier === true && (
+                    <div className="mt-4 flex items-center gap-2 text-green-600 bg-green-50 px-4 py-2.5 rounded-xl" data-testid="price-confirmed-badge">
+                      <Check weight="bold" className="w-4 h-4" />
+                      <span className="text-sm font-medium">Dodavatel potvrdil cenu {demand.price_confirmed_at ? `dne ${new Date(demand.price_confirmed_at).toLocaleDateString('cs-CZ')}` : ''}</span>
+                    </div>
+                  )}
+                  {demand.agreed_price > 0 && demand.price_confirmed_by_supplier === false && (
+                    <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3" data-testid="price-disputed-badge">
+                      <div className="flex items-center gap-2 text-red-600 mb-1">
+                        <Warning weight="bold" className="w-4 h-4" />
+                        <span className="text-sm font-medium">Dodavatel nesouhlasí s cenou</span>
+                      </div>
+                      {demand.price_dispute_reason && (
+                        <p className="text-sm text-red-600 ml-6">{demand.price_dispute_reason}</p>
+                      )}
+                    </div>
+                  )}
+                  {demand.agreed_price > 0 && demand.price_confirmed_by_supplier === null && user?.id !== demand.assigned_supplier_id && (
+                    <div className="mt-4 flex items-center gap-2 text-orange-600 bg-orange-50 px-4 py-2.5 rounded-xl" data-testid="price-pending-badge">
+                      <Clock weight="bold" className="w-4 h-4" />
+                      <span className="text-sm font-medium">Čeká na potvrzení ceny dodavatelem</span>
+                    </div>
+                  )}
+                </>
+              )}
               {demand.status === 'completed' && (
                 <div className="mt-6 pt-6 border-t border-gray-100" data-testid="completion-photos-section">
                   <div className="flex items-center justify-between mb-3">

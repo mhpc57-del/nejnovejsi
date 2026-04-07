@@ -1,0 +1,84 @@
+{
+  "summary": "Iteration 21 - Complete testing of supplier price confirmation feature. All 12 backend tests passed. All 11 frontend features verified via Playwright. Features tested: confirm-price endpoint, dispute flow, finances endpoint with confirmed/pending breakdown, UI badges for confirmed/disputed/pending states.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration21_price_confirmation.py",
+    "/app/test_reports/pytest/pytest_results_iteration21.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration21_price_confirmation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all 11 features verified)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "Used existing test demands: a2d8e3b0-388d-4cd0-ac76-b4a8cd2a4d55 (confirmed), a26298e5-222b-4bab-b63c-4eddcb74150f (disputed during test)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Price confirmation feature fully tested. Key test demands: a2d8e3b0 (price confirmed), a26298e5 (price disputed with reason). Supplier finances endpoint returns total_income (confirmed only), total_pending, confirmed_jobs, pending_jobs. Sidebar finance widget shows both confirmed and pending amounts.",
+  "features_tested": {
+    "BACKEND_CONFIRM_PRICE_TRUE": {
+      "status": "PASSED",
+      "details": "POST /api/demands/{id}/confirm-price with confirmed=true marks demand price as confirmed"
+    },
+    "BACKEND_CONFIRM_PRICE_FALSE": {
+      "status": "PASSED",
+      "details": "POST /api/demands/{id}/confirm-price with confirmed=false and reason marks as disputed"
+    },
+    "BACKEND_CONFIRM_PRICE_403": {
+      "status": "PASSED",
+      "details": "Returns 403 if not the assigned supplier (customer blocked)"
+    },
+    "BACKEND_CONFIRM_PRICE_400": {
+      "status": "PASSED",
+      "details": "Returns 400 if already confirmed/disputed (double confirmation blocked)"
+    },
+    "BACKEND_SUPPLIER_FINANCES": {
+      "status": "PASSED",
+      "details": "GET /api/suppliers/{id}/finances returns total_income, total_pending, confirmed_jobs, pending_jobs"
+    },
+    "FRONTEND_PRICE_CONFIRMATION_SECTION": {
+      "status": "PASSED",
+      "details": "DemandDetail shows 'POTVRZENÍ CENY' section for supplier on completed demand with unconfirmed price"
+    },
+    "FRONTEND_CONFIRM_BUTTON": {
+      "status": "PASSED",
+      "details": "Supplier can click 'Souhlasím s cenou' button to confirm"
+    },
+    "FRONTEND_DISPUTE_FORM": {
+      "status": "PASSED",
+      "details": "Supplier can click 'Nesouhlasím' to show dispute form with textarea"
+    },
+    "FRONTEND_CONFIRMED_BADGE": {
+      "status": "PASSED",
+      "details": "After confirmation, green badge 'Dodavatel potvrdil cenu' appears with date"
+    },
+    "FRONTEND_PENDING_BADGE": {
+      "status": "PASSED",
+      "details": "Customer sees 'Čeká na potvrzení ceny dodavatelem' badge on unconfirmed demand (verified via code review - badge shows when price_confirmed_by_supplier === null)"
+    },
+    "FRONTEND_SIDEBAR_FINANCE": {
+      "status": "PASSED",
+      "details": "Supplier dashboard sidebar shows 'Potvrzené příjmy' (32,500 Kč, 2 jobs) + 'Čeká na potvrzení' (15,000 Kč, 1 job) separately"
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

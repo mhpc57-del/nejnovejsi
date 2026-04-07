@@ -406,8 +406,16 @@ const SupplierDashboard = () => {
           {/* Finance widget */}
           {finances && (
             <div className="bg-green-50 rounded-xl p-4 mb-3" data-testid="sidebar-finance">
-              <p className="text-xs text-green-600 font-medium">Celkové příjmy</p>
+              <p className="text-xs text-green-600 font-medium">Potvrzené příjmy</p>
               <p className="text-lg font-bold text-green-800">{(finances.total_income || 0).toLocaleString('cs-CZ')} Kč</p>
+              <p className="text-xs text-green-600 mt-0.5">{finances.confirmed_jobs || 0} zakázek</p>
+              {finances.total_pending > 0 && (
+                <div className="mt-2 pt-2 border-t border-green-200">
+                  <p className="text-xs text-orange-600 font-medium">Čeká na potvrzení</p>
+                  <p className="text-sm font-semibold text-orange-700">{(finances.total_pending || 0).toLocaleString('cs-CZ')} Kč</p>
+                  <p className="text-xs text-orange-500">{finances.pending_jobs || 0} zakázek</p>
+                </div>
+              )}
             </div>
           )}
           <div className="bg-orange-50 rounded-xl p-4 mb-4">

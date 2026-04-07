@@ -662,24 +662,99 @@ async def set_cancellation_reason(demand_id: str, reason: str, current_user: dic
     return {"message": "Důvod uložen"}
 
 
+@router.post("/demands/{demand_id}/confirm-price")
+async def confirm_price(demand_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Supplier confirms or disputes the completion price."""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Zakázka není dokončená")
+    if demand.get("assigned_supplier_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nejste přiřazený dodavatel")
+    if demand.get("price_confirmed_by_supplier") is not None:
+        raise HTTPException(status_code=400, detail="Cena již byla potvrzena nebo zamítnuta")
+    
+    confirmed = data.get("confirmed", False)
+    now = datetime.now(timezone.utc).isoformat()
+    
+    update = {
+        "price_confirmed_by_supplier": confirmed,
+        "price_confirmed_at": now
+    }
+    
+    if not confirmed:
+        update["price_dispute_reason"] = data.get("reason", "")
+    
+    await db.demands.update_one({"id": demand_id}, {"$set": update})
+    
+    # Notify the customer
+    try:
+        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1})
+        if customer:
+            supplier_name = current_user.get("company_name") or f"{current_user.get('first_name', '')} {current_user.get('last_name', '')}".strip()
+            if confirmed:
+                subject = f"CraftBolt — Dodavatel potvrdil cenu: {demand['title']}"
+                heading = "Dodavatel potvrdil konečnou cenu"
+                final = demand.get('final_price') or demand.get('agreed_price', 0)
+                body = f"Dodavatel <strong>{supplier_name}</strong> potvrdil konečnou cenu <strong>{final:,.0f} Kč</strong> za zakázku <strong>{demand['title']}</strong>."
+            else:
+                reason = data.get("reason", "")
+                subject = f"CraftBolt — Dodavatel nesouhlasí s cenou: {demand['title']}"
+                heading = "Dodavatel nesouhlasí s uvedenou cenou"
+                body = f"Dodavatel <strong>{supplier_name}</strong> nesouhlasí s cenou za zakázku <strong>{demand['title']}</strong>."
+                if reason:
+                    body += f'<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;"><p style="margin: 0 0 4px 0; font-weight: 600;">Důvod:</p><p style="margin: 0;">{reason}</p></div>'
+            
+            await notification_service.email_service.send_email(
+                customer["email"], subject,
+                notification_service.templates.email_base(f"""
+                    <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">{heading}</h2>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den,</p>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">{body}</p>
+                """, subject)
+            )
+    except Exception as e:
+        logger.error(f"Failed to send price confirmation notification: {e}")
+    
+    return {"message": "Cena potvrzena" if confirmed else "Nesouhlas s cenou odeslán"}
+
+
 @router.get("/suppliers/{supplier_id}/finances")
 async def get_supplier_finances(supplier_id: str, current_user: dict = Depends(get_current_user)):
     """Get financial summary for a supplier."""
     if current_user["id"] != supplier_id and current_user["role"] != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Nemáte oprávnění")
     
-    completed = await db.demands.find({
+    # Only count confirmed prices
+    confirmed = await db.demands.find({
         "assigned_supplier_id": supplier_id,
         "status": "completed",
-        "invoiced_amount": {"$exists": True, "$ne": None}
-    }, {"_id": 0, "invoiced_amount": 1, "completed_at": 1}).to_list(500)
+        "price_confirmed_by_supplier": True
+    }, {"_id": 0, "final_price": 1, "agreed_price": 1, "completed_at": 1, "title": 1, "category": 1}).to_list(500)
     
-    total_income = sum(d.get("invoiced_amount", 0) for d in completed)
+    # Also get pending (not yet confirmed)
+    pending = await db.demands.find({
+        "assigned_supplier_id": supplier_id,
+        "status": "completed",
+        "agreed_price": {"$exists": True, "$ne": None},
+        "price_confirmed_by_supplier": None
+    }, {"_id": 0, "final_price": 1, "agreed_price": 1, "title": 1}).to_list(500)
+    
+    total_confirmed = sum(d.get("final_price") or d.get("agreed_price", 0) for d in confirmed)
+    total_pending = sum(d.get("final_price") or d.get("agreed_price", 0) for d in pending)
     
     return {
-        "total_income": total_income,
-        "completed_jobs": len(completed),
-        "transactions": completed
+        "total_income": total_confirmed,
+        "total_pending": total_pending,
+        "confirmed_jobs": len(confirmed),
+        "pending_jobs": len(pending),
+        "transactions": [{
+            "title": d.get("title", ""),
+            "category": d.get("category", ""),
+            "amount": d.get("final_price") or d.get("agreed_price", 0),
+            "completed_at": d.get("completed_at", "")
+        } for d in confirmed]
     }
 
 

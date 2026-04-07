@@ -159,6 +159,9 @@ class DemandResponse(BaseModel):
     agreed_price: Optional[float] = None
     final_price: Optional[float] = None
     completion_photos: List[dict] = []
+    price_confirmed_by_supplier: Optional[bool] = None
+    price_confirmed_at: Optional[str] = None
+    price_dispute_reason: Optional[str] = None
 
 
 class MessageCreate(BaseModel):
