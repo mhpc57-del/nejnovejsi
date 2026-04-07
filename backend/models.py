@@ -154,6 +154,8 @@ class DemandResponse(BaseModel):
     completion_type: Optional[str] = None
     price_increase: Optional[float] = None
     blacklist_reason: Optional[str] = None
+    agreed_price: Optional[float] = None
+    final_price: Optional[float] = None
 
 
 class MessageCreate(BaseModel):

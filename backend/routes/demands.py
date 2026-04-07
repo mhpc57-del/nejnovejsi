@@ -463,7 +463,9 @@ async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = 
     update_fields = {
         "status": "completed",
         "completed_at": now.isoformat(),
-        "completion_type": completion_type
+        "completion_type": completion_type,
+        "agreed_price": data.get("agreed_price", 0),
+        "final_price": data.get("final_price", 0)
     }
     
     # Handle price increase

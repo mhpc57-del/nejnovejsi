@@ -41,6 +41,8 @@ const DemandDetail = () => {
   const [completeType, setCompleteType] = useState(null);
   const [completePriceIncrease, setCompletePriceIncrease] = useState('');
   const [completeBlacklistReason, setCompleteBlacklistReason] = useState('');
+  const [completeAgreedPrice, setCompleteAgreedPrice] = useState('');
+  const [completeFinalPrice, setCompleteFinalPrice] = useState('');
   const [completing, setCompleting] = useState(false);
 
   const [notificationToast, setNotificationToast] = useState(null);
@@ -317,8 +319,12 @@ const DemandDetail = () => {
     setCompleting(true);
     try {
       const payload = { completion_type: completeType };
+      payload.agreed_price = parseFloat(completeAgreedPrice) || 0;
       if (completeType === 'price_increase') {
         payload.price_increase = parseFloat(completePriceIncrease) || 0;
+        payload.final_price = payload.agreed_price + payload.price_increase;
+      } else {
+        payload.final_price = payload.agreed_price;
       }
       if (completeType === 'blacklist') {
         payload.blacklist_reason = completeBlacklistReason;
@@ -330,6 +336,8 @@ const DemandDetail = () => {
       setCompleteType(null);
       setCompletePriceIncrease('');
       setCompleteBlacklistReason('');
+      setCompleteAgreedPrice('');
+      setCompleteFinalPrice('');
       fetchData();
       setShowReviewModal(true);
     } catch (error) {
@@ -886,15 +894,20 @@ const DemandDetail = () => {
 
             {completeType === 'standard' && (
               <div>
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
                   <p className="text-green-800 font-medium">Zakázka bude označena jako dokončená za sjednanou cenu.</p>
                 </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
+                  placeholder="Zadejte cenu zakázky v Kč"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
+                  data-testid="agreed-price-input" autoFocus />
                 <div className="flex gap-3">
                   <button onClick={() => setCompleteType(null)}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
                     Zpět
                   </button>
-                  <button onClick={handleCompleteDemand} disabled={completing}
+                  <button onClick={handleCompleteDemand} disabled={completing || !completeAgreedPrice}
                     className="flex-1 py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl disabled:opacity-50"
                     data-testid="confirm-complete-btn">
                     {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
@@ -908,17 +921,28 @@ const DemandDetail = () => {
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
                   <p className="text-orange-800 font-medium">Zakázka dokončena s navýšením ceny</p>
                 </div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">O kolik bylo navýšení? (Kč)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Původně sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
+                  placeholder="Původní cena v Kč"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  data-testid="agreed-price-input" autoFocus />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">O kolik bylo navýšení? (Kč) <span className="text-red-500">*</span></label>
                 <input type="number" value={completePriceIncrease} onChange={e => setCompletePriceIncrease(e.target.value)}
-                  placeholder="Zadejte částku navýšení v Kč"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
-                  data-testid="price-increase-input" autoFocus />
+                  placeholder="Částka navýšení v Kč"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  data-testid="price-increase-input" />
+                {completeAgreedPrice && completePriceIncrease && (
+                  <div className="bg-gray-50 rounded-xl p-3 mb-4 text-sm">
+                    <span className="text-gray-600">Konečná cena: </span>
+                    <span className="font-bold text-gray-900">{(parseFloat(completeAgreedPrice) + parseFloat(completePriceIncrease)).toLocaleString('cs-CZ')} Kč</span>
+                  </div>
+                )}
                 <div className="flex gap-3">
-                  <button onClick={() => { setCompleteType(null); setCompletePriceIncrease(''); }}
+                  <button onClick={() => { setCompleteType(null); setCompletePriceIncrease(''); setCompleteAgreedPrice(''); }}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
                     Zpět
                   </button>
-                  <button onClick={handleCompleteDemand} disabled={completing || !completePriceIncrease}
+                  <button onClick={handleCompleteDemand} disabled={completing || !completePriceIncrease || !completeAgreedPrice}
                     className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl disabled:opacity-50"
                     data-testid="confirm-complete-btn">
                     {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
@@ -932,18 +956,23 @@ const DemandDetail = () => {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
                   <p className="text-red-800 font-medium">Zakázka dokončena — zákazník bude označen</p>
                 </div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Důvod, proč už nechcete tomuto zákazníkovi poskytovat služby:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
+                  placeholder="Cena zakázky v Kč"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  data-testid="agreed-price-input" autoFocus />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Důvod: <span className="text-red-500">*</span></label>
                 <textarea value={completeBlacklistReason} onChange={e => setCompleteBlacklistReason(e.target.value)}
                   placeholder="Popište důvod..."
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none mb-4"
-                  data-testid="blacklist-reason-input" autoFocus />
+                  data-testid="blacklist-reason-input" />
                 <div className="flex gap-3">
-                  <button onClick={() => { setCompleteType(null); setCompleteBlacklistReason(''); }}
+                  <button onClick={() => { setCompleteType(null); setCompleteBlacklistReason(''); setCompleteAgreedPrice(''); }}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
                     Zpět
                   </button>
-                  <button onClick={handleCompleteDemand} disabled={completing || !completeBlacklistReason.trim()}
+                  <button onClick={handleCompleteDemand} disabled={completing || !completeBlacklistReason.trim() || !completeAgreedPrice}
                     className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl disabled:opacity-50"
                     data-testid="confirm-complete-btn">
                     {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
