@@ -20,7 +20,11 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
 async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        if existing.get("is_deactivated"):
+            # Allow re-registration: remove the deactivated account
+            await db.users.delete_one({"email": user_data.email})
+        else:
+            raise HTTPException(status_code=400, detail="Email already registered")
     
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
@@ -158,7 +162,7 @@ async def login(credentials: UserLogin):
     if not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if user.get("is_deactivated"):
-        raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Kontaktujte administrátora pro obnovení.")
+        raise HTTPException(status_code=403, detail="Váš účet byl deaktivován. Pro obnovení kontaktujte administrátora na info@craftbolt.cz.")
     if not user.get("is_verified") and user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="EMAIL_NOT_VERIFIED")
     

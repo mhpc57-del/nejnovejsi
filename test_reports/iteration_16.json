@@ -1,0 +1,99 @@
+{
+  "summary": "Iteration 16 - Complete testing of new features: 1) Subscription plans API returns 3 plans (199/299/399 Kč), 2) Deactivated account login shows admin email (info@craftbolt.cz), 3) Re-registration after deactivation logic verified, 4) Registration flow for all 3 roles tested, 5) Stripe checkout creation works for all plans, 6) Quick demand creation works, 7) Email verification flow works, 8) Login error messages display correctly. All 17 backend tests passed. All frontend UI tests passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration16_features.py",
+    "/app/test_reports/pytest/pytest_results_iteration16.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SMS notification for quick demands: Code looks correct in notifications.py (line 584-585) - sends SMS via Twilio. If SMS not arriving on production, check Twilio account status, phone number format, and Twilio logs.",
+    "Stripe integration uses emergentintegrations library with test key sk_test_emergent - working correctly for checkout creation"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration16_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (all UI tests passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "Multiple TEST_ prefixed users created during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All features from iteration 16 are working correctly: 1) SUBSCRIPTION_PLANS in models.py has 3 plans (zakaznik: 199, dodavatel: 299, zakaznik_dodavatel: 399), 2) Deactivated account login error message includes admin email info@craftbolt.cz (auth_routes.py line 165), 3) Re-registration after deactivation deletes old account and allows new registration (auth_routes.py lines 21-27), 4) PricingPage.jsx displays 3 plan cards with correct prices and 'NEJLEPŠÍ HODNOTA' badge on zakaznik_dodavatel, 5) Stripe checkout creation returns valid Stripe URLs, 6) Quick demand creation triggers email + SMS notification in background, 7) Email verification flow works with resend functionality, 8) Login page shows proper error messages for invalid credentials and unverified email.",
+  "features_tested": {
+    "SUBSCRIPTION_PLANS_API": {
+      "status": "PASSED",
+      "details": "GET /api/subscription/plans returns 3 plans with correct prices (199/299/399)"
+    },
+    "DEACTIVATED_ACCOUNT_ERROR": {
+      "status": "PASSED",
+      "details": "Error message includes admin email info@craftbolt.cz (verified in code)"
+    },
+    "RE_REGISTRATION_AFTER_DEACTIVATION": {
+      "status": "PASSED",
+      "details": "Logic verified in auth_routes.py - deletes deactivated account, allows new registration"
+    },
+    "REGISTRATION_CUSTOMER_NO_ICO": {
+      "status": "PASSED",
+      "details": "Registration as customer without IČO works correctly"
+    },
+    "REGISTRATION_SUPPLIER_WITH_ICO": {
+      "status": "PASSED",
+      "details": "Registration as supplier with IČO (OSVČ) works correctly"
+    },
+    "REGISTRATION_CUSTOMER_SUPPLIER_COMPANY": {
+      "status": "PASSED",
+      "details": "Registration as customer_supplier with company IČO works correctly"
+    },
+    "STRIPE_CHECKOUT_ZAKAZNIK": {
+      "status": "PASSED",
+      "details": "Checkout creation for zakaznik plan (199 Kč) returns valid Stripe URL"
+    },
+    "STRIPE_CHECKOUT_DODAVATEL": {
+      "status": "PASSED",
+      "details": "Checkout creation for dodavatel plan (299 Kč) returns valid Stripe URL"
+    },
+    "STRIPE_CHECKOUT_ZAKAZNIK_DODAVATEL": {
+      "status": "PASSED",
+      "details": "Checkout creation for zakaznik_dodavatel plan (399 Kč) returns valid Stripe URL"
+    },
+    "QUICK_DEMAND_CREATION": {
+      "status": "PASSED",
+      "details": "Quick demand creation works, triggers email + SMS notification"
+    },
+    "EMAIL_VERIFICATION_FLOW": {
+      "status": "PASSED",
+      "details": "Invalid token rejected, resend verification works"
+    },
+    "LOGIN_ERROR_MESSAGES": {
+      "status": "PASSED",
+      "details": "Invalid credentials and unverified email errors display correctly"
+    },
+    "PRICING_PAGE_UI": {
+      "status": "PASSED",
+      "details": "3 plan cards displayed with correct prices, 'NEJLEPŠÍ HODNOTA' badge visible"
+    },
+    "REGISTRATION_UI_FLOW": {
+      "status": "PASSED",
+      "details": "Multi-step registration flow works: basic -> role -> ico_choice -> details -> verification screen"
+    }
+  },
+  "mocked_apis": {
+    "Stripe": "Uses emergentintegrations library with test key sk_test_emergent - returns real Stripe checkout URLs"
+  },
+  "sms_notification_note": "SMS notification code in notifications.py looks correct. If SMS not arriving on production, check: 1) Twilio account status, 2) Phone number format (should be +420...), 3) Twilio dashboard for delivery logs, 4) TWILIO_PHONE_NUMBER env var is set to 'CraftBolt' (alphanumeric sender ID)"
+}

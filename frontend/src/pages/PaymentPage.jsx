@@ -200,7 +200,43 @@ const PricingPage = () => {
     }
   };
 
-  const planOrder = ['zakaznik', 'dodavatel'];
+  const planOrder = ['zakaznik', 'dodavatel', 'zakaznik_dodavatel'];
+
+  const planFeatures = {
+    zakaznik: [
+      'Neomezený počet zadání',
+      'Výběr z ověřených dodavatelů',
+      'Online chat s dodavateli',
+      'Zamítnutí nabídek',
+      'Úpravy stávajících nabídek',
+      'Vkládání fotografií',
+      'Notifikace (APP, E-mail, SMS)',
+    ],
+    dodavatel: [
+      'Neomezený přístup k zakázkám',
+      'Výběr zakázky dle svých možností',
+      'Online chat se zákazníky',
+      'Ověřený profil nahráním oprávnění',
+      'Volba více kategorií',
+      'Vkládání fotografií',
+      'Notifikace (APP, E-mail, SMS)',
+    ],
+    zakaznik_dodavatel: [
+      'Vše z tarifu Zákazník',
+      'Vše z tarifu Dodavatel',
+      'Zadávání i přijímání zakázek',
+      'Kompletní přístup ke všem funkcím',
+      'Online chat se všemi uživateli',
+      'Vkládání fotografií',
+      'Notifikace (APP, E-mail, SMS)',
+    ],
+  };
+
+  const planLabels = {
+    zakaznik: 'Začít jako zákazník',
+    dodavatel: 'Začít jako dodavatel',
+    zakaznik_dodavatel: 'Začít s plným přístupem',
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,6 +250,7 @@ const PricingPage = () => {
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            data-testid="pricing-back-btn"
           >
             <ArrowLeft weight="bold" />
             Zpět
@@ -222,14 +259,14 @@ const PricingPage = () => {
       </header>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <span className="text-orange-500 font-bold text-sm tracking-wider uppercase">Ceník</span>
           <h1 className="text-4xl font-bold text-gray-900 mt-2 mb-4">
             Jednoduchý a férový ceník.
           </h1>
           <p className="text-gray-600 text-lg">
-            Vyberte si tarif podle toho, zda hledáte řemeslníka nebo nabízíte služby.
+            Vyberte si tarif podle toho, zda hledáte řemeslníka, nabízíte služby, nebo obojí.
           </p>
         </div>
 
@@ -238,25 +275,26 @@ const PricingPage = () => {
             <Spinner className="w-12 h-12 text-orange-500 animate-spin" />
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {planOrder.map((planId) => {
               const plan = plans[planId];
               if (!plan) return null;
-              const isDodavatel = planId === 'dodavatel';
+              const isHighlighted = planId === 'zakaznik_dodavatel';
 
               return (
                 <div
                   key={planId}
-                  className={`bg-white rounded-2xl p-8 ${
-                    isDodavatel 
+                  data-testid={`plan-card-${planId}`}
+                  className={`bg-white rounded-2xl p-7 flex flex-col ${
+                    isHighlighted 
                       ? 'ring-2 ring-orange-500 shadow-xl relative' 
                       : 'border border-gray-200 shadow-lg'
                   }`}
                 >
-                  {isDodavatel && (
+                  {isHighlighted && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <span className="bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
-                        PRO ŘEMESLNÍKY
+                      <span className="bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                        NEJLEPŠÍ HODNOTA
                       </span>
                     </div>
                   )}
@@ -265,83 +303,26 @@ const PricingPage = () => {
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline mb-1">
-                    <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-500 ml-2">Kč/měsíc bez DPH</span>
+                    <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
+                    <span className="text-gray-500 ml-2 text-sm">Kč/měsíc bez DPH</span>
                   </div>
-                  <p className="text-orange-500 text-sm mb-6">{plan.trial_days} dní zdarma na vyzkoušení</p>
+                  <p className="text-orange-500 text-sm mb-5">{plan.trial_days} dní zdarma na vyzkoušení</p>
 
-                  <ul className="space-y-3 mb-8">
-                    {planId === 'zakaznik' && (
-                      <>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Neomezený počet zadání
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Výběr z ověřených dodavatelů
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Online chat s dodavateli
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Zamítnutí nabídek
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Úpravy stávajících nabídek
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Vkládání fotografií
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Notifikace (APP, E-mail, SMS)
-                        </li>
-                      </>
-                    )}
-                    {planId === 'dodavatel' && (
-                      <>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Neomezený přístup k zakázkám
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Výběr zakázky dle svých možností
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Online chat se zákazníky
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Ověřený profil nahráním oprávnění
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Volba více kategorií
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Vkládání fotografií
-                        </li>
-                        <li className="flex items-center gap-2 text-gray-600">
-                          <CheckCircle weight="fill" className="text-green-500 flex-shrink-0" />
-                          Notifikace (APP, E-mail, SMS)
-                        </li>
-                      </>
-                    )}
+                  <ul className="space-y-2.5 mb-6 flex-1">
+                    {(planFeatures[planId] || []).map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                        <CheckCircle weight="fill" className="text-green-500 flex-shrink-0 mt-0.5 w-4 h-4" />
+                        {feature}
+                      </li>
+                    ))}
                   </ul>
 
                   <button
                     onClick={() => handleSubscribe(planId)}
                     disabled={processingPlan !== null}
+                    data-testid={`subscribe-${planId}-btn`}
                     className={`w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                      isDodavatel
+                      isHighlighted
                         ? 'bg-orange-500 hover:bg-orange-600 text-white'
                         : 'bg-gray-900 hover:bg-gray-800 text-white'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -354,7 +335,7 @@ const PricingPage = () => {
                     ) : (
                       <>
                         <CreditCard weight="bold" />
-                        {planId === 'zakaznik' ? 'Začít jako zákazník' : 'Začít jako dodavatel'}
+                        {planLabels[planId] || 'Předplatit'}
                       </>
                     )}
                   </button>
@@ -364,9 +345,11 @@ const PricingPage = () => {
           </div>
         )}
 
-        <p className="text-center text-gray-600 text-sm mt-8 bg-gray-100 py-3 px-6 rounded-full inline-block mx-auto">
-          Platba kartou přes zabezpečenou bránu Stripe. <strong>Předplatné můžete kdykoliv zrušit.</strong>
-        </p>
+        <div className="text-center mt-10">
+          <p className="text-gray-600 text-sm bg-gray-100 py-3 px-6 rounded-full inline-block">
+            Platba kartou přes zabezpečenou bránu Stripe. <strong>Předplatné můžete kdykoliv zrušit.</strong>
+          </p>
+        </div>
       </div>
     </div>
   );

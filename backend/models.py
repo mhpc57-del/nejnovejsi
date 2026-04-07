@@ -300,16 +300,23 @@ CATEGORIES = [
 SUBSCRIPTION_PLANS = {
     "zakaznik": {
         "name": "Zákazník",
-        "price": 99.0,
+        "price": 199.0,
         "description": "Neomezený počet zadání, výběr z ověřených dodavatelů",
         "role": "customer",
         "trial_days": 14
     },
     "dodavatel": {
         "name": "Dodavatel",
-        "price": 399.0,
+        "price": 299.0,
         "description": "Neomezený přístup k zakázkám, ověřený profil",
         "role": "supplier",
+        "trial_days": 14
+    },
+    "zakaznik_dodavatel": {
+        "name": "Zákazník i Dodavatel",
+        "price": 399.0,
+        "description": "Kompletní přístup — zadávání i přijímání zakázek",
+        "role": "customer_supplier",
         "trial_days": 14
     }
 }
