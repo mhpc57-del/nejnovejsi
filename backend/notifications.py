@@ -558,6 +558,29 @@ class NotificationService:
         subject, html = self.templates.payment_success_email(plan_name, amount)
         await self.email_service.send_email(user_email, subject, html)
 
+    async def notify_category_suggestion(self, admin_email: str, category_name: str, suggested_by_name: str):
+        """Notify admin about a new category suggestion"""
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Nový návrh kategorie</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dobrý den,
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{suggested_by_name}</strong> navrhl novou kategorii služeb:
+            </p>
+            <div style="background-color: #fef3e6; border-left: 4px solid #f97316; padding: 16px; margin: 0 0 24px 0; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; color: #1a1a1a; font-size: 18px; font-weight: 600;">
+                    {category_name}
+                </p>
+            </div>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Přihlaste se do administrace a rozhodněte, zda kategorii schválíte nebo zamítnete.
+            </p>
+        """
+        subject = f"CraftBolt — Nový návrh kategorie: {category_name}"
+        html = self.templates.email_base(content, subject)
+        await self.email_service.send_email(admin_email, subject, html)
+
     async def notify_soft_accept(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str, demand_id: str = ""):
         """Notify customer about supplier's conditional acceptance"""
         subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason, demand_id)

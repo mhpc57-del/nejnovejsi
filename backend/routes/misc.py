@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from database import db
 from auth import get_current_user
 from models import CATEGORIES, CategorySuggestion, ADMIN_EMAIL
+from notifications import NotificationService
 from datetime import datetime, timezone
 import uuid
 import httpx
@@ -9,6 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+notification_service = NotificationService()
 
 
 # ============ CATEGORIES ============
@@ -39,6 +41,14 @@ async def suggest_category(data: CategorySuggestion, current_user: dict = Depend
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.notifications.insert_one(notification)
+    
+    # Send email to admin
+    try:
+        await notification_service.notify_category_suggestion(
+            ADMIN_EMAIL, data.name, suggestion['suggested_by_name']
+        )
+    except Exception as e:
+        logger.error(f"Failed to send category suggestion email: {e}")
     
     logger.info(f"Category suggestion: {data.name} by {suggestion['suggested_by_name']}")
     return {"message": "Návrh kategorie byl odeslán ke schválení"}
