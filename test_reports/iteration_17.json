@@ -1,0 +1,64 @@
+{
+  "summary": "Iteration 17 - Complete testing of Financial Summary feature for completed demands. All 6 backend tests passed. All 3 frontend UI tests passed. E2E completion flow verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_financial_summary.py",
+    "/app/test_reports/pytest/pytest_results_iteration17.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_financial_summary.py"
+  ],
+  "success_rate": {
+    "backend": "100% (6/6 tests passed)",
+    "frontend": "100% (all UI tests passed)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "E2E test demand created: 620bccb5-2b12-4f77-b96b-56202645d27a (standard completion with agreed_price=7500)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Financial Summary feature fully tested and working. Three completion types verified: 1) price_increase (demand a2d8e3b0-388d-4cd0-ac76-b4a8cd2a4d55 with agreed=20000, increase=5000, final=25000), 2) blacklist (demand a26298e5-222b-4bab-b63c-4eddcb74150f with agreed=15000, final=15000, reason='Zákazník byl nepříjemný'), 3) standard (E2E test demand 620bccb5-2b12-4f77-b96b-56202645d27a with agreed=7500, final=7500). Frontend correctly shows 'FINANČNÍ PŘEHLED' section with Dohodnutá cena, Navýšení ceny (only for price_increase), Konečná cena (only when different from agreed), and blacklist warning with reason (only for blacklist type).",
+  "features_tested": {
+    "BACKEND_API_PRICE_INCREASE_DEMAND": {
+      "status": "PASSED",
+      "details": "GET /api/demands/a2d8e3b0-388d-4cd0-ac76-b4a8cd2a4d55 returns agreed_price=20000, final_price=25000, price_increase=5000, completion_type=price_increase"
+    },
+    "BACKEND_API_BLACKLIST_DEMAND": {
+      "status": "PASSED",
+      "details": "GET /api/demands/a26298e5-222b-4bab-b63c-4eddcb74150f returns agreed_price=15000, final_price=15000, completion_type=blacklist, blacklist_reason='Zákazník byl nepříjemný a odmítal spolupráci.'"
+    },
+    "FRONTEND_PRICE_INCREASE_DISPLAY": {
+      "status": "PASSED",
+      "details": "Demand detail page shows 'FINANČNÍ PŘEHLED' with Dohodnutá cena 20 000 Kč, Navýšení ceny +5 000 Kč (orange), Konečná cena 25 000 Kč"
+    },
+    "FRONTEND_BLACKLIST_DISPLAY": {
+      "status": "PASSED",
+      "details": "Demand detail page shows 'FINANČNÍ PŘEHLED' with Dohodnutá cena 15 000 Kč, red warning 'Zákazník označen — příště neposkytovat' with reason text"
+    },
+    "E2E_COMPLETION_FLOW": {
+      "status": "PASSED",
+      "details": "Created demand as customer, accepted as supplier, completed with 'standard' type and agreed_price=7500. Financial summary displays correctly on detail page."
+    },
+    "DEMAND_WITHOUT_AGREED_PRICE": {
+      "status": "PASSED",
+      "details": "Verified that demands without agreed_price (old demands) return null/0 for financial fields. Frontend correctly hides financial summary when agreed_price is 0 or null."
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

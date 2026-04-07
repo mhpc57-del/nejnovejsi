@@ -612,6 +612,54 @@ const DemandDetail = () => {
                 )}
               </div>
 
+              {/* Financial Summary for completed demands */}
+              {demand.status === 'completed' && demand.agreed_price > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-100" data-testid="completed-financial-summary">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Finanční přehled</h3>
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Dohodnutá cena</span>
+                      <span className="font-semibold text-gray-900" data-testid="agreed-price-display">
+                        {Number(demand.agreed_price).toLocaleString('cs-CZ')} Kč
+                      </span>
+                    </div>
+                    {demand.completion_type === 'price_increase' && demand.price_increase > 0 && (
+                      <div className="flex items-center justify-between text-orange-600">
+                        <span className="text-sm">Navýšení ceny</span>
+                        <span className="font-semibold" data-testid="price-increase-display">
+                          +{Number(demand.price_increase).toLocaleString('cs-CZ')} Kč
+                        </span>
+                      </div>
+                    )}
+                    {demand.final_price > 0 && demand.final_price !== demand.agreed_price && (
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                        <span className="text-sm font-medium text-gray-900">Konečná cena</span>
+                        <span className="font-bold text-lg text-gray-900" data-testid="final-price-display">
+                          {Number(demand.final_price).toLocaleString('cs-CZ')} Kč
+                        </span>
+                      </div>
+                    )}
+                    {demand.completion_type === 'blacklist' && demand.blacklist_reason && (
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <div className="flex items-start gap-2">
+                          <Warning weight="bold" className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-sm font-medium text-red-700">Zákazník označen — příště neposkytovat</span>
+                            <p className="text-sm text-red-600 mt-0.5" data-testid="blacklist-reason-display">{demand.blacklist_reason}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {demand.completed_at && (
+                      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-200">
+                        <span>Dokončeno</span>
+                        <span data-testid="completed-at-display">{new Date(demand.completed_at).toLocaleDateString('cs-CZ')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
                 {canAccept && (
