@@ -10,6 +10,7 @@ import {
   Eye, EyeSlash, ArrowLeft, ArrowRight, User, Briefcase, 
   Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X, Image as ImageIcon, Plus
 } from '@phosphor-icons/react';
+import ThemeToggle from '../components/ThemeToggle';
 
 // Leaflet marker fix
 delete L.Icon.Default.prototype._getIconUrl;
@@ -861,10 +862,13 @@ const RegisterPage = () => {
             <span className="text-2xl font-bold text-gray-900">Craft</span>
             <span className="text-2xl font-bold text-orange-500">Bolt</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            Zpět
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              Zpět
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

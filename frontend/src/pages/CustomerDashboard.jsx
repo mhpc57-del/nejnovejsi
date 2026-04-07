@@ -11,6 +11,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DraggableMap from '../components/DraggableMap';
+import ThemeToggle from '../components/ThemeToggle';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -169,6 +170,9 @@ const CustomerDashboard = () => {
             <SignOut className="w-5 h-5" />
             Odhlásit se
           </button>
+          <div className="px-4 py-2">
+            <ThemeToggle className="w-full justify-center" />
+          </div>
         </div>
       </aside>
 

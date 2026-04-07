@@ -9,6 +9,7 @@ import {
   Briefcase, Check, PencilSimple, Camera, Envelope, Buildings, 
   MagnifyingGlass, Globe, X, Plus, Image as ImageIcon, Trash, Clock
 } from '@phosphor-icons/react';
+import ThemeToggle from '../components/ThemeToggle';
 
 // Fix default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -307,14 +308,17 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-4 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" data-testid="back-btn">
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold text-gray-900">Craft</span>
-            <span className="text-xl font-bold text-orange-500">Bolt</span>
-          </Link>
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" data-testid="back-btn">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <Link to="/" className="flex items-center">
+              <span className="text-xl font-bold text-gray-900">Craft</span>
+              <span className="text-xl font-bold text-orange-500">Bolt</span>
+            </Link>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 

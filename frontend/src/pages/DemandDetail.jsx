@@ -8,6 +8,7 @@ import {
   PencilSimple, ImageSquare, Plus
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
+import ThemeToggle from '../components/ThemeToggle';
 
 const DemandDetail = () => {
   const { id } = useParams();
@@ -474,6 +475,7 @@ const DemandDetail = () => {
               {showMap ? 'Skrýt mapu' : 'Sledovat polohu'}
             </button>
           )}
+          <ThemeToggle />
         </div>
       </header>
 
