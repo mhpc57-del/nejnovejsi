@@ -186,10 +186,17 @@ async def get_available_demands(category: Optional[str] = None, current_user: di
     
     query = {"status": "open"}
     supplier_categories = current_user.get("categories", [])
-    if supplier_categories:
-        query["category"] = {"$in": supplier_categories}
+    
     if category:
-        query["category"] = category
+        # Explicit filter from UI
+        query["category"] = {"$regex": f"^{category}$", "$options": "i"}
+    elif supplier_categories:
+        # Match supplier's categories (case-insensitive)
+        category_regex = [{"category": {"$regex": f"^{cat}$", "$options": "i"}} for cat in supplier_categories]
+        if len(category_regex) == 1:
+            query.update(category_regex[0])
+        else:
+            query["$or"] = category_regex
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return [DemandResponse(**_fix_demand_data(d)) for d in demands]
