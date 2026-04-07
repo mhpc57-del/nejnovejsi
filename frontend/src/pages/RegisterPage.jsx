@@ -600,19 +600,40 @@ const RegisterPage = () => {
                 </div>
 
                 {/* Pobočky (nepovinné, více) */}
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa pobočky</label>
                   <div className="flex gap-2">
-                    <input type="text" name="branch_address_input" value={formData.branch_address_input || ''} onChange={handleInputChange}
-                      placeholder="Adresa pobočky (pokud se liší od sídla)"
-                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      data-testid="register-branch-input" />
+                    <div className="flex-1 relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input type="text" name="branch_address_input" value={formData.branch_address_input || ''}
+                        onChange={handleAddressInput}
+                        onFocus={() => setActiveAddressField('branch_address_input')}
+                        placeholder="Začněte psát adresu pobočky..."
+                        autoComplete="off"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                        data-testid="register-branch-input" />
+                    </div>
                     <button type="button" onClick={handleAddBranchAddress}
                       className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
                       data-testid="add-branch-btn">
                       <Plus className="w-5 h-5" />
                     </button>
                   </div>
+                  {activeAddressField === 'branch_address_input' && addressSuggestions.branch_address_input?.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {addressSuggestions.branch_address_input.map((s, i) => (
+                        <button key={i} type="button" onClick={() => {
+                          setFormData(prev => ({ ...prev, branch_address_input: s.display_name }));
+                          setAddressSuggestions(prev => ({ ...prev, branch_address_input: [] }));
+                          setActiveAddressField(null);
+                        }}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {formData.branch_addresses.length > 0 && (
                     <div className="mt-2 space-y-1.5">
                       {formData.branch_addresses.map((addr, i) => (
