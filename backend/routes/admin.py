@@ -396,17 +396,52 @@ async def approve_category(suggestion_id: str, current_user: dict = Depends(get_
 
 
 @router.put("/admin/category-suggestions/{suggestion_id}/reject")
-async def reject_category(suggestion_id: str, current_user: dict = Depends(get_current_user)):
+async def reject_category(suggestion_id: str, data: dict = None, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin only")
+    
+    if data is None:
+        data = {}
     
     suggestion = await db.category_suggestions.find_one({"id": suggestion_id}, {"_id": 0})
     if not suggestion:
         raise HTTPException(status_code=404, detail="Návrh nenalezen")
     
+    reason = data.get("reason", "")
+    
     await db.category_suggestions.update_one(
         {"id": suggestion_id},
-        {"$set": {"status": "rejected", "rejected_at": datetime.now(timezone.utc).isoformat()}}
+        {"$set": {"status": "rejected", "rejected_at": datetime.now(timezone.utc).isoformat(), "reject_reason": reason}}
     )
+    
+    # Notify the user who suggested the category
+    suggester = await db.users.find_one({"id": suggestion["suggested_by"]}, {"_id": 0, "email": 1})
+    if suggester:
+        reason_block = ""
+        if reason:
+            reason_block = f"""
+                <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 0 0 24px 0; border-radius: 0 8px 8px 0;">
+                    <p style="margin: 0 0 4px 0; color: #1a1a1a; font-weight: 600;">Důvod zamítnutí:</p>
+                    <p style="margin: 0; color: #4b5563;">{reason}</p>
+                </div>
+            """
+        try:
+            await notification_service.email_service.send_email(
+                suggester["email"],
+                f"CraftBolt — Návrh kategorie zamítnut: {suggestion['category_name']}",
+                notification_service.templates.email_base(f"""
+                    <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Váš návrh kategorie byl zamítnut</h2>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den,</p>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                        Váš návrh nové kategorie „<strong>{suggestion['category_name']}</strong>" byl administrátorem zamítnut.
+                    </p>
+                    {reason_block}
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                        Pokud máte dotazy, kontaktujte nás na <a href="mailto:info@craftbolt.cz" style="color: #f97316;">info@craftbolt.cz</a>.
+                    </p>
+                """, "Návrh kategorie zamítnut")
+            )
+        except Exception as e:
+            logger.error(f"Failed to send category rejection email: {e}")
     
     return {"message": f"Kategorie '{suggestion['category_name']}' byla zamítnuta"}

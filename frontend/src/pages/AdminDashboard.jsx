@@ -92,7 +92,7 @@ const AdminDashboard = () => {
           await axios.put(`${API}/admin/category-suggestions/${args[0]}/approve`, {}, { headers });
           break;
         case 'rejectCategory':
-          await axios.put(`${API}/admin/category-suggestions/${args[0]}/reject`, {}, { headers });
+          await axios.put(`${API}/admin/category-suggestions/${args[0]}/reject`, args[1] || {}, { headers });
           break;
         default: break;
       }
@@ -385,7 +385,7 @@ const AdminDashboard = () => {
                     className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors" data-testid={`approve-${s.id}`}>
                     Schválit
                   </button>
-                  <button onClick={() => handleAction('rejectCategory', s.id)}
+                  <button onClick={() => { setModal({ type: 'rejectCategory', data: s }); setModalInput({ reason: '' }); }}
                     className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors" data-testid={`reject-${s.id}`}>
                     Zamítnout
                   </button>
@@ -444,6 +444,22 @@ const AdminDashboard = () => {
         body: <p className="text-gray-600 mb-4">Opravdu chcete zablokovat tohoto uživatele? Nebude se moci přihlásit a obdrží emailové oznámení.</p>,
         confirm: () => handleAction('block', data.id),
         confirmLabel: 'Zablokovat',
+        confirmClass: 'bg-red-500 hover:bg-red-600',
+      },
+      rejectCategory: {
+        title: `Zamítnout kategorii: ${data.category_name || ''}`,
+        body: (
+          <div className="space-y-3">
+            <p className="text-gray-600">Navrhovateli bude odeslán email s oznámením o zamítnutí.</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Důvod zamítnutí (volitelné)</label>
+              <textarea value={modalInput.reason || ''} onChange={e => setModalInput(prev => ({ ...prev, reason: e.target.value }))} rows={3}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Např.: Kategorie je příliš úzká, spadá pod existující kategorii..." data-testid="modal-reject-reason" />
+            </div>
+          </div>
+        ),
+        confirm: () => handleAction('rejectCategory', data.id, { reason: modalInput.reason }),
+        confirmLabel: 'Zamítnout kategorii',
         confirmClass: 'bg-red-500 hover:bg-red-600',
       },
       editUser: {
