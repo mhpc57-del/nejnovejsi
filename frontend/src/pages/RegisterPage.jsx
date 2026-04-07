@@ -161,7 +161,7 @@ const RegisterPage = () => {
 
   const handleAresLookup = async () => {
     if (!formData.ico || formData.ico.length < 7) {
-      setError('Zadejte platné IČO (min. 7 číslic)');
+      setError('Zadejte platné IČ (min. 7 číslic)');
       return;
     }
     setAresLoading(true);
@@ -244,7 +244,7 @@ const RegisterPage = () => {
         break;
       case 'details':
         if (formData.has_ico) {
-          if (!formData.ico) { setError('Vyplňte IČO'); return false; }
+          if (!formData.ico) { setError('Vyplňte IČ'); return false; }
           if (!formData.address) { setError('Vyplňte adresu sídla'); return false; }
         } else {
           if (!formData.first_name || !formData.last_name) { setError('Vyplňte jméno a příjmení'); return false; }
@@ -418,7 +418,7 @@ const RegisterPage = () => {
       case 'ico_choice':
         return (
           <div className="space-y-4">
-            <p className="text-gray-600 mb-6">Podnikáte nebo máte IČO?</p>
+            <p className="text-gray-600 mb-6">Podnikáte nebo máte IČ?</p>
             <button type="button"
               onClick={() => setFormData(prev => ({ ...prev, has_ico: false, account_type: 'nepodnikatel' }))}
               className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.has_ico === false ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
@@ -428,7 +428,7 @@ const RegisterPage = () => {
                   <User weight="bold" className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">Nemám IČO</h3>
+                  <h3 className="font-semibold text-gray-900">Nemám IČ</h3>
                   <p className="text-sm text-gray-500">Fyzická osoba nepodnikající</p>
                 </div>
                 {formData.has_ico === false && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
@@ -443,7 +443,7 @@ const RegisterPage = () => {
                   <Briefcase weight="bold" className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">Mám IČO</h3>
+                  <h3 className="font-semibold text-gray-900">Mám IČ</h3>
                   <p className="text-sm text-gray-500">OSVČ nebo firma</p>
                 </div>
                 {formData.has_ico === true && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
@@ -519,10 +519,10 @@ const RegisterPage = () => {
             </p>
 
             {formData.has_ico ? (
-              /* ======= MÁM IČO ======= */
+              /* ======= MÁM IČ ======= */
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">IČO <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">IČ <span className="text-red-500">*</span></label>
                   <div className="flex gap-2">
                     <input type="text" name="ico" value={formData.ico} onChange={handleInputChange}
                       placeholder="12345678"
@@ -546,7 +546,7 @@ const RegisterPage = () => {
                     data-testid="register-dic-input" />
                 </div>
 
-                {/* Name (optional for IČO) */}
+                {/* Name (optional for IČ) */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Jméno</label>
@@ -650,7 +650,7 @@ const RegisterPage = () => {
                 </div>
               </>
             ) : (
-              /* ======= NEMÁM IČO ======= */
+              /* ======= NEMÁM IČ ======= */
               <>
                 {/* Name (povinné) */}
                 <div className="grid grid-cols-2 gap-3">
@@ -885,7 +885,7 @@ const RegisterPage = () => {
     const titles = {
       basic: 'Základní údaje',
       role: 'Výběr role',
-      ico_choice: 'Máte IČO?',
+      ico_choice: 'Máte IČ?',
       ico_type: 'Typ podnikání',
       details: 'Údaje o účtu',
       categories: 'Kategorie služeb'

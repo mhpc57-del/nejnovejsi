@@ -169,7 +169,7 @@ const RecurringPaymentsPage = () => {
             <p className="text-gray-600">
               <strong>AC/DC MONT s.r.o.</strong><br />
               Sportovní 7, 789 63 Ruda nad Moravou<br />
-              IČO: 097 44 550 | DIČ: CZ09744550
+              IČ: 097 44 550 | DIČ: CZ09744550
             </p>
           </section>
 

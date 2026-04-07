@@ -29,7 +29,7 @@ const TermsPage = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Úvodní ustanovení</h2>
             <p className="mb-4">
               Tyto obchodní podmínky (dále jen „Podmínky") upravují smluvní vztahy mezi provozovatelem služby 
-              CraftBolt.cz – společností AC/DC MONT s.r.o., IČO: 097 44 550, se sídlem Sportovní 7, 789 63 Ruda nad Moravou 
+              CraftBolt.cz – společností AC/DC MONT s.r.o., IČ: 097 44 550, se sídlem Sportovní 7, 789 63 Ruda nad Moravou 
               (dále jen „Provozovatel") a uživateli platformy CraftBolt.cz (dále jen „Služba").
             </p>
             <p className="mb-4">

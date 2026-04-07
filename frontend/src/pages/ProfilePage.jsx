@@ -232,7 +232,7 @@ const ProfilePage = () => {
   };
 
   const handleAresLookup = async () => {
-    if (!formData.ico || formData.ico.length < 7) { setError('Zadejte platné IČO (min. 7 číslic)'); return; }
+    if (!formData.ico || formData.ico.length < 7) { setError('Zadejte platné IČ (min. 7 číslic)'); return; }
     setAresLoading(true); setError('');
     try {
       const response = await axios.get(`${API}/ares/${formData.ico}`);
@@ -447,10 +447,10 @@ const ProfilePage = () => {
             <div className="bg-white rounded-xl border border-gray-100 p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Osobní údaje</h2>
               <div className="space-y-4">
-                {/* IČO + ARES — for OSVČ/firma */}
+                {/* IČ + ARES — for OSVČ/firma */}
                 {!isNepodnikatel && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">IČO</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">IČ</label>
                     <div className="flex gap-2">
                       <input type="text" value={formData.ico} onChange={(e) => setFormData(prev => ({ ...prev, ico: e.target.value }))}
                         placeholder="12345678" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-ico-input" />
@@ -676,7 +676,7 @@ const ProfilePage = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-gray-600"><Phone className="w-5 h-5 text-gray-400 flex-shrink-0" />{profile.phone || '-'}</div>
                 <div className="flex items-center gap-3 text-gray-600"><Envelope className="w-5 h-5 text-gray-400 flex-shrink-0" />{profile.email}</div>
-                {profile.ico && <div className="flex items-center gap-3 text-gray-600"><Briefcase className="w-5 h-5 text-gray-400 flex-shrink-0" />IČO: {profile.ico}</div>}
+                {profile.ico && <div className="flex items-center gap-3 text-gray-600"><Briefcase className="w-5 h-5 text-gray-400 flex-shrink-0" />IČ: {profile.ico}</div>}
                 {profile.dic && <div className="flex items-center gap-3 text-gray-600"><Briefcase className="w-5 h-5 text-gray-400 flex-shrink-0" />DIČ: {profile.dic}</div>}
                 {profile.address && <div className="flex items-center gap-3 text-gray-600"><MapPin className="w-5 h-5 text-gray-400 flex-shrink-0" />Sídlo: {profile.address}</div>}
                 {profile.branch_address && <div className="flex items-center gap-3 text-gray-600"><Buildings className="w-5 h-5 text-gray-400 flex-shrink-0" />Pobočka: {profile.branch_address}</div>}

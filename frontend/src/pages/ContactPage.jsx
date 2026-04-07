@@ -155,7 +155,7 @@ const ContactPage = () => {
             <div>
               <p><strong>Provozovatel:</strong> AC/DC MONT s.r.o.</p>
               <p><strong>Sídlo:</strong> Sportovní 7, 789 63 Ruda nad Moravou</p>
-              <p><strong>IČO:</strong> 097 44 550</p>
+              <p><strong>IČ:</strong> 097 44 550</p>
               <p><strong>DIČ:</strong> CZ09744550</p>
             </div>
             <div>

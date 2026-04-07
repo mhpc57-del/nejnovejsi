@@ -76,7 +76,7 @@ async def ares_lookup(ico: str):
         async with httpx.AsyncClient(timeout=10.0) as client_http:
             response = await client_http.get(f"https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}")
             if response.status_code != 200:
-                raise HTTPException(status_code=404, detail="IČO nenalezeno v registru ARES")
+                raise HTTPException(status_code=404, detail="IČ nenalezeno v registru ARES")
             data = response.json()
             
             result = {"company_name": data.get("obchodniJmeno", ""), "ico": data.get("ico", ico), "dic": "", "address": ""}
