@@ -156,6 +156,7 @@ class DemandResponse(BaseModel):
     blacklist_reason: Optional[str] = None
     agreed_price: Optional[float] = None
     final_price: Optional[float] = None
+    completion_photos: List[dict] = []
 
 
 class MessageCreate(BaseModel):

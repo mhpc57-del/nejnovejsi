@@ -495,6 +495,18 @@ async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = 
                 }}}
             )
     
+    # Handle completion photos from the modal
+    completion_photos = data.get("completion_photos", [])
+    if completion_photos:
+        photo_entries = [{
+            "url": p.get("url") if isinstance(p, dict) else p,
+            "uploaded_by": current_user["id"],
+            "uploaded_by_name": current_user.get("company_name") or f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip(),
+            "uploaded_by_role": current_user["role"],
+            "uploaded_at": now.isoformat()
+        } for p in completion_photos]
+        update_fields["completion_photos"] = photo_entries
+    
     await db.demands.update_one({"id": demand_id}, {"$set": update_fields})
     
     try:
@@ -557,6 +569,64 @@ async def add_progress_photo(demand_id: str, photo_url: str, current_user: dict 
         {"$push": {"progress_photos": photo_url}}
     )
     return {"message": "Foto přidáno"}
+
+
+@router.post("/demands/{demand_id}/completion-photos")
+async def add_completion_photo(demand_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Add completion photos to a completed demand (max 20 total)."""
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Fotky lze přidat pouze k dokončeným zakázkám")
+    if current_user["id"] != demand.get("assigned_supplier_id") and current_user["id"] != demand.get("customer_id") and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    
+    existing = demand.get("completion_photos", [])
+    if len(existing) >= 20:
+        raise HTTPException(status_code=400, detail="Maximální počet fotek (20) byl dosažen")
+    
+    now = datetime.now(timezone.utc)
+    photo_url = data.get("url", "")
+    if not photo_url:
+        raise HTTPException(status_code=400, detail="URL fotky je povinné")
+    
+    photo_entry = {
+        "url": photo_url,
+        "uploaded_by": current_user["id"],
+        "uploaded_by_name": current_user.get("company_name") or f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip(),
+        "uploaded_by_role": current_user["role"],
+        "uploaded_at": now.isoformat()
+    }
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$push": {"completion_photos": photo_entry}}
+    )
+    return {"message": "Foto přidáno", "photo": photo_entry}
+
+
+@router.delete("/demands/{demand_id}/completion-photos")
+async def remove_completion_photo(demand_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Remove a completion photo (only by the person who uploaded it or admin)."""
+    demand = await db.demands.find_one({"id": demand_id})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    
+    photo_url = data.get("url", "")
+    existing = demand.get("completion_photos", [])
+    photo = next((p for p in existing if p.get("url") == photo_url), None)
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotka nenalezena")
+    
+    if current_user["id"] != photo.get("uploaded_by") and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Můžete mazat pouze vlastní fotky")
+    
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$pull": {"completion_photos": {"url": photo_url}}}
+    )
+    return {"message": "Fotka odstraněna"}
 
 
 @router.post("/demands/{demand_id}/invoice")

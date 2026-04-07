@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   ArrowLeft, MapPin, Calendar, User, Clock, Check, X,
   PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving, CurrencyCircleDollar,
-  PencilSimple, ImageSquare, Plus
+  PencilSimple, ImageSquare, Plus, Camera, Trash
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
 import ThemeToggle from '../components/ThemeToggle';
@@ -44,6 +44,10 @@ const DemandDetail = () => {
   const [completeAgreedPrice, setCompleteAgreedPrice] = useState('');
   const [completeFinalPrice, setCompleteFinalPrice] = useState('');
   const [completing, setCompleting] = useState(false);
+  const [completePhotos, setCompletePhotos] = useState([]);
+  const [uploadingCompletePhoto, setUploadingCompletePhoto] = useState(false);
+  const [uploadingPostPhoto, setUploadingPostPhoto] = useState(false);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
 
   const [notificationToast, setNotificationToast] = useState(null);
 
@@ -329,6 +333,9 @@ const DemandDetail = () => {
       if (completeType === 'blacklist') {
         payload.blacklist_reason = completeBlacklistReason;
       }
+      if (completePhotos.length > 0) {
+        payload.completion_photos = completePhotos.map(url => ({ url }));
+      }
       await axios.post(`${API}/demands/${id}/complete`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -338,12 +345,67 @@ const DemandDetail = () => {
       setCompleteBlacklistReason('');
       setCompleteAgreedPrice('');
       setCompleteFinalPrice('');
+      setCompletePhotos([]);
       fetchData();
       setShowReviewModal(true);
     } catch (error) {
       alert(error.response?.data?.detail || 'Nepodařilo se dokončit zakázku');
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const handleCompletePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCompletePhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      setCompletePhotos(prev => [...prev, res.data.url]);
+    } catch (error) {
+      alert('Nepodařilo se nahrát fotku');
+    } finally {
+      setUploadingCompletePhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handlePostCompletionPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPostPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      await axios.post(`${API}/demands/${id}/completion-photos`, { url: uploadRes.data.url }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se nahrát fotku');
+    } finally {
+      setUploadingPostPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveCompletionPhoto = async (photoUrl) => {
+    if (!window.confirm('Opravdu chcete smazat tuto fotku?')) return;
+    try {
+      await axios.delete(`${API}/demands/${id}/completion-photos`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { url: photoUrl }
+      });
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se smazat fotku');
     }
   };
 
@@ -660,6 +722,57 @@ const DemandDetail = () => {
                 </div>
               )}
 
+              {/* Completion Photos / Fotodokumentace */}
+              {demand.status === 'completed' && (
+                <div className="mt-6 pt-6 border-t border-gray-100" data-testid="completion-photos-section">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Fotodokumentace</h3>
+                    <span className="text-xs text-gray-400">
+                      {(demand.completion_photos || []).length} / 20 fotek
+                    </span>
+                  </div>
+                  {(demand.completion_photos || []).length > 0 ? (
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+                      {demand.completion_photos.map((photo, i) => (
+                        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 cursor-pointer"
+                          onClick={() => setLightboxPhoto(photo)}>
+                          <img src={`${API.replace('/api', '')}${photo.url}`} alt={`Foto ${i + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-[10px] text-white truncate">{photo.uploaded_by_name}</p>
+                          </div>
+                          {(photo.uploaded_by === user?.id || user?.role === 'admin') && (
+                            <button onClick={(e) => { e.stopPropagation(); handleRemoveCompletionPhoto(photo.url); }}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              data-testid={`delete-completion-photo-${i}`}>
+                              <Trash className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Zatím žádné fotky.</p>
+                  )}
+                  {(demand.completion_photos || []).length < 20 && (
+                    (user?.id === demand.customer_id || user?.id === demand.assigned_supplier_id) && (
+                      <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-sm text-gray-700 cursor-pointer transition-colors" data-testid="add-post-completion-photo-btn">
+                        {uploadingPostPhoto ? (
+                          <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Camera className="w-4 h-4" />
+                        )}
+                        Přidat fotku
+                        <input type="file" className="hidden" onChange={handlePostCompletionPhotoUpload}
+                          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                          disabled={uploadingPostPhoto} />
+                      </label>
+                    )
+                  )}
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
                 {canAccept && (
@@ -950,6 +1063,34 @@ const DemandDetail = () => {
                   placeholder="Zadejte cenu zakázky v Kč"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
                   data-testid="agreed-price-input" autoFocus />
+                {/* Photo upload section */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {completePhotos.map((url, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                        <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
+                        <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5" data-testid={`remove-complete-photo-${i}`}>
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {completePhotos.length < 20 && (
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-complete-photo-btn">
+                        {uploadingCompletePhoto ? (
+                          <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-gray-400" />
+                        )}
+                        <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
+                          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                          disabled={uploadingCompletePhoto} />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                </div>
                 <div className="flex gap-3">
                   <button onClick={() => setCompleteType(null)}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
@@ -985,6 +1126,34 @@ const DemandDetail = () => {
                     <span className="font-bold text-gray-900">{(parseFloat(completeAgreedPrice) + parseFloat(completePriceIncrease)).toLocaleString('cs-CZ')} Kč</span>
                   </div>
                 )}
+                {/* Photo upload section */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {completePhotos.map((url, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                        <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
+                        <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {completePhotos.length < 20 && (
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                        {uploadingCompletePhoto ? (
+                          <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-gray-400" />
+                        )}
+                        <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
+                          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                          disabled={uploadingCompletePhoto} />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                </div>
                 <div className="flex gap-3">
                   <button onClick={() => { setCompleteType(null); setCompletePriceIncrease(''); setCompleteAgreedPrice(''); }}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
@@ -1015,6 +1184,34 @@ const DemandDetail = () => {
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none mb-4"
                   data-testid="blacklist-reason-input" />
+                {/* Photo upload section */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {completePhotos.map((url, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                        <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
+                        <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {completePhotos.length < 20 && (
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                        {uploadingCompletePhoto ? (
+                          <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-gray-400" />
+                        )}
+                        <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
+                          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                          disabled={uploadingCompletePhoto} />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                </div>
                 <div className="flex gap-3">
                   <button onClick={() => { setCompleteType(null); setCompleteBlacklistReason(''); setCompleteAgreedPrice(''); }}
                     className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
@@ -1046,6 +1243,23 @@ const DemandDetail = () => {
           token={token} 
           onClose={() => setShowReviewModal(false)} 
         />
+      )}
+
+      {/* Photo Lightbox */}
+      {lightboxPhoto && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightboxPhoto(null)} data-testid="photo-lightbox">
+          <button onClick={() => setLightboxPhoto(null)} className="absolute top-4 right-4 text-white/70 hover:text-white" data-testid="close-lightbox-btn">
+            <X className="w-8 h-8" />
+          </button>
+          <div className="max-w-4xl max-h-[85vh] w-full flex flex-col items-center" onClick={e => e.stopPropagation()}>
+            <img src={`${API.replace('/api', '')}${lightboxPhoto.url}`} alt="Fotodokumentace"
+              className="max-w-full max-h-[75vh] object-contain rounded-lg" />
+            <div className="mt-3 text-center">
+              <p className="text-white/80 text-sm">{lightboxPhoto.uploaded_by_name}</p>
+              <p className="text-white/50 text-xs">{new Date(lightboxPhoto.uploaded_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Soft Accept Modal */}
