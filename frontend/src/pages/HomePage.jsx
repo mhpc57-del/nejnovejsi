@@ -135,12 +135,12 @@ const HomePage = () => {
                 <Lightning weight="fill" className="w-4 h-4" />
                 BEZKONKURENČNÍ PLATFORMA
               </span>
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-widest uppercase mb-3">PRO ZÁKAZNÍKY I DODAVATELE</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 tracking-widest uppercase mb-3">POPTÁVKY — NABÍDKY — SLUŽBY</p>
               <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-6">
-                <span className="text-orange-500">BĚHEM PÁR MINUT</span>
+                <span className="text-orange-500">JEDNODUŠE, RYCHLE, EFEKTIVNĚ</span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                Vyhledání dodavatele nebo zákazníka z okolí nebylo nikdy jednodušší. Začněte teď hned.
+                Zadejte poptávku, nebo se registrujte jako dodavatel. Začněte teď hned.
               </p>
               <div className="flex flex-wrap gap-4 mb-12">
                 <Link 
