@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from database import db
 from auth import hash_password, verify_password, create_token, get_current_user
 from models import UserCreate, UserLogin, UserResponse, TokenResponse, UserRole
@@ -17,9 +17,12 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
 
 
 @router.post("/auth/register")
-async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
+async def register(user_data: UserCreate, request: Request, background_tasks: BackgroundTasks):
     # Normalize email to lowercase
     user_data.email = user_data.email.strip().lower()
+    
+    # Get origin URL from request for email links
+    origin_url = request.headers.get("origin") or ""
     
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
@@ -84,7 +87,8 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
         user_data.company_name or user_data.first_name or user_data.email.split('@')[0],
         user_data.role,
         user_data.phone,
-        verification_token
+        verification_token,
+        origin_url
     )
     
     return {
@@ -94,11 +98,11 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     }
 
 
-async def _send_verification_email(email: str, name: str, role: str, phone: str, token: str):
+async def _send_verification_email(email: str, name: str, role: str, phone: str, token: str, origin_url: str = ""):
     try:
         await notification_service.notify_registration_verification(
             user_email=email, user_name=name, user_role=role, 
-            user_phone=phone, verification_token=token
+            user_phone=phone, verification_token=token, origin_url=origin_url
         )
     except Exception as e:
         logger.error(f"Failed to send verification email: {str(e)}")
@@ -125,12 +129,13 @@ async def verify_email(token: str):
 
 
 @router.post("/auth/resend-verification")
-async def resend_verification(data: dict, background_tasks: BackgroundTasks):
+async def resend_verification(data: dict, request: Request, background_tasks: BackgroundTasks):
     """Resend verification email"""
     email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email je povinný")
     email = email.strip().lower()
+    origin_url = data.get("origin_url", "") or request.headers.get("origin") or ""
     
     user = await db.users.find_one({"email": email}, {"_id": 0})
     if not user:
@@ -152,7 +157,8 @@ async def resend_verification(data: dict, background_tasks: BackgroundTasks):
         user.get("company_name") or user.get("first_name") or email.split('@')[0],
         user.get("role", "customer"),
         user.get("phone"),
-        new_token
+        new_token,
+        origin_url
     )
     
     return {"message": "Ověřovací email byl znovu odeslán"}
@@ -205,11 +211,15 @@ async def deactivate_account(current_user: dict = Depends(get_current_user), pas
 
 
 @router.post("/auth/forgot-password")
-async def forgot_password(data: dict, background_tasks: BackgroundTasks):
+async def forgot_password(data: dict, request: Request, background_tasks: BackgroundTasks):
     """Send password reset email"""
     email = data.get("email", "").strip().lower()
+    origin_url = data.get("origin_url", "").rstrip("/")
     if not email:
         raise HTTPException(status_code=400, detail="Email je povinný")
+    
+    # Use origin from frontend request, fallback to FRONTEND_URL, then craftbolt.cz
+    base_url = origin_url or request.headers.get("origin") or FRONTEND_URL or "https://craftbolt.cz"
     
     user = await db.users.find_one({"email": email})
     if not user:
@@ -224,8 +234,9 @@ async def forgot_password(data: dict, background_tasks: BackgroundTasks):
         {"$set": {"reset_token": reset_token, "reset_token_expires": expires.isoformat()}}
     )
     
-    reset_link = f"{FRONTEND_URL}/obnoveni-hesla?token={reset_token}"
+    reset_link = f"{base_url}/obnoveni-hesla?token={reset_token}"
     user_name = user.get("company_name") or user.get("first_name") or email.split('@')[0]
+    logger.info(f"Password reset link generated: {reset_link}")
     
     html = f"""
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; background: #ffffff;">

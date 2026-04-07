@@ -456,10 +456,10 @@ class NotificationService:
         subject, html = self.templates.registration_success_email(user_name, user_role)
         await self.email_service.send_email(user_email, subject, html)
     
-    async def notify_registration_verification(self, user_email: str, user_name: str, user_role: str, user_phone: Optional[str] = None, verification_token: str = ""):
+    async def notify_registration_verification(self, user_email: str, user_name: str, user_role: str, user_phone: Optional[str] = None, verification_token: str = "", origin_url: str = ""):
         """Send email verification link after registration"""
         import os
-        frontend_url = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
+        frontend_url = origin_url or os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
         verification_url = f"{frontend_url}/overit-email/{verification_token}"
         subject, html = self.templates.verification_email(user_name, verification_url)
         await self.email_service.send_email(user_email, subject, html)
