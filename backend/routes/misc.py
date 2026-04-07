@@ -17,7 +17,11 @@ notification_service = NotificationService()
 
 @router.get("/categories")
 async def get_categories():
-    return {"categories": CATEGORIES}
+    # Combine static categories with admin-approved ones
+    approved = await db.approved_categories.find({}, {"_id": 0, "name": 1}).to_list(200)
+    approved_names = [a["name"] for a in approved if a.get("name") and a["name"] not in CATEGORIES]
+    all_categories = sorted(set(CATEGORIES + approved_names), key=lambda x: x.lower())
+    return {"categories": all_categories}
 
 
 @router.post("/categories/suggest")
