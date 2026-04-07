@@ -296,7 +296,8 @@ async def accept_demand(demand_id: str, current_user: dict = Depends(get_current
                 customer_email=customer["email"],
                 customer_phone=customer.get("phone"),
                 supplier_name=current_user.get("company_name") or current_user["email"],
-                demand_title=demand["title"]
+                demand_title=demand["title"],
+                demand_id=demand_id
             )
     except Exception as e:
         logger.error(f"Failed to send accept notification: {str(e)}")
@@ -561,7 +562,8 @@ async def soft_accept_demand(demand_id: str, reason: str = "", current_user: dic
                     customer_phone=customer.get("phone"),
                     supplier_name=supplier_name.strip(),
                     demand_title=demand["title"],
-                    reason=reason
+                    reason=reason,
+                    demand_id=demand_id
                 )
     except Exception as e:
         logger.error(f"Failed to send soft-accept notification: {str(e)}")

@@ -282,25 +282,28 @@ class NotificationTemplates:
     # ============ NEW OFFER ============
     
     @staticmethod
-    def new_offer_email(supplier_name: str, demand_title: str) -> tuple:
+    def new_offer_email(supplier_name: str, demand_title: str, demand_id: str = "") -> tuple:
         """Email template for new offer notification to customer"""
+        demand_url = f"https://craftbolt.cz/zakazka/{demand_id}" if demand_id else "https://craftbolt.cz/zakaznik"
         content = f"""
-            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Nová nabídka na vaši poptávku!</h2>
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel závazně přijal vaši poptávku!</h2>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
                 Dobrý den,
             </p>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
-                Dodavatel <strong>{supplier_name}</strong> reagoval na vaši poptávku 
+                Dodavatel <strong>{supplier_name}</strong> závazně přijal vaši poptávku 
                 „<strong>{demand_title}</strong>".
             </p>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
-                Přihlaste se a prohlédněte si jeho profil a nabídku.
+                Klikněte na tlačítko níže pro zobrazení detailu a zahájení komunikace s dodavatelem.
             </p>
-            <a href="https://craftbolt.cz/dashboard" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                Zobrazit nabídku
-            </a>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{demand_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Zobrazit detail zakázky
+                </a>
+            </div>
         """
-        subject = f"Nová nabídka od {supplier_name}"
+        subject = f"Závazné přijetí od {supplier_name} — {demand_title}"
         return subject, NotificationTemplates.email_base(content, subject)
     
     @staticmethod
@@ -385,8 +388,9 @@ class NotificationTemplates:
     # ============ PAYMENT ============
     
     @staticmethod
-    def soft_accept_email(supplier_name: str, demand_title: str, reason: str) -> tuple:
+    def soft_accept_email(supplier_name: str, demand_title: str, reason: str, demand_id: str = "") -> tuple:
         """Email template for supplier's conditional acceptance"""
+        demand_url = f"https://craftbolt.cz/zakazka/{demand_id}" if demand_id else "https://craftbolt.cz/zakaznik"
         content = f"""
             <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel projevil zájem o vaši poptávku</h2>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
@@ -402,13 +406,15 @@ class NotificationTemplates:
                 </p>
             </div>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
-                Doporučujeme kontaktovat dodavatele přes chat v aplikaci.
+                Klikněte na tlačítko níže pro zobrazení detailu a zahájení komunikace s dodavatelem.
             </p>
-            <a href="https://craftbolt.cz/dashboard" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                Zobrazit poptávku
-            </a>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{demand_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Zobrazit detail poptávky
+                </a>
+            </div>
         """
-        subject = f"Zájem o poptávku: {demand_title}"
+        subject = f"Nezávazný zájem o poptávku: {demand_title}"
         return subject, NotificationTemplates.email_base(content, subject)
     
     @staticmethod
@@ -490,9 +496,9 @@ class NotificationService:
         if push_tokens:
             await send_expo_push(push_tokens, f"Nová poptávka: {demand_category}", f"{demand_title} — {demand_address}", {"type": "new_demand"})
     
-    async def notify_new_offer(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str):
+    async def notify_new_offer(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, demand_id: str = ""):
         """Notify customer about new offer"""
-        subject, html = self.templates.new_offer_email(supplier_name, demand_title)
+        subject, html = self.templates.new_offer_email(supplier_name, demand_title, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
         
         if customer_phone:
@@ -552,9 +558,9 @@ class NotificationService:
         subject, html = self.templates.payment_success_email(plan_name, amount)
         await self.email_service.send_email(user_email, subject, html)
 
-    async def notify_soft_accept(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str):
+    async def notify_soft_accept(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str, demand_id: str = ""):
         """Notify customer about supplier's conditional acceptance"""
-        subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason)
+        subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
         
         if customer_phone:

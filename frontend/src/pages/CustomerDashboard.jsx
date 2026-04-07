@@ -345,6 +345,12 @@ const CustomerDashboard = () => {
                                 <div className="flex items-center gap-3 mb-2">
                                   <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
                                   {getStatusBadge(demand.status)}
+                                  {(demand.soft_accepts?.length > 0 || demand.status === 'in_progress') && demand.status !== 'completed' && demand.status !== 'cancelled' && (
+                                    <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" data-testid={`response-badge-${demand.id}`}>
+                                      <Bell weight="fill" className="w-3 h-3" />
+                                      {demand.soft_accepts?.length > 0 ? `${demand.soft_accepts.length} ${demand.soft_accepts.length === 1 ? 'reakce' : 'reakcí'}` : 'Přijato'}
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
                                 <div className="flex items-center gap-4 text-sm text-gray-400">
