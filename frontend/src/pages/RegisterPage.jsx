@@ -281,13 +281,23 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       const submitData = { ...formData };
+      // Remove frontend-only fields
       delete submitData.custom_category_input;
       delete submitData.has_ico;
       delete submitData.branch_address_input;
       // Set account_type for Nemám IČ
-      if (!formData.has_ico) {
+      if (formData.has_ico === false) {
         submitData.account_type = 'nepodnikatel';
       }
+      // Clean up empty optional arrays to avoid validation issues
+      if (!submitData.preferred_languages || submitData.preferred_languages.length === 0) {
+        submitData.preferred_languages = [];
+      }
+      if (!submitData.branch_addresses || submitData.branch_addresses.length === 0) {
+        submitData.branch_addresses = [];
+      }
+      if (!submitData.categories) submitData.categories = [];
+      if (!submitData.custom_categories) submitData.custom_categories = [];
       
       await register(submitData);
       
@@ -295,7 +305,15 @@ const RegisterPage = () => {
       setRegisteredEmail(formData.email);
       setRegistrationComplete(true);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registrace se nezdařila');
+      console.error('Registration error:', err);
+      const detail = err.response?.data?.detail;
+      if (typeof detail === 'string') {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map(d => d.msg || d.message || JSON.stringify(d)).join(', '));
+      } else {
+        setError('Registrace se nezdařila. Zkontrolujte prosím vyplněné údaje.');
+      }
     } finally {
       setLoading(false);
     }

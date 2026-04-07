@@ -99,15 +99,20 @@ async def _send_verification_email(email: str, name: str, role: str, phone: str,
 
 @router.get("/auth/verify-email/{token}")
 async def verify_email(token: str):
-    """Verify user email with token"""
-    user = await db.users.find_one({"verification_token": token}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=400, detail="Neplatný nebo expirovaný ověřovací odkaz")
-    
-    await db.users.update_one(
-        {"id": user["id"]},
-        {"$set": {"is_verified": True}, "$unset": {"verification_token": ""}}
+    """Verify user email with token - atomic and idempotent"""
+    # Atomic: find + verify + remove token in one operation
+    result = await db.users.find_one_and_update(
+        {"verification_token": token},
+        {"$set": {"is_verified": True}, "$unset": {"verification_token": ""}},
+        return_document=False  # return the document BEFORE update
     )
+    
+    if not result:
+        # Token not found - either expired, or already used (React double-render)
+        raise HTTPException(
+            status_code=400, 
+            detail="Neplatný nebo expirovaný ověřovací odkaz. Pokud jste email již ověřili, můžete se rovnou přihlásit."
+        )
     
     return {"message": "Email byl úspěšně ověřen. Nyní se můžete přihlásit.", "verified": True}
 

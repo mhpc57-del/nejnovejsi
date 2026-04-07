@@ -33,6 +33,8 @@ const LoginPage = () => {
         navigate('/admin');
       } else if (user.role === 'supplier') {
         navigate('/dodavatel');
+      } else if (user.role === 'customer_supplier') {
+        navigate('/zakaznik');
       } else {
         navigate('/zakaznik');
       }
