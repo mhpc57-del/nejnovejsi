@@ -227,6 +227,73 @@ const HomePage = () => {
       </section>
 
       {/* How it works */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-orange-500 font-bold text-sm tracking-widest uppercase">Konec otravování</span>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 mb-4">
+              Žádné telefonáty. Žádný spam. Žádné ověřování.
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
+              Známe to. Na jiných platformách vás po zadání poptávky ihned volá telefonista, 10 minut s vámi poptávku "ověřuje" a pak vám přijde 30 emailů a neustále zvoní telefon. U nás ne.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Konkurence */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border-2 border-red-100 dark:border-red-900/30">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                  <X weight="bold" className="w-4 h-4 text-red-500" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white">Konkurenční platformy</h3>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Telefonista vás volá ihned po zadání poptávky',
+                  '5–10 minut "ověřování" po telefonu',
+                  'Desítky emailů od dodavatelů z celé ČR',
+                  'Neustále zvonící telefon s nabídkami',
+                  'Po půl hodině nevíte, s kým jste mluvili',
+                  'Časově náročné a otravné',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-gray-600 dark:text-gray-400 text-sm">
+                    <X weight="bold" className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* CraftBolt */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border-2 border-green-100 dark:border-green-900/30">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Check weight="bold" className="w-4 h-4 text-green-500" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white">CraftBolt</h3>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Poptávku zadáte sami za 2 minuty — bez telefonátů',
+                  'Žádné ověřování, žádný telefonista',
+                  'Reagují jen dodavatelé z vašeho okolí',
+                  'Komunikace přes chat — v klidu, kdy se vám hodí',
+                  'Přehled všech nabídek na jednom místě',
+                  'Jednoduše, rychle, efektivně',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-gray-600 dark:text-gray-400 text-sm">
+                    <Check weight="bold" className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
