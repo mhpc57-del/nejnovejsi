@@ -15,14 +15,12 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - **customer_supplier**: Obojí — vytváření i přijímání
 - **admin**: Plný přístup
 
-## Registrace — Nový flow
+## Registrace — Flow
 1. Email + Heslo
 2. Výběr role (customer / supplier / customer_supplier)
 3. Mám IČO / Nemám IČO
 4. (Pokud Mám IČO) OSVČ / Firma
-5. Detaily:
-   - Nemám IČO: jméno(povinné), trvalý pobyt(opt), skutečná adresa(opt), telefon(povinné), email(povinné), web(opt), jazyky
-   - Mám IČO: IČO+ARES(povinné), DIČ(opt), jméno(opt), sídlo(povinné), pobočky(opt, více), telefon(povinné), email(povinné), web(opt), jazyky
+5. Detaily s preferred_languages, branch_addresses
 6. Kategorie (pouze supplier / customer_supplier)
 
 ## Implementováno
@@ -30,7 +28,8 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - 3 role: customer, supplier, customer_supplier
 - Registrace s Mám IČO / Nemám IČO, ARES, pobočky, preferované jazyky
 - Ceník 3 sloupce na HP: 199/299/399 Kč
-- SMS notifikace (Twilio) — token aktualizován
+- **Dark mode** — toggle na každé stránce, persistence v localStorage
+- SMS notifikace (Twilio)
 - SMTP emaily přes Wedos (denní limit 400)
 - Tvorba/editace poptávek s mapou
 - Chat s toast notifikacemi
@@ -38,31 +37,17 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - Zkušební doba 14 dní (sidebar)
 - Quick Demand (rychlá poptávka bez registrace)
 - Notifikace na dashboardu (nepřečtené zprávy badges + banner)
-- Mapy na dashboardech (zákazník i dodavatel) s barevnými markery
+- Mapy na dashboardech s barevnými markery
 - Claim quick demand po registraci
-- Dashboard přepínač pro customer_supplier (zákazník ↔ dodavatel)
+- Dashboard přepínač pro customer_supplier
 
 ## Architektura
 - Frontend: React + Vite + Tailwind + Leaflet mapy
 - Backend: FastAPI + MongoDB + Twilio + SMTP Wedos
-- Komponenty: /app/frontend/src/components/ui/ (Shadcn)
-
-## Klíčové endpointy
-- POST /api/auth/register (podporuje customer_supplier role)
-- POST /api/demands/quick (bez auth)
-- POST /api/demands/claim (po registraci)
-- GET /api/messages/unread-summary
-- POST /api/messages
-- POST /api/demands/{id}/soft-accept
-
-## Databáze
-- users: role, is_verified, account_type, preferred_languages, branch_addresses
-- demands: customer_name, status, is_quick, customer_email, customer_phone
-- messages: demand_id, sender_id, sender_name, content
+- Dark mode: CSS global overrides v App.css + ThemeContext
 
 ## Mocked: Stripe (platby)
 
 ## Backlog
-- P2: Dark mode (bylo funkční, ztratilo se)
 - P2: Mobilní aplikace (React Native) - PAUSOVÁNO
 - P3: Stripe platby (aktuálně MOCKED)
