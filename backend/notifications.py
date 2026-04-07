@@ -118,6 +118,9 @@ class SMSService:
             logger.warning("Twilio phone number not configured - SMS disabled")
             return False
         
+        # Normalize phone number - remove spaces, dashes, parentheses
+        to_phone = ''.join(c for c in to_phone if c.isdigit() or c == '+')
+        
         # Format phone number for Czech Republic
         if to_phone and not to_phone.startswith('+'):
             if to_phone.startswith('00'):

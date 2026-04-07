@@ -40,14 +40,25 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - Mapy na dashboardech s barevnými markery
 - Claim quick demand po registraci
 - Dashboard přepínač pro customer_supplier
+- **Stripe platby** — plně funkční integrace (3 plány: 199/299/399 Kč), checkout, webhook, status polling
+- Re-registrace po deaktivaci účtu
+- Hláška o deaktivaci s admin emailem (info@craftbolt.cz)
+- Normalizace telefonního čísla pro SMS (odstranění mezer, pomlček)
+- Weather & Name Day widget na HomePage
 
 ## Architektura
 - Frontend: React + Vite + Tailwind + Leaflet mapy
 - Backend: FastAPI + MongoDB + Twilio + SMTP Wedos
 - Dark mode: CSS global overrides v App.css + ThemeContext
+- Platby: Stripe via emergentintegrations library
 
-## Mocked: Stripe (platby)
+## Stripe integrace
+- Klíč: STRIPE_API_KEY v backend/.env
+- Plány: zakaznik (199), dodavatel (299), zakaznik_dodavatel (399)
+- Checkout URL: /api/subscription/checkout
+- Status: /api/subscription/status/{session_id}
+- Webhook: /api/webhook/stripe
+- Ceníková stránka: /cenik
 
 ## Backlog
 - P2: Mobilní aplikace (React Native) - PAUSOVÁNO
-- P3: Stripe platby (aktuálně MOCKED)
