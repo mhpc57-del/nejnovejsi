@@ -35,9 +35,15 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 - Re-registrace po deaktivaci účtu
 - Hláška o deaktivaci s admin emailem (info@craftbolt.cz)
 - Weather & Name Day widget na HomePage
-- **AI Chat podpora** — plovoucí widget na všech stránkách, GPT-powered, odpovídá česky na dotazy o platformě
+- **AI Chat podpora** — plovoucí widget na všech stránkách, GPT-powered, odpovídá česky
 - Našeptávač adresy pobočky při registraci
 - Email normalizace na lowercase (registrace + login)
+- **3-option modal dokončení zakázky** (Standard, Navýšení ceny, Blacklist)
+- **Nemohu provést** — dodavatel může zrušit zakázku s důvodem
+- **Finanční přehled** u dokončených poptávek (dohodnutá cena, navýšení, konečná cena, blacklist důvod) - DONE 7.4.2026
+- Přímé odkazy v emailech na konkrétní poptávku + badge na dashboardu
+- Case-insensitive filtrování kategorií a emailů
+- Service Area mapa pro všechny role s read-only zobrazením
 
 ## AI Chat
 - Backend: /api/ai/chat (POST), /api/ai/chat/history/{session_id} (GET)
@@ -63,9 +69,12 @@ Servisní tržiště CraftBolt.cz - React + FastAPI + MongoDB
 ## Klíčové soubory
 - /app/frontend/src/components/AiChatWidget.jsx — AI chat widget
 - /app/frontend/src/pages/PasswordResetPage.jsx — Zapomenuté heslo + reset
+- /app/frontend/src/pages/DemandDetail.jsx — Detail poptávky + finanční přehled
 - /app/backend/routes/ai_chat.py — AI chat backend
 - /app/backend/routes/auth_routes.py — Auth (login, register, verify, reset)
 - /app/backend/routes/payments.py — Stripe platby
+- /app/backend/routes/demands.py — Poptávky + dokončení + zrušení
 
 ## Backlog
+- P1: Přechod Stripe a Twilio na firemní účty CraftBolt
 - P2: Mobilní aplikace (React Native) - PAUSOVÁNO
