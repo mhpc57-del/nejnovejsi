@@ -449,7 +449,7 @@ async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_curr
 
 
 @router.post("/demands/{demand_id}/complete")
-async def complete_demand(demand_id: str, current_user: dict = Depends(get_current_user)):
+async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = Depends(get_current_user)):
     demand = await db.demands.find_one({"id": demand_id})
     if not demand:
         raise HTTPException(status_code=404, detail="Demand not found")
@@ -458,10 +458,42 @@ async def complete_demand(demand_id: str, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=403, detail="Not authorized")
     
     now = datetime.now(timezone.utc)
-    await db.demands.update_one(
-        {"id": demand_id},
-        {"$set": {"status": "completed", "completed_at": now.isoformat()}}
-    )
+    completion_type = data.get("completion_type", "standard")
+    
+    update_fields = {
+        "status": "completed",
+        "completed_at": now.isoformat(),
+        "completion_type": completion_type
+    }
+    
+    # Handle price increase
+    if completion_type == "price_increase":
+        price_increase = data.get("price_increase", 0)
+        update_fields["price_increase"] = price_increase
+        # Add to supplier's total earnings
+        if demand.get("assigned_supplier_id"):
+            await db.users.update_one(
+                {"id": demand["assigned_supplier_id"]},
+                {"$inc": {"total_earnings_extra": price_increase}}
+            )
+    
+    # Handle blacklist
+    if completion_type == "blacklist":
+        blacklist_reason = data.get("blacklist_reason", "")
+        update_fields["blacklist_reason"] = blacklist_reason
+        # Add customer to supplier's blacklist
+        if demand.get("assigned_supplier_id") and demand.get("customer_id"):
+            await db.users.update_one(
+                {"id": demand["assigned_supplier_id"]},
+                {"$addToSet": {"blacklisted_customers": {
+                    "customer_id": demand["customer_id"],
+                    "reason": blacklist_reason,
+                    "demand_id": demand_id,
+                    "created_at": now.isoformat()
+                }}}
+            )
+    
+    await db.demands.update_one({"id": demand_id}, {"$set": update_fields})
     
     try:
         customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})

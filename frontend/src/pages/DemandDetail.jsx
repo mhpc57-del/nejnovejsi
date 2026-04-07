@@ -4,7 +4,7 @@ import { useAuth, API } from '../App';
 import axios from 'axios';
 import { 
   ArrowLeft, MapPin, Calendar, User, Clock, Check, X,
-  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving,
+  PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving, CurrencyCircleDollar,
   PencilSimple, ImageSquare, Plus
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
@@ -37,6 +37,11 @@ const DemandDetail = () => {
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingEditPhoto, setUploadingEditPhoto] = useState(false);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [completeType, setCompleteType] = useState(null);
+  const [completePriceIncrease, setCompletePriceIncrease] = useState('');
+  const [completeBlacklistReason, setCompleteBlacklistReason] = useState('');
+  const [completing, setCompleting] = useState(false);
 
   const [notificationToast, setNotificationToast] = useState(null);
 
@@ -309,14 +314,28 @@ const DemandDetail = () => {
   };
 
   const handleCompleteDemand = async () => {
+    setCompleting(true);
     try {
-      await axios.post(`${API}/demands/${id}/complete`, {}, {
+      const payload = { completion_type: completeType };
+      if (completeType === 'price_increase') {
+        payload.price_increase = parseFloat(completePriceIncrease) || 0;
+      }
+      if (completeType === 'blacklist') {
+        payload.blacklist_reason = completeBlacklistReason;
+      }
+      await axios.post(`${API}/demands/${id}/complete`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setShowCompleteDialog(false);
+      setCompleteType(null);
+      setCompletePriceIncrease('');
+      setCompleteBlacklistReason('');
       fetchData();
       setShowReviewModal(true);
     } catch (error) {
       alert(error.response?.data?.detail || 'Nepodařilo se dokončit zakázku');
+    } finally {
+      setCompleting(false);
     }
   };
 
@@ -619,7 +638,7 @@ const DemandDetail = () => {
                 )}
                 {canComplete && (
                   <button
-                    onClick={handleCompleteDemand}
+                    onClick={() => setShowCompleteDialog(true)}
                     className="px-5 py-2.5 bg-green-500 hover:bg-green-600 rounded-xl font-medium text-white transition-colors flex items-center gap-2"
                     data-testid="complete-demand-btn"
                   >
@@ -812,6 +831,138 @@ const DemandDetail = () => {
       </div>
 
       {/* Review Modal */}
+      {/* Complete Demand Dialog */}
+      {showCompleteDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowCompleteDialog(false); setCompleteType(null); }}>
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Dokončení zakázky</h3>
+            <p className="text-sm text-gray-500 mb-5">Vyberte, jak byla zakázka dokončena:</p>
+
+            {!completeType && (
+              <div className="space-y-3">
+                <button onClick={() => setCompleteType('standard')}
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all"
+                  data-testid="complete-standard-btn">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check weight="bold" className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Dokončeno za sjednanou cenu</p>
+                      <p className="text-sm text-gray-500 mt-0.5">Zakázka byla v pořádku dokončena za sjednanou cenu dle domluvy.</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button onClick={() => setCompleteType('price_increase')}
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                  data-testid="complete-price-increase-btn">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CurrencyCircleDollar weight="bold" className="w-4 h-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Dokončeno s navýšením ceny</p>
+                      <p className="text-sm text-gray-500 mt-0.5">Zakázka byla v pořádku dokončena s navýšením ceny oproti původní domluvě.</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button onClick={() => setCompleteType('blacklist')}
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 hover:bg-red-50 transition-all"
+                  data-testid="complete-blacklist-btn">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Warning weight="bold" className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Dokončeno — příště nebudu poskytovat</p>
+                      <p className="text-sm text-gray-500 mt-0.5">Zakázka dokončena, ale příště už tomuto zákazníkovi služby poskytovat nebudu.</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {completeType === 'standard' && (
+              <div>
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5">
+                  <p className="text-green-800 font-medium">Zakázka bude označena jako dokončená za sjednanou cenu.</p>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setCompleteType(null)}
+                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    Zpět
+                  </button>
+                  <button onClick={handleCompleteDemand} disabled={completing}
+                    className="flex-1 py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl disabled:opacity-50"
+                    data-testid="confirm-complete-btn">
+                    {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {completeType === 'price_increase' && (
+              <div>
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
+                  <p className="text-orange-800 font-medium">Zakázka dokončena s navýšením ceny</p>
+                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">O kolik bylo navýšení? (Kč)</label>
+                <input type="number" value={completePriceIncrease} onChange={e => setCompletePriceIncrease(e.target.value)}
+                  placeholder="Zadejte částku navýšení v Kč"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
+                  data-testid="price-increase-input" autoFocus />
+                <div className="flex gap-3">
+                  <button onClick={() => { setCompleteType(null); setCompletePriceIncrease(''); }}
+                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    Zpět
+                  </button>
+                  <button onClick={handleCompleteDemand} disabled={completing || !completePriceIncrease}
+                    className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl disabled:opacity-50"
+                    data-testid="confirm-complete-btn">
+                    {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {completeType === 'blacklist' && (
+              <div>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                  <p className="text-red-800 font-medium">Zakázka dokončena — zákazník bude označen</p>
+                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Důvod, proč už nechcete tomuto zákazníkovi poskytovat služby:</label>
+                <textarea value={completeBlacklistReason} onChange={e => setCompleteBlacklistReason(e.target.value)}
+                  placeholder="Popište důvod..."
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none mb-4"
+                  data-testid="blacklist-reason-input" autoFocus />
+                <div className="flex gap-3">
+                  <button onClick={() => { setCompleteType(null); setCompleteBlacklistReason(''); }}
+                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    Zpět
+                  </button>
+                  <button onClick={handleCompleteDemand} disabled={completing || !completeBlacklistReason.trim()}
+                    className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl disabled:opacity-50"
+                    data-testid="confirm-complete-btn">
+                    {completing ? 'Dokončuji...' : 'Potvrdit dokončení'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!completeType && (
+              <button onClick={() => setShowCompleteDialog(false)}
+                className="w-full mt-4 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                data-testid="cancel-complete-btn">
+                Zrušit
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {showReviewModal && (
         <ReviewModal 
           demandId={id} 

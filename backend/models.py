@@ -151,6 +151,9 @@ class DemandResponse(BaseModel):
     deadline: Optional[str] = None
     soft_accepts: List[dict] = []
     cancellations: List[dict] = []
+    completion_type: Optional[str] = None
+    price_increase: Optional[float] = None
+    blacklist_reason: Optional[str] = None
 
 
 class MessageCreate(BaseModel):
