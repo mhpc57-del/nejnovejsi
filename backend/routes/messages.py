@@ -122,8 +122,15 @@ async def get_unread_summary(current_user: dict = Depends(get_current_user)):
     if not demand_ids:
         return {"unread_demands": [], "total_unread": 0}
     
-    # For each demand, check the latest message
+    # For each demand, check the latest message against last read time
     unread = []
+    
+    # Batch fetch all read timestamps for this user
+    read_records = await db.message_reads.find(
+        {"user_id": user_id, "demand_id": {"$in": demand_ids}}, {"_id": 0}
+    ).to_list(500)
+    read_map = {r["demand_id"]: r.get("last_read_at", "") for r in read_records}
+    
     for demand in user_demands:
         last_msg = await db.messages.find_one(
             {"demand_id": demand["id"]},
@@ -131,14 +138,16 @@ async def get_unread_summary(current_user: dict = Depends(get_current_user)):
             sort=[("created_at", -1)]
         )
         if last_msg and last_msg["sender_id"] != user_id:
-            unread.append({
-                "demand_id": demand["id"],
-                "demand_title": demand.get("title", ""),
-                "demand_status": demand.get("status", ""),
-                "last_sender": last_msg["sender_name"],
-                "last_message": last_msg["content"][:80],
-                "last_message_at": last_msg["created_at"]
-            })
+            last_read = read_map.get(demand["id"], "")
+            if not last_read or last_msg["created_at"] > last_read:
+                unread.append({
+                    "demand_id": demand["id"],
+                    "demand_title": demand.get("title", ""),
+                    "demand_status": demand.get("status", ""),
+                    "last_sender": last_msg["sender_name"],
+                    "last_message": last_msg["content"][:80],
+                    "last_message_at": last_msg["created_at"]
+                })
     
     return {"unread_demands": unread, "total_unread": len(unread)}
 
@@ -150,4 +159,13 @@ async def get_messages(demand_id: str, current_user: dict = Depends(get_current_
         raise HTTPException(status_code=404, detail="Demand not found")
     
     messages = await db.messages.find({"demand_id": demand_id}, {"_id": 0}).sort("created_at", 1).to_list(500)
+    
+    # Mark messages as read for this user
+    now = datetime.now(timezone.utc).isoformat()
+    await db.message_reads.update_one(
+        {"user_id": current_user["id"], "demand_id": demand_id},
+        {"$set": {"user_id": current_user["id"], "demand_id": demand_id, "last_read_at": now}},
+        upsert=True
+    )
+    
     return [MessageResponse(**m) for m in messages]
