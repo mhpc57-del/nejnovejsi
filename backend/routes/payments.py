@@ -3,6 +3,7 @@ from database import db
 from auth import get_current_user
 from models import CreateCheckoutRequest, SUBSCRIPTION_PLANS, UserRole
 from notifications import notification_service
+from routes.invoices import create_invoice_for_payment
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 from datetime import datetime, timezone, timedelta
 import os
@@ -118,6 +119,12 @@ async def get_subscription_status(request: Request, session_id: str, current_use
                 )
             except Exception as e:
                 logger.error(f"Failed to send payment notification: {str(e)}")
+            
+            # Generate invoice
+            try:
+                await create_invoice_for_payment(transaction)
+            except Exception as e:
+                logger.error(f"Failed to create invoice: {str(e)}")
             
             logger.info(f"Subscription activated for {transaction['user_email']}")
         
