@@ -25,15 +25,21 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
   - Automaticke generovani faktur po uspesne platbe Stripe
   - Email notifikace s cislem faktury po platbe
   - Firma: AC/DC MONT s.r.o., IC 09744550, DIC CZ09744550, Sportovni 7, 789 63 Ruda nad Moravou
+- **Persistentni upload souboru (2026-04-08)**:
+  - Soubory se ukladaji do MongoDB (kolekce file_storage) misto disku
+  - Preziji deployment/restart serveru
+  - Fallback na disk pro zpetnou kompatibilitu
+  - URL format nezmeneny: /api/uploads/{filename}
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS (/app/frontend)
 - Backend: FastAPI + MongoDB (/app/backend)
 - Mobile: React Native Expo (/app/mobile) - PAUSOVANO
 - Invoicing: /app/backend/invoicing.py (PDF + XML gen), /app/backend/routes/invoices.py
+- File Storage: MongoDB kolekce file_storage (binary data)
 
 ## Backlog
 - P1: Konfigurace Stripe webhooku pro live mod
-- P1: Prechod Twilio na firemni ucet (navod jiz poslan uzivateli)
+- P1: Prechod Twilio na firemni ucet (domena overena, zbyvajici kroky)
 - P1: Nove kategorie (ceka seznam)
 - P2: Mobilni aplikace - PAUSOVANO (az bude web 100%)

@@ -1,7 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from database import db, client, UPLOADS_DIR
+from database import db, client
 from routes.auth_routes import router as auth_router
 from routes.users import router as users_router
 from routes.demands import router as demands_router
@@ -49,9 +48,6 @@ api_router.include_router(ai_chat_router)
 api_router.include_router(invoices_router)
 
 app.include_router(api_router)
-
-# Static files for uploads
-app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 
 @app.on_event("startup")
