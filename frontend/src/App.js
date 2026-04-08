@@ -19,6 +19,7 @@ import ContactPage from './pages/ContactPage';
 import RecurringPaymentsPage from './pages/RecurringPaymentsPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordResetPage';
+import InvoicesPage from './pages/InvoicesPage';
 import AiChatWidget from './components/AiChatWidget';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -202,6 +203,13 @@ function App() {
           } />
           
           <Route path="/profil/:id" element={<ProfilePage />} />
+          
+          {/* Invoices */}
+          <Route path="/faktury" element={
+            <ProtectedRoute>
+              <InvoicesPage />
+            </ProtectedRoute>
+          } />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

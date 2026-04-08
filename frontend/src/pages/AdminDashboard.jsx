@@ -7,7 +7,7 @@ import {
   User, Check, X, Eye, Star, ShieldWarning,
   PencilSimple, Envelope, Trash, Tag, Warning, 
   ChatCircle, ArrowClockwise, Lock, LockOpen,
-  CaretDown, MagnifyingGlass
+  CaretDown, MagnifyingGlass, Receipt, Download
 } from '@phosphor-icons/react';
 
 const AdminDashboard = () => {
@@ -28,6 +28,13 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [demandFilter, setDemandFilter] = useState('all');
   const [aresLoading, setAresLoading] = useState(false);
+  const [adminInvoices, setAdminInvoices] = useState([]);
+  const [invoiceMonth, setInvoiceMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [zipDownloading, setZipDownloading] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -136,11 +143,61 @@ const AdminDashboard = () => {
 
   const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
 
+  // ============ INVOICE FUNCTIONS ============
+  const fetchAdminInvoices = async (month) => {
+    setInvoicesLoading(true);
+    try {
+      const res = await axios.get(`${API}/admin/invoices`, { headers, params: { month } });
+      setAdminInvoices(res.data);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    } finally {
+      setInvoicesLoading(false);
+    }
+  };
+
+  const handleDownloadZip = async () => {
+    setZipDownloading(true);
+    try {
+      const res = await axios.get(`${API}/admin/invoices/download-zip`, {
+        headers, params: { month: invoiceMonth }, responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `CraftBolt_Faktury_${invoiceMonth}.zip`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(error.response?.status === 404 ? 'Za toto obdobi nejsou zadne faktury' : 'Chyba pri stahovani');
+    } finally {
+      setZipDownloading(false);
+    }
+  };
+
+  const handleDownloadSingle = async (invoiceId, format) => {
+    try {
+      const res = await axios.get(`${API}/invoices/${invoiceId}/${format}`, {
+        headers, responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      const inv = adminInvoices.find(i => i.id === invoiceId);
+      link.href = url;
+      link.download = format === 'pdf' ? `${inv?.invoice_number}.pdf` : `${inv?.invoice_number}.isdoc.xml`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Nepodarilo se stahnout fakturu');
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: 'Přehled', icon: House },
     { id: 'users', label: 'Uživatelé', icon: Users },
     { id: 'demands', label: 'Zakázky', icon: Briefcase },
     { id: 'categories', label: 'Kategorie', icon: Tag, badge: pendingSuggestions.length },
+    { id: 'invoices', label: 'Faktury', icon: Receipt },
   ];
 
   const getStatusBadge = (status) => {
@@ -469,6 +526,87 @@ const AdminDashboard = () => {
     </div>
   );
 
+  const renderInvoices = () => (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Faktury</h2>
+          <p className="text-sm text-gray-500">Prehled vsech faktur platformy</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <input type="month" value={invoiceMonth} onChange={(e) => setInvoiceMonth(e.target.value)}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm" data-testid="invoice-month-filter" />
+          <button onClick={() => fetchAdminInvoices(invoiceMonth)}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors" data-testid="invoice-filter-btn">
+            Zobrazit
+          </button>
+          <button onClick={handleDownloadZip} disabled={zipDownloading}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900 transition-colors disabled:opacity-50" data-testid="invoice-zip-btn">
+            <Download className="w-4 h-4" /> {zipDownloading ? 'Stahuji...' : 'ZIP export'}
+          </button>
+        </div>
+      </div>
+
+      {invoicesLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+        </div>
+      ) : adminInvoices.length === 0 ? (
+        <div className="text-center py-12">
+          <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Klikněte "Zobrazit" pro načtení faktur za vybraný měsíc</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full" data-testid="admin-invoices-table">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Číslo</th>
+                <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Zákazník</th>
+                <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Datum</th>
+                <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Plán</th>
+                <th className="text-right p-3 text-xs font-medium text-gray-500 uppercase">Částka</th>
+                <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Stav</th>
+                <th className="text-right p-3 text-xs font-medium text-gray-500 uppercase">Akce</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminInvoices.map((inv) => (
+                <tr key={inv.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50" data-testid={`admin-invoice-${inv.id}`}>
+                  <td className="p-3 text-sm font-medium text-gray-900">{inv.invoice_number}</td>
+                  <td className="p-3 text-sm text-gray-600">{inv.customer?.name || inv.user_email}</td>
+                  <td className="p-3 text-sm text-gray-500">{new Date(inv.issue_date).toLocaleDateString('cs-CZ')}</td>
+                  <td className="p-3 text-sm text-gray-500">{inv.plan_name || '-'}</td>
+                  <td className="p-3 text-sm font-semibold text-gray-900 text-right">{inv.total?.toLocaleString('cs-CZ')} Kc</td>
+                  <td className="p-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${inv.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      {inv.payment_status === 'paid' ? 'Uhrazeno' : 'Ceka'}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <button onClick={() => handleDownloadSingle(inv.id, 'pdf')}
+                        className="px-2.5 py-1 bg-red-50 text-red-600 rounded-md text-xs font-medium hover:bg-red-100 transition-colors" data-testid={`admin-pdf-${inv.id}`}>
+                        PDF
+                      </button>
+                      <button onClick={() => handleDownloadSingle(inv.id, 'xml')}
+                        className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium hover:bg-blue-100 transition-colors" data-testid={`admin-xml-${inv.id}`}>
+                        XML
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="p-4 border-t border-gray-100 text-sm text-gray-500">
+            Celkem {adminInvoices.length} faktur | Suma: {adminInvoices.reduce((sum, i) => sum + (i.total || 0), 0).toLocaleString('cs-CZ')} Kc
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     if (loading) return <div className="p-10 text-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div></div>;
     switch (activeTab) {
@@ -476,6 +614,7 @@ const AdminDashboard = () => {
       case 'users': return renderUsers();
       case 'demands': return renderDemands();
       case 'categories': return renderCategories();
+      case 'invoices': return renderInvoices();
       default: return null;
     }
   };

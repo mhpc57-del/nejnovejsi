@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   House, Briefcase, User, SignOut, MapPin, Calendar, ArrowRight, 
   Check, Clock, Star, Camera, X, CurrencyDollar, Warning,
-  CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle
+  CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle, Receipt
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -393,6 +393,9 @@ const SupplierDashboard = () => {
           </Link>
           <Link to="/profil" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-profile">
             <User className="w-5 h-5" /> Profil
+          </Link>
+          <Link to="/faktury" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-invoices">
+            <Receipt className="w-5 h-5" /> Faktury
           </Link>
           {user?.role === 'customer_supplier' && (
             <Link to="/zakaznik"
