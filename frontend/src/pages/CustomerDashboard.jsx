@@ -121,7 +121,7 @@ const CustomerDashboard = () => {
             data-testid="nav-dashboard"
           >
             <House weight={location.pathname === '/zakaznik' ? 'fill' : 'regular'} className="w-5 h-5" />
-            Dashboard
+            Hlavní menu
           </Link>
           <Link 
             to="/profil" 
@@ -146,7 +146,7 @@ const CustomerDashboard = () => {
               data-testid="nav-switch-to-supplier"
             >
               <Briefcase className="w-5 h-5" />
-              Dodavatel
+              Přepnout na - Dodavatel
             </Link>
           )}
         </nav>

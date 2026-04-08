@@ -389,7 +389,7 @@ const SupplierDashboard = () => {
           <Link to="/dodavatel"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location.pathname === '/dodavatel' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             data-testid="nav-dashboard">
-            <House weight={location.pathname === '/dodavatel' ? 'fill' : 'regular'} className="w-5 h-5" /> Dashboard
+            <House weight={location.pathname === '/dodavatel' ? 'fill' : 'regular'} className="w-5 h-5" /> Hlavní menu
           </Link>
           <Link to="/profil" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-profile">
             <User className="w-5 h-5" /> Profil
@@ -401,7 +401,7 @@ const SupplierDashboard = () => {
             <Link to="/zakaznik"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors font-medium"
               data-testid="nav-switch-to-customer">
-              <User className="w-5 h-5" /> Zákazník
+              <User className="w-5 h-5" /> Přepnout na - Zákazník
             </Link>
           )}
         </nav>
@@ -446,7 +446,7 @@ const SupplierDashboard = () => {
         <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Dashboard dodavatele</h1>
+              <h1 className="text-xl font-bold text-gray-900">Hlavní menu dodavatele</h1>
               <p className="text-sm text-gray-500">Vítejte zpět, {user?.company_name || user?.email}</p>
             </div>
             {/* Rating */}
