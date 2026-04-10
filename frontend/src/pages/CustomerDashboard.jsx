@@ -36,6 +36,8 @@ const greyIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
 
+import HeaderWidget from '../components/HeaderWidget';
+
 const CustomerDashboard = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
@@ -192,6 +194,7 @@ const CustomerDashboard = () => {
             <div>
               <h1 className="text-xl font-bold text-gray-900">Profil zákazníka</h1>
               <p className="text-sm text-gray-500">Vítejte zpět, {user?.company_name || user?.email}</p>
+              <div className="mt-1"><HeaderWidget /></div>
             </div>
             <div className="flex items-center gap-4">
               <button 

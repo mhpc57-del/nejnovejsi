@@ -40,6 +40,8 @@ const orangeIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
 
+import HeaderWidget from '../components/HeaderWidget';
+
 const SupplierDashboard = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
@@ -448,6 +450,7 @@ const SupplierDashboard = () => {
             <div>
               <h1 className="text-xl font-bold text-gray-900">Hlavní menu dodavatele</h1>
               <p className="text-sm text-gray-500">Vítejte zpět, {user?.company_name || user?.email}</p>
+              <div className="mt-1"><HeaderWidget /></div>
             </div>
             {/* Rating */}
             <div className="flex items-center gap-2">

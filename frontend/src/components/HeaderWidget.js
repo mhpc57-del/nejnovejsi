@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, Snowflake, CloudLightning, Wind, ThermometerSimple, Drop, Star } from '@phosphor-icons/react';
+import { Sun, Cloud, CloudRain, Snowflake, CloudLightning, Wind, ThermometerSimple, Drop, Star, Users, UserCircle, CircleWavyCheck } from '@phosphor-icons/react';
 
 // Czech namedays - full year
 const NAMEDAYS = {
@@ -105,10 +105,15 @@ const WMO_ICONS = {
   99: { icon: CloudLightning, label: 'Silné bouřky' },
 };
 
+const API = process.env.REACT_APP_BACKEND_URL
+  ? `${process.env.REACT_APP_BACKEND_URL}/api`
+  : '/api';
+
 const HeaderWidget = () => {
   const [weather, setWeather] = useState(null);
   const [nameday, setNameday] = useState('');
   const [holiday, setHoliday] = useState(null);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     // Get today's nameday and holiday
@@ -156,13 +161,24 @@ const HeaderWidget = () => {
         { timeout: 5000 }
       );
     }
+
+    // Fetch platform stats
+    const fetchStats = () => {
+      fetch(`${API}/platform/stats`)
+        .then(r => r.json())
+        .then(setStats)
+        .catch(() => {});
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const weatherInfo = weather ? (WMO_ICONS[weather.code] || WMO_ICONS[0]) : null;
   const WeatherIcon = weatherInfo?.icon || Sun;
 
   return (
-    <div className="flex items-center gap-3 text-xs" data-testid="header-widget">
+    <div className="flex items-center gap-3 text-xs flex-wrap" data-testid="header-widget">
       {/* Nameday / Holiday */}
       <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400" data-testid="widget-nameday">
         <Star weight="fill" className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
@@ -190,6 +206,32 @@ const HeaderWidget = () => {
             <Wind className="w-3 h-3 ml-1" />
             <span>{weather.wind} km/h</span>
           </div>
+        </div>
+      )}
+
+      {/* Separator */}
+      {stats && (
+        <div className="w-px h-4 bg-gray-200 dark:bg-gray-600"></div>
+      )}
+
+      {/* Platform stats */}
+      {stats && (
+        <div className="flex items-center gap-2.5 text-gray-500 dark:text-gray-400" data-testid="widget-stats">
+          <Users weight="bold" className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+          <span className="font-semibold text-green-600" title="Zákazníci">{stats.customers}</span>
+          <span className="text-gray-300 dark:text-gray-600">/</span>
+          <span className="font-semibold text-red-500" title="Dodavatelé">{stats.suppliers}</span>
+          <span className="text-gray-300 dark:text-gray-600">/</span>
+          <span className="font-semibold text-orange-500" title="Zákazníci/Dodavatelé">{stats.customer_suppliers}</span>
+          {stats.online > 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="flex items-center gap-1" title="Online">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="font-semibold text-green-600">{stats.online}</span>
+              </span>
+            </>
+          )}
         </div>
       )}
     </div>

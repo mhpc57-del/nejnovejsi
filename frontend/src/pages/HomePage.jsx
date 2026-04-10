@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
@@ -35,6 +35,21 @@ const HomePage = () => {
   const [quickLoading, setQuickLoading] = useState(false);
   const [quickSuccess, setQuickSuccess] = useState(false);
   const [quickError, setQuickError] = useState('');
+  const [platformStats, setPlatformStats] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API}/platform/stats`)
+      .then(r => r.json())
+      .then(setPlatformStats)
+      .catch(() => {});
+    const interval = setInterval(() => {
+      fetch(`${API}/platform/stats`)
+        .then(r => r.json())
+        .then(setPlatformStats)
+        .catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleQuickDemand = async () => {
     if (!quickForm.first_name || !quickForm.last_name || !quickForm.phone || !quickForm.email) {
@@ -197,6 +212,46 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Platform Stats Banner */}
+      {platformStats && (
+        <section className="py-6 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700" data-testid="platform-stats-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap">
+              <div className="flex items-center gap-2" data-testid="stat-customers">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Zákazníci</span>
+                <span className="text-lg font-bold text-green-600">{platformStats.customers}</span>
+              </div>
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-2" data-testid="stat-suppliers">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Dodavatelé</span>
+                <span className="text-lg font-bold text-red-500">{platformStats.suppliers}</span>
+              </div>
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-2" data-testid="stat-both">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Zákazníci/Dodavatelé</span>
+                <span className="text-lg font-bold text-orange-500">{platformStats.customer_suppliers}</span>
+              </div>
+              {platformStats.online > 0 && (
+                <>
+                  <div className="w-px h-6 bg-gray-200 dark:bg-gray-600"></div>
+                  <div className="flex items-center gap-2" data-testid="stat-online">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Online</span>
+                    <span className="text-lg font-bold text-green-600">{platformStats.online}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Advantages Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">

@@ -91,6 +91,19 @@ const AuthProvider = ({ children }) => {
     isAuthenticated: !!user
   };
 
+  // Heartbeat for online tracking
+  useEffect(() => {
+    if (!token || !user) return;
+    const sendHeartbeat = () => {
+      axios.post(`${API}/platform/heartbeat`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
+    };
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 45000);
+    return () => clearInterval(interval);
+  }, [token, user]);
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

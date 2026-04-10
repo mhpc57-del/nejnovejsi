@@ -10,6 +10,8 @@ import {
   CaretDown, MagnifyingGlass, Receipt, Download
 } from '@phosphor-icons/react';
 
+import HeaderWidget from '../components/HeaderWidget';
+
 const AdminDashboard = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
@@ -873,6 +875,7 @@ const AdminDashboard = () => {
             <div>
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
               <p className="text-sm text-gray-500">Správa platformy CraftBolt</p>
+              <div className="mt-1"><HeaderWidget /></div>
             </div>
             {/* Mobile tabs */}
             <div className="flex gap-1 lg:hidden">

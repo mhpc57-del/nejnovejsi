@@ -122,6 +122,38 @@ async def ares_lookup(ico: str):
         raise HTTPException(status_code=503, detail="ARES služba není dostupná")
 
 
+# ============ PLATFORM STATS (public) ============
+
+@router.get("/platform/stats")
+async def get_platform_stats():
+    """Public endpoint returning user counts and online count."""
+    customers = await db.users.count_documents({"role": "customer", "is_blocked": {"$ne": True}})
+    suppliers = await db.users.count_documents({"role": "supplier", "is_blocked": {"$ne": True}})
+    both = await db.users.count_documents({"role": "customer_supplier", "is_blocked": {"$ne": True}})
+    online = await db.online_users.count_documents({})
+    return {
+        "customers": customers,
+        "suppliers": suppliers,
+        "customer_suppliers": both,
+        "online": online
+    }
+
+
+@router.post("/platform/heartbeat")
+async def heartbeat(current_user: dict = Depends(get_current_user)):
+    """Track online users via heartbeat."""
+    await db.online_users.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {
+            "user_id": current_user["id"],
+            "role": current_user.get("role", ""),
+            "last_seen": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"ok": True}
+
+
 # ============ HEALTH ============
 
 @router.get("/")

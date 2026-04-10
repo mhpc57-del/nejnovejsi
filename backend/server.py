@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from database import db, client
 from routes.auth_routes import router as auth_router
 from routes.users import router as users_router
@@ -16,6 +17,7 @@ from models import ADMIN_EMAIL, UserRole
 from auth import hash_password
 from datetime import datetime, timezone, timedelta
 import uuid
+import asyncio
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +66,20 @@ async def startup():
     await db.messages.create_index("demand_id")
     await db.reviews.create_index("reviewed_user_id")
     await db.payment_transactions.create_index("session_id", unique=True)
+    await db.online_users.create_index("user_id", unique=True)
+    # Clean stale online users on startup
+    await db.online_users.delete_many({})
+
+    # Background task: clean stale online users every 60s
+    async def cleanup_stale_online():
+        while True:
+            await asyncio.sleep(60)
+            try:
+                cutoff = (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat()
+                await db.online_users.delete_many({"last_seen": {"$lt": cutoff}})
+            except Exception:
+                pass
+    asyncio.create_task(cleanup_stale_online())
     
     # Seed admin
     admin = await db.users.find_one({"email": ADMIN_EMAIL})
