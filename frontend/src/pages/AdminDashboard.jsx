@@ -113,6 +113,9 @@ const AdminDashboard = () => {
         case 'reactivate':
           await axios.put(`${API}/admin/users/${args[0]}/reactivate`, {}, { headers });
           break;
+        case 'deleteUser':
+          await axios.delete(`${API}/admin/users/${args[0]}`, { headers });
+          break;
         case 'verificationReminder':
           await axios.post(`${API}/admin/users/${args[0]}/send-verification-reminder`, {}, { headers });
           break;
@@ -392,6 +395,10 @@ const AdminDashboard = () => {
                           <Lock className="w-4 h-4" />
                         </button>
                       )}
+                      <button onClick={() => setModal({ type: 'deleteUser', data: u })}
+                        className="p-1.5 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors" title="Smazat uživatele" data-testid={`delete-user-${u.id}`}>
+                        <Trash className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </td>
@@ -634,6 +641,18 @@ const AdminDashboard = () => {
         confirm: () => handleAction('block', data.id),
         confirmLabel: 'Zablokovat',
         confirmClass: 'bg-red-500 hover:bg-red-600',
+      },
+      deleteUser: {
+        title: `Trvale smazat uživatele: ${data.email}`,
+        body: (
+          <div className="space-y-3">
+            <p className="text-red-600 font-medium">Tato akce je nevratná!</p>
+            <p className="text-gray-600">Budou smazány veškeré údaje uživatele včetně jeho poptávek, zpráv, recenzí a faktur. Uživatel se poté může znovu zaregistrovat pod stejným emailem.</p>
+          </div>
+        ),
+        confirm: () => handleAction('deleteUser', data.id),
+        confirmLabel: 'Trvale smazat',
+        confirmClass: 'bg-red-700 hover:bg-red-800',
       },
       rejectCategory: {
         title: `Zamítnout kategorii: ${data.category_name || ''}`,

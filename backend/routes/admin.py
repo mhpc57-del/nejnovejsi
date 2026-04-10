@@ -108,7 +108,7 @@ async def block_user(user_id: str, current_user: dict = Depends(get_current_user
         await notification_service.email_service.send_email(
             user["email"],
             "CraftBolt — Váš účet byl zablokován",
-            notification_service.templates.email_base(f"""
+            notification_service.templates.email_base("""
                 <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Váš účet byl zablokován</h2>
                 <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
                     Dobrý den,
@@ -156,6 +156,31 @@ async def reactivate_user(user_id: str, current_user: dict = Depends(get_current
     return {"message": "Účet byl obnoven"}
 
 
+@router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Permanently delete a user and all their related data."""
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Uzivatel nenalezen")
+    if user.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Nelze smazat administratora")
+
+    # Delete user and all related data
+    await db.users.delete_one({"id": user_id})
+    await db.demands.delete_many({"$or": [{"customer_id": user_id}, {"assigned_supplier_id": user_id}]})
+    await db.messages.delete_many({"sender_id": user_id})
+    await db.reviews.delete_many({"$or": [{"reviewer_id": user_id}, {"reviewed_user_id": user_id}]})
+    await db.invoices.delete_many({"user_id": user_id})
+    await db.online_users.delete_many({"user_id": user_id})
+    await db.file_storage.delete_many({"uploaded_by": user_id})
+
+    logger.info(f"Admin {current_user['email']} permanently deleted user {user.get('email')} ({user_id})")
+    return {"message": f"Uzivatel {user.get('email')} byl trvale smazan"}
+
+
 @router.post("/admin/users/{user_id}/send-verification-reminder")
 async def send_verification_reminder(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != UserRole.ADMIN:
@@ -171,7 +196,7 @@ async def send_verification_reminder(user_id: str, current_user: dict = Depends(
         await notification_service.email_service.send_email(
             user["email"],
             "CraftBolt — Připomínka: Ověřte svůj email",
-            notification_service.templates.email_base(f"""
+            notification_service.templates.email_base("""
                 <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Ověřte svůj email pro plné využití CraftBolt</h2>
                 <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den,</p>
                 <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
