@@ -116,6 +116,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
         "budget_max": demand_data.budget_max,
         "payment_method": demand_data.payment_method,
         "deadline": demand_data.deadline,
+        "supplier_radius": demand_data.supplier_radius,
         "status": "open",
         "customer_id": current_user["id"],
         "customer_name": current_user.get("company_name") or f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip() or current_user["email"],
@@ -131,11 +132,40 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
     await db.demands.insert_one(demand)
     
     try:
-        suppliers = await db.users.find({
-            "role": "supplier",
+        # Find suppliers matching category with active subscription
+        all_suppliers = await db.users.find({
+            "role": {"$in": ["supplier", "customer_supplier"]},
             "categories": demand_data.category,
             "subscription_active": True
-        }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1}).to_list(100)
+        }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
+        
+        # Filter by distance if radius is set and demand has coordinates
+        if demand_data.supplier_radius and demand_data.latitude and demand_data.longitude:
+            from math import radians, sin, cos, sqrt, atan2
+            
+            def haversine(lat1, lon1, lat2, lon2):
+                R = 6371
+                dlat = radians(lat2 - lat1)
+                dlon = radians(lon2 - lon1)
+                a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+                return R * 2 * atan2(sqrt(a), sqrt(1-a))
+            
+            filtered = []
+            for s in all_suppliers:
+                areas = s.get("service_areas", [])
+                if not areas:
+                    # Supplier without service area — include if within radius
+                    filtered.append(s)
+                    continue
+                for area in areas:
+                    dist = haversine(demand_data.latitude, demand_data.longitude, area.get("lat", 0), area.get("lng", 0))
+                    area_radius = area.get("radius_km", 20)
+                    if dist <= demand_data.supplier_radius + area_radius:
+                        filtered.append(s)
+                        break
+            suppliers = filtered
+        else:
+            suppliers = all_suppliers
         
         if suppliers:
             await notification_service.notify_new_demand(

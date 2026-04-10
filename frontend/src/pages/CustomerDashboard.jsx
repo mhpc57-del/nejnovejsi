@@ -11,6 +11,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DraggableMap from '../components/DraggableMap';
+import DemandRadiusMap from '../components/DemandRadiusMap';
 import ThemeToggle from '../components/ThemeToggle';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -456,7 +457,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
     budget_min: '',
     budget_max: '',
     payment_method: 'cash',
-    deadline: ''
+    deadline: '',
+    supplier_radius: 30
   });
 
   // Address autocomplete state
@@ -605,7 +607,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
         images: uploadedImages,
         budget_min: formData.budget_min ? parseFloat(formData.budget_min) : null,
         budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null,
-        deadline: formData.deadline || null
+        deadline: formData.deadline || null,
+        supplier_radius: formData.supplier_radius || null
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -774,10 +777,11 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
             {/* Interactive map */}
             {showMap && (
               <div className="mt-3 rounded-xl overflow-hidden border border-gray-200" data-testid="demand-location-map">
-                <DraggableMap
+                <DemandRadiusMap
                   key={mapKey}
                   lat={formData.latitude || 49.8175}
                   lng={formData.longitude || 15.4730}
+                  radiusKm={formData.supplier_radius}
                   onLocationChange={async (lat, lng) => {
                     setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
                     try {
@@ -792,6 +796,30 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 />
               </div>
             )}
+          </div>
+
+          {/* Supplier radius */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Okruh dodavatelů</label>
+            <p className="text-xs text-gray-400 mb-2">Pouze dodavatelé působící v tomto okruhu od místa zakázky budou osloveni</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="5"
+                max="150"
+                step="5"
+                value={formData.supplier_radius}
+                onChange={(e) => setFormData(prev => ({ ...prev, supplier_radius: parseInt(e.target.value) }))}
+                className="flex-1 accent-orange-500"
+                data-testid="supplier-radius-slider"
+              />
+              <span className="text-sm font-semibold text-orange-600 w-16 text-right" data-testid="supplier-radius-value">{formData.supplier_radius} km</span>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-300 mt-0.5 px-0.5">
+              <span>5 km</span>
+              <span>75 km</span>
+              <span>150 km</span>
+            </div>
           </div>
 
           {/* Photo upload */}

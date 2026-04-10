@@ -110,6 +110,7 @@ class DemandCreate(BaseModel):
     budget_max: Optional[float] = None
     payment_method: str = "cash"
     deadline: Optional[str] = None
+    supplier_radius: Optional[int] = None
 
 
 class DemandUpdate(BaseModel):
@@ -162,6 +163,7 @@ class DemandResponse(BaseModel):
     price_confirmed_by_supplier: Optional[bool] = None
     price_confirmed_at: Optional[str] = None
     price_dispute_reason: Optional[str] = None
+    supplier_radius: Optional[int] = None
 
 
 class MessageCreate(BaseModel):
