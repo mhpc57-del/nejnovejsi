@@ -235,6 +235,7 @@ const ProfilePage = () => {
   const [aresLoading, setAresLoading] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState([]);
+  const [groupedCategories, setGroupedCategories] = useState({});
   const [formData, setFormData] = useState({});
   const [customCatInput, setCustomCatInput] = useState('');
   const [catSearch, setCatSearch] = useState('');
@@ -291,6 +292,7 @@ const ProfilePage = () => {
 
         const catRes = await axios.get(`${API}/categories`);
         setCategories(catRes.data.categories);
+        if (catRes.data.grouped) setGroupedCategories(catRes.data.grouped);
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -739,19 +741,34 @@ const ProfilePage = () => {
                 {/* Search input */}
                 <input type="text" value={catSearch} onChange={(e) => setCatSearch(e.target.value)}
                   placeholder="Hledat kategorii..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-2" data-testid="category-search-input" />
-                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1.5">
-                  {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).map((category) => (
-                    <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
-                      className={`w-full p-2 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
-                        formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                      }`} data-testid={`profile-cat-${category.replace(/\s+/g, '-').toLowerCase()}`}>
-                      {category}
-                      {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
-                    </button>
-                  ))}
-                  {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-2">Žádná kategorie nenalezena</p>
-                  )}
+                <div className="max-h-56 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1">
+                  {(() => {
+                    const searchLower = catSearch.toLowerCase();
+                    const hasGroups = Object.keys(groupedCategories).length > 0;
+                    const entries = hasGroups
+                      ? Object.entries(groupedCategories).map(([g, items]) => [g, catSearch ? items.filter(c => c.toLowerCase().includes(searchLower)) : items]).filter(([, items]) => items.length > 0)
+                      : [['', catSearch ? categories.filter(c => c.toLowerCase().includes(searchLower)) : categories]];
+                    const total = entries.reduce((s, [, items]) => s + items.length, 0);
+                    if (total === 0) return <p className="text-sm text-gray-400 text-center py-2">Žádná kategorie nenalezena</p>;
+                    return entries.map(([group, items]) => (
+                      <div key={group || 'all'}>
+                        {group && (
+                          <div className="sticky top-0 bg-white z-10 px-2 py-1.5 border-b border-gray-100 mb-1">
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{group}</span>
+                          </div>
+                        )}
+                        {items.map((category) => (
+                          <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
+                            className={`w-full p-2 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
+                              formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                            }`} data-testid={`profile-cat-${category.replace(/\s+/g, '-').toLowerCase()}`}>
+                            {category}
+                            {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </div>
+                    ));
+                  })()}
                 </div>
 
                 {/* Custom category */}

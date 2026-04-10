@@ -145,6 +145,7 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [groupedCategories, setGroupedCategories] = useState({});
   const [aresLoading, setAresLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingRef, setUploadingRef] = useState(false);
@@ -233,6 +234,7 @@ const RegisterPage = () => {
       try {
         const response = await axios.get(`${API}/categories`);
         setCategories(response.data.categories);
+        if (response.data.grouped) setGroupedCategories(response.data.grouped);
       } catch (err) {
         console.error('Failed to fetch categories:', err);
       }
@@ -961,9 +963,15 @@ const RegisterPage = () => {
         );
 
       case 'categories':
-        const filteredCategories = categoryFilter
-          ? categories.filter(cat => cat.toLowerCase().includes(categoryFilter.toLowerCase()))
-          : categories;
+        const filterLower = categoryFilter.toLowerCase();
+        const hasGroups = Object.keys(groupedCategories).length > 0;
+        const groupEntries = hasGroups
+          ? Object.entries(groupedCategories).map(([group, items]) => {
+              const filtered = filterLower ? items.filter(c => c.toLowerCase().includes(filterLower)) : items;
+              return [group, filtered];
+            }).filter(([, items]) => items.length > 0)
+          : [['', filterLower ? categories.filter(c => c.toLowerCase().includes(filterLower)) : categories]];
+        const totalFiltered = groupEntries.reduce((sum, [, items]) => sum + items.length, 0);
         return (
           <div>
             <p className="text-gray-600 mb-3">Vyberte kategorie služeb, které nabízíte:</p>
@@ -999,19 +1007,28 @@ const RegisterPage = () => {
                 </button>
               )}
             </div>
-            <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1.5">
-              {filteredCategories.length === 0 ? (
+            <div className="max-h-72 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1" data-testid="category-list">
+              {totalFiltered === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-4">Žádná kategorie nebyla nalezena</p>
               ) : (
-                filteredCategories.map((category) => (
-                  <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
-                    className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
-                      formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                    }`}
-                    data-testid={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}>
-                    {category}
-                    {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
-                  </button>
+                groupEntries.map(([group, items]) => (
+                  <div key={group || 'all'}>
+                    {group && (
+                      <div className="sticky top-0 bg-white z-10 px-2 py-2 border-b border-gray-100 mb-1" data-testid={`group-header-${group.toLowerCase()}`}>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{group}</span>
+                      </div>
+                    )}
+                    {items.map((category) => (
+                      <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
+                        className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
+                          formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                        }`}
+                        data-testid={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}>
+                        {category}
+                        {formData.categories.includes(category) && <Check weight="bold" className="w-4 h-4" />}
+                      </button>
+                    ))}
+                  </div>
                 ))
               )}
             </div>

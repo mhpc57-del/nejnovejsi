@@ -457,6 +457,7 @@ const CustomerDashboard = () => {
 
 const NewDemandModal = ({ onClose, onSuccess, token }) => {
   const [categories, setCategories] = useState([]);
+  const [groupedCategories, setGroupedCategories] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [catSearch, setCatSearch] = useState('');
@@ -492,6 +493,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
       try {
         const response = await axios.get(`${API}/categories`);
         setCategories(response.data.categories);
+        if (response.data.grouped) setGroupedCategories(response.data.grouped);
       } catch (err) {
         console.error('Failed to fetch categories:', err);
       }
@@ -687,17 +689,32 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
               {catDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setCatDropdownOpen(false)} />
-                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                    {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).map((cat) => (
-                      <button key={cat} type="button" onClick={() => { setFormData(prev => ({ ...prev, category: cat })); setCatSearch(''); setCatDropdownOpen(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${formData.category === cat ? 'bg-orange-500 text-white hover:bg-orange-600' : 'text-gray-700'}`}
-                        data-testid={`demand-cat-option-${cat.replace(/\s+/g, '-').toLowerCase()}`}>
-                        {cat}
-                      </button>
-                    ))}
-                    {categories.filter(c => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase())).length === 0 && (
-                      <p className="px-4 py-3 text-sm text-gray-400 text-center">Žádná kategorie nenalezena</p>
-                    )}
+                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {(() => {
+                      const searchLower = catSearch.toLowerCase();
+                      const hasGroups = Object.keys(groupedCategories).length > 0;
+                      const entries = hasGroups
+                        ? Object.entries(groupedCategories).map(([g, items]) => [g, catSearch ? items.filter(c => c.toLowerCase().includes(searchLower)) : items]).filter(([, items]) => items.length > 0)
+                        : [['', catSearch ? categories.filter(c => c.toLowerCase().includes(searchLower)) : categories]];
+                      const total = entries.reduce((s, [, items]) => s + items.length, 0);
+                      if (total === 0) return <p className="px-4 py-3 text-sm text-gray-400 text-center">Žádná kategorie nenalezena</p>;
+                      return entries.map(([group, items]) => (
+                        <div key={group || 'all'}>
+                          {group && (
+                            <div className="sticky top-0 bg-gray-50 z-10 px-4 py-1.5 border-b border-gray-100">
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{group}</span>
+                            </div>
+                          )}
+                          {items.map((cat) => (
+                            <button key={cat} type="button" onClick={() => { setFormData(prev => ({ ...prev, category: cat })); setCatSearch(''); setCatDropdownOpen(false); }}
+                              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${formData.category === cat ? 'bg-orange-500 text-white hover:bg-orange-600' : 'text-gray-700'}`}
+                              data-testid={`demand-cat-option-${cat.replace(/\s+/g, '-').toLowerCase()}`}>
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </>
               )}

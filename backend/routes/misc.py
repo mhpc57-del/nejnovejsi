@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from database import db
 from auth import get_current_user
-from models import CATEGORIES, CategorySuggestion, ADMIN_EMAIL
+from models import CATEGORIES, CATEGORY_GROUPS, CategorySuggestion, ADMIN_EMAIL
 from notifications import NotificationService
 from datetime import datetime, timezone
 import uuid
@@ -21,7 +21,15 @@ async def get_categories():
     approved = await db.approved_categories.find({}, {"_id": 0, "name": 1}).to_list(200)
     approved_names = [a["name"] for a in approved if a.get("name") and a["name"] not in CATEGORIES]
     all_categories = sorted(set(CATEGORIES + approved_names), key=lambda x: x.lower())
-    return {"categories": all_categories}
+    
+    # Build grouped response (approved go into Služby by default)
+    grouped = {}
+    for group_name, items in CATEGORY_GROUPS.items():
+        grouped[group_name] = sorted(items, key=lambda x: x.lower())
+    if approved_names:
+        grouped["Služby"] = sorted(set(grouped.get("Služby", []) + approved_names), key=lambda x: x.lower())
+    
+    return {"categories": all_categories, "grouped": grouped}
 
 
 @router.post("/categories/suggest")
