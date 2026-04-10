@@ -688,9 +688,11 @@ const DemandDetail = () => {
                   </div>
                 )}
                 {demand.deadline && (
-                  <div className="flex items-center gap-2 text-orange-600 font-medium" data-testid="demand-deadline-display">
+                  <div className={`flex items-center gap-2 font-medium ${demand.deadline === 'URGENT' ? 'text-red-600' : 'text-orange-600'}`} data-testid="demand-deadline-display">
                     <Clock className="w-5 h-5" />
-                    Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}
+                    {demand.deadline === 'ASAP' ? 'Pokud možno, co nejdříve' :
+                     demand.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' :
+                     `Termín: ${new Date(demand.deadline).toLocaleDateString('cs-CZ')}`}
                   </div>
                 )}
               </div>

@@ -920,15 +920,41 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
           {/* Deadline */}
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1.5">Požadovaný termín realizace</label>
+            <div className="flex gap-2 mb-2">
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, deadline: 'ASAP' }))}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                  formData.deadline === 'ASAP'
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                data-testid="deadline-asap-btn"
+              >
+                Pokud možno, co nejdříve
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, deadline: 'URGENT' }))}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                  formData.deadline === 'URGENT'
+                    ? 'border-red-500 bg-red-50 text-red-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                data-testid="deadline-urgent-btn"
+              >
+                IHNED — klidně si připlatím
+              </button>
+            </div>
             <input
               type="date"
-              value={formData.deadline}
+              value={formData.deadline === 'ASAP' || formData.deadline === 'URGENT' ? '' : formData.deadline}
               onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
               min={new Date().toISOString().split('T')[0]}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-gray-900"
               data-testid="demand-deadline-input"
             />
-            <p className="text-xs text-gray-500 mt-1">Nepovinné — zadejte pokud máte požadovaný termín</p>
+            <p className="text-xs text-gray-500 mt-1">Vyberte tlačítko nebo konkrétní datum z kalendáře</p>
           </div>
 
           <div className="flex gap-4 pt-4">
