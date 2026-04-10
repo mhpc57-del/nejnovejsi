@@ -51,9 +51,25 @@ const HomePage = () => {
   const [quickError, setQuickError] = useState('');
   const [platformStats, setPlatformStats] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
+  const [promotedSuppliers, setPromotedSuppliers] = useState([]);
+  const [showPromoForm, setShowPromoForm] = useState(false);
+  const [promoForm, setPromoForm] = useState({ company_name: '', bio: '', phone: '', website: '', logo_url: '' });
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoUploadingLogo, setPromoUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/platform/stats`).then(r => r.json()).then(setPlatformStats).catch(() => {});
+    fetch(`${API}/promoted-suppliers`).then(r => r.json()).then(d => setPromotedSuppliers(d.suppliers || [])).catch(() => {});
+    // Handle promo success redirect from Stripe
+    const params = new URLSearchParams(window.location.search);
+    const promoSuccess = params.get('promo_success');
+    if (promoSuccess) {
+      fetch(`${API}/promoted-suppliers/${promoSuccess}/activate`, { method: 'POST' })
+        .then(() => fetch(`${API}/promoted-suppliers`).then(r => r.json()).then(d => setPromotedSuppliers(d.suppliers || [])))
+        .catch(() => {});
+      window.history.replaceState({}, '', '/');
+    }
     const interval = setInterval(() => {
       fetch(`${API}/platform/stats`).then(r => r.json()).then(setPlatformStats).catch(() => {});
     }, 30000);
@@ -61,6 +77,32 @@ const HomePage = () => {
     window.addEventListener('scroll', onScroll);
     return () => { clearInterval(interval); window.removeEventListener('scroll', onScroll); };
   }, []);
+
+  const handlePromoLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPromoUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await axios.post(`${API}/upload/public`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setPromoForm(p => ({ ...p, logo_url: res.data.url }));
+    } catch { /* ignore */ }
+    setPromoUploadingLogo(false);
+  };
+
+  const handlePromoSubmit = async () => {
+    if (!promoForm.company_name || !promoForm.bio || !promoForm.phone) return;
+    setPromoLoading(true);
+    try {
+      const res = await axios.post(`${API}/promoted-suppliers`, promoForm);
+      const checkoutRes = await axios.post(`${API}/promoted-suppliers/${res.data.id}/create-checkout`);
+      window.location.href = checkoutRes.data.checkout_url;
+    } catch (err) {
+      setPromoLoading(false);
+    }
+  };
+
 
   const handleQuickDemand = async () => {
     if (!quickForm.first_name || !quickForm.last_name || !quickForm.phone || !quickForm.email) {
@@ -154,19 +196,20 @@ const HomePage = () => {
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left — Text */}
             <motion.div className="lg:col-span-6" initial="hidden" animate="visible" variants={staggerContainer}>
-              <motion.div variants={fadeUp} custom={0}>
+              <motion.div variants={fadeUp} custom={0} className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-600 dark:text-orange-400 px-4 py-1.5 rounded-md text-xs font-bold tracking-[0.15em] uppercase">
                   <Lightning weight="fill" className="w-3.5 h-3.5" />
                   Bezkonkurenční platforma
                 </span>
+                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">pro malé i větší zakázky</span>
               </motion.div>
               <motion.p variants={fadeUp} custom={1} className="text-xs font-bold text-zinc-500 dark:text-zinc-500 tracking-[0.2em] uppercase mt-6 mb-4">
                 Poptávky — Nabídky — Služby
               </motion.p>
               <motion.h1 variants={fadeUp} custom={2} className="text-5xl sm:text-6xl font-semibold tracking-tighter leading-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-                Jednoduše,{' '}
-                <span className="text-orange-500">rychle,</span>{' '}
-                efektivně.
+                Jednoduše, rychle,{' '}
+                efektivně,{' '}
+                <span className="text-orange-500">spolehlivě.</span>
               </motion.h1>
               <motion.p variants={fadeUp} custom={3} className="text-lg text-zinc-500 dark:text-zinc-400 mt-6 leading-relaxed max-w-md">
                 Zadejte poptávku, nebo se registrujte jako dodavatel. Začněte teď hned.
@@ -185,8 +228,8 @@ const HomePage = () => {
               <motion.div variants={fadeUp} custom={5} className="flex items-center gap-6 mt-12">
                 {[
                   { icon: ChatCircle, label: 'SMS notifikace' },
-                  { icon: CurrencyDollar, label: 'od 199 Kč / měs.' },
-                  { icon: Clock, label: '24/7 NON-STOP' },
+                  { icon: CurrencyDollar, label: 'od 199 Kč bez dalších poplatků' },
+                  { icon: Clock, label: 'RealTime sledování příjezdů' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center">
@@ -419,12 +462,25 @@ const HomePage = () => {
       {/* ───── Pricing ───── */}
       <section className="py-24 px-6 md:px-12 bg-stone-50 dark:bg-zinc-900/50">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+          <motion.div className="text-center mb-10" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Ceník</motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
               Jednoduchý a férový ceník
             </motion.h2>
           </motion.div>
+
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-3 mb-12" data-testid="billing-toggle">
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>Měsíčně</span>
+            <button onClick={() => setBillingPeriod(p => p === 'monthly' ? 'yearly' : 'monthly')}
+              className="relative w-14 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full transition-colors"
+              data-testid="billing-toggle-btn">
+              <div className={`absolute top-1 w-5 h-5 bg-orange-500 rounded-full transition-all duration-200 ${billingPeriod === 'yearly' ? 'left-8' : 'left-1'}`} />
+            </button>
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'yearly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
+              Ročně <span className="text-orange-500 font-bold">-10%</span>
+            </span>
+          </div>
           
           <motion.div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             {/* Zákazník */}
@@ -432,11 +488,26 @@ const HomePage = () => {
               className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
               <div className="mb-6">
                 <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Zákazník</span>
-                <div className="flex items-baseline gap-1 mt-3">
-                  <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>199</span>
-                  <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                </div>
-                <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
+                {billingPeriod === 'monthly' ? (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>199</span>
+                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>2 149</span>
+                      <span className="text-zinc-500 text-sm">Kč/rok</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-zinc-400 line-through text-sm">2 388 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 239 Kč</span>
+                    </div>
+                  </div>
+                )}
+                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Neomezený počet poptávek","Výběr z ověřených dodavatelů","Online chat s dodavateli","Zamítnutí nabídek","Úpravy stávajících poptávek","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
@@ -458,11 +529,26 @@ const HomePage = () => {
               </span>
               <div className="mb-6">
                 <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Dodavatel</span>
-                <div className="flex items-baseline gap-1 mt-3">
-                  <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>299</span>
-                  <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                </div>
-                <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
+                {billingPeriod === 'monthly' ? (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>299</span>
+                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>3 229</span>
+                      <span className="text-zinc-500 text-sm">Kč/rok</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-zinc-400 line-through text-sm">3 588 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 359 Kč</span>
+                    </div>
+                  </div>
+                )}
+                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Neomezený přístup k zakázkám","Výběr zakázky dle svých možností","Online chat se zákazníky","Ověřený profil nahráním oprávnění","Volba více kategorií","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
@@ -481,11 +567,26 @@ const HomePage = () => {
               className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
               <div className="mb-6">
                 <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Zákazník i dodavatel</span>
-                <div className="flex items-baseline gap-1 mt-3">
-                  <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>399</span>
-                  <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                </div>
-                <span className="text-orange-500 text-sm font-medium">14 dní zdarma</span>
+                {billingPeriod === 'monthly' ? (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>399</span>
+                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>4 309</span>
+                      <span className="text-zinc-500 text-sm">Kč/rok</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-zinc-400 line-through text-sm">4 788 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 479 Kč</span>
+                    </div>
+                  </div>
+                )}
+                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {["Vše z profilu zákazníka","Vše z profilu dodavatele","Zadávání i přijímání zakázek","Online chat s oběma stranami","Ověřený profil","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
@@ -500,10 +601,82 @@ const HomePage = () => {
             </motion.div>
           </motion.div>
           <p className="text-center text-zinc-500 text-sm mt-8">
-            Platba kartou přes zabezpečenou bránu Stripe. <strong className="text-zinc-700 dark:text-zinc-300">Předplatné můžete kdykoliv zrušit.</strong>
+            Platba kartou přes zabezpečenou bránu Stripe. <strong className="text-zinc-700 dark:text-zinc-300">Předplatné můžete kdykoliv zrušit.</strong> Ceny jsou uvedeny bez DPH.
           </p>
         </div>
       </section>
+
+      {/* ───── Promoted Suppliers ───── */}
+      <section className="py-24 px-6 md:px-12" data-testid="promoted-suppliers-section">
+        <div className="max-w-7xl mx-auto">
+          <motion.div className="text-center mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+            <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Doporučení dodavatelé</motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
+              Spolehliví partneři
+            </motion.h2>
+          </motion.div>
+
+          <motion.div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+            {Array.from({ length: 6 }).map((_, i) => {
+              const supplier = promotedSuppliers[i];
+              if (supplier) {
+                const logoUrl = supplier.logo_url
+                  ? (supplier.logo_url.startsWith('http') ? supplier.logo_url : `${API.replace('/api', '')}${supplier.logo_url.startsWith('/api') ? supplier.logo_url : '/api' + (supplier.logo_url.startsWith('/') ? '' : '/') + supplier.logo_url}`)
+                  : null;
+                return (
+                  <motion.div key={supplier.id} variants={fadeUp} custom={i}
+                    className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+                    data-testid={`promo-card-${i}`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt={supplier.company_name} className="w-14 h-14 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700" />
+                      ) : (
+                        <div className="w-14 h-14 bg-orange-100 dark:bg-orange-500/15 rounded-lg flex items-center justify-center">
+                          <Briefcase weight="duotone" className="w-7 h-7 text-orange-500" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{supplier.company_name}</h3>
+                        {supplier.website && <a href={supplier.website.startsWith('http') ? supplier.website : `https://${supplier.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-500 hover:text-orange-600 truncate block">{supplier.website}</a>}
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2 mb-2">{supplier.bio}</p>
+                    {supplier.phone && <p className="text-xs text-zinc-400">{supplier.phone}</p>}
+                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                      <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">Sponzorovaný banner</span>
+                    </div>
+                  </motion.div>
+                );
+              }
+              return (
+                <motion.button key={`empty-${i}`} variants={fadeUp} custom={i}
+                  onClick={() => setShowPromoForm(true)}
+                  className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-6 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all duration-200 text-center group cursor-pointer"
+                  data-testid={`promo-empty-${i}`}>
+                  <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/15 rounded-lg flex items-center justify-center mx-auto mb-3 transition-colors">
+                    <Plus weight="bold" className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
+                  </div>
+                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
+                  <p className="text-xs font-bold text-orange-500">300 Kč/den</p>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {promotedSuppliers.length >= 6 && (
+            <div className="text-center mt-8">
+              <button onClick={() => setShowPromoForm(true)}
+                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25"
+                data-testid="add-promo-banner-btn">
+                <Plus weight="bold" className="w-4 h-4" />
+                Přidat reklamní banner za 300 Kč/den
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+
 
       {/* ───── CTA ───── */}
       <section className="py-24 px-6 md:px-12">
@@ -653,6 +826,70 @@ const HomePage = () => {
           </motion.div>
         </div>
       )}
+
+      {/* ───── Promo Form Modal ───── */}
+      {showPromoForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4" onClick={() => !promoLoading && setShowPromoForm(false)}>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}
+            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border border-zinc-200/50 dark:border-zinc-800" onClick={e => e.stopPropagation()} data-testid="promo-form-modal">
+            <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Reklamní banner</h2>
+                <p className="text-xs text-zinc-400 mt-0.5">300 Kč/den + 21% DPH = <strong>363 Kč</strong></p>
+              </div>
+              <button onClick={() => setShowPromoForm(false)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors">
+                <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Název firmy *</label>
+                <input type="text" value={promoForm.company_name} onChange={e => setPromoForm(p => ({...p, company_name: e.target.value}))}
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="Název vaší firmy" data-testid="promo-company-name" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Stručný popis *</label>
+                <textarea value={promoForm.bio} onChange={e => setPromoForm(p => ({...p, bio: e.target.value}))} rows={2}
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm resize-none" placeholder="Co nabízíte..." data-testid="promo-bio" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Telefon *</label>
+                  <input type="tel" value={promoForm.phone} onChange={e => setPromoForm(p => ({...p, phone: e.target.value}))}
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="+420..." data-testid="promo-phone" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Web</label>
+                  <input type="text" value={promoForm.website} onChange={e => setPromoForm(p => ({...p, website: e.target.value}))}
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="www.firma.cz" data-testid="promo-website" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Logo</label>
+                <div className="flex items-center gap-3">
+                  {promoForm.logo_url ? (
+                    <img src={promoForm.logo_url.startsWith('http') ? promoForm.logo_url : `${API.replace('/api', '')}${promoForm.logo_url.startsWith('/api') ? promoForm.logo_url : '/api' + (promoForm.logo_url.startsWith('/') ? '' : '/') + promoForm.logo_url}`} alt="Logo" className="w-14 h-14 rounded-lg object-cover border border-zinc-200" />
+                  ) : (
+                    <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
+                      <Briefcase className="w-6 h-6 text-zinc-400" />
+                    </div>
+                  )}
+                  <label className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+                    {promoUploadingLogo ? 'Nahrávám...' : 'Nahrát logo'}
+                    <input type="file" accept="image/*" onChange={handlePromoLogoUpload} className="hidden" disabled={promoUploadingLogo} />
+                  </label>
+                </div>
+              </div>
+              <button onClick={handlePromoSubmit} disabled={promoLoading || !promoForm.company_name || !promoForm.bio || !promoForm.phone}
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2" data-testid="promo-submit-btn">
+                {promoLoading ? 'Přesměrování na platbu...' : 'Pokračovat k platbě — 363 Kč'}
+              </button>
+              <p className="text-[11px] text-zinc-400 text-center">Cena 300 Kč + 21% DPH. Banner bude aktivní 24 hodin od zaplacení.</p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 };
