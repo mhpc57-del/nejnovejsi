@@ -11,45 +11,30 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - AI Chat (GPT), Quick Demand, Weather widget
 - 3-option dokonceni (Standard/Navyseni/Blacklist), Nemohu provest
 - Financni prehled + Fotodokumentace (max 20, lightbox)
-- **Potvrzeni ceny dodavatelem** -- zakaznik nastavi cenu, dodavatel potvrdi/nesouhlasi, email notifikace
-- **Prijmy dodavatele** -- sidebar: potvrzene prijmy vs cekajici na potvrzeni
-- **Admin Panel**: uzivatele (blok/edit/zprava/overeni/reaktivace/ARES), zakazky (zrusit/oznameni/vulgarita), kategorie (schvalit/zamitnout s duvodem)
-- Kategorie s vyhledavanim (profil + poptavky)
-- Read tracking zprav (badge zmizi po precteni)
-- Homepage: "24/7 NON-STOP"
-- **Fakturacni system (2026-04-08)**:
-  - Backend: PDF generovani (ReportLab), XML ISDOC pro POHODA, ZIP hromadny export
-  - Frontend: /faktury stranka pro uzivatele (prehled, stahovani PDF/XML)
-  - Admin: tab Faktury v Admin Panelu (filtrace mesic, Zobrazit, ZIP export, PDF/XML per faktura)
-  - Navigace: odkaz "Faktury" v sidebaru Dodavatele i Zakaznika
-  - Automaticke generovani faktur po uspesne platbe Stripe
-  - Email notifikace s cislem faktury po platbe
-  - Firma: AC/DC MONT s.r.o., IC 09744550, DIC CZ09744550, Sportovni 7, 789 63 Ruda nad Moravou
-- **Persistentni upload souboru (2026-04-08)**:
-  - Soubory se ukladaji do MongoDB (kolekce file_storage) misto disku
-  - Preziji deployment/restart serveru
-  - Fallback na disk pro zpetnou kompatibilitu
-  - URL format nezmeneny: /api/uploads/{filename}
-- **Rozsireny registracni formular (2026-04-09)**:
-  - Dodavatele: pridany 2 nove kroky po "Kategorie sluzeb"
-  - Krok 7: "Oblast pusobeni" - interaktivni mapa CR (Leaflet), kliknutim se pridaji oblasti, posuvnik polomeru 5-100km
-  - Krok 8: "Portfolio a reference" - upload referencnich fotek (max 20), verejny upload endpoint
-  - Oba kroky jsou volitelne (lze preskocit)
-  - Zakaznik tyto kroky nevidi
-  - Testovano: 12/12 testu proslo (100%)
+- Potvrzeni ceny dodavatelem, Prijmy dodavatele
+- Admin Panel: uzivatele, zakazky, kategorie
+- Fakturacni system (PDF/XML/ZIP)
+- Persistentni upload do MongoDB
+- **Rozsireny registracni formular (2026-04-09)**: 2 nove kroky (Oblast pusobeni + Portfolio)
+- **Seskupene kategorie (2026-04-10)**:
+  - Kategorie rozdeleny do 2 skupin: Remesla (46) a Sluzby (78) = 124 celkem
+  - Backend `/api/categories` vraci flat i grouped data
+  - Registrace, Profil, Poptavky - vsude seskupene s hlavickami
+  - Filtr funguje pres obe skupiny
+  - Testovano: 11/11 testu proslo (100%)
+- **Zabraneni prekladu prohlizecem (2026-04-10)**:
+  - `lang="cs"` misto `lang="en"` v index.html
+  - `translate="no"`, `class="notranslate"`, `<meta name="google" content="notranslate">`
+  - `<meta http-equiv="Content-Language" content="cs">`
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS (/app/frontend)
 - Backend: FastAPI + MongoDB (/app/backend)
 - Mobile: React Native Expo (/app/mobile) - PAUSOVANO
-- Invoicing: /app/backend/invoicing.py (PDF + XML gen), /app/backend/routes/invoices.py
-- File Storage: MongoDB kolekce file_storage (binary data)
 
 ## Backlog
-- P1: Konfigurace Stripe webhooku pro live mod
-- P1: Prechod Twilio na firemni ucet (domena overena, zbyvajici kroky)
-- P1: Nove kategorie (ceka seznam)
 - P1: Overeni Twilio SMS doruceni (ceka na potvrzeni uzivatele)
+- P1: Stripe Live finalizace (ceka na uzivatele + ucetni)
 - P2: Sledovani rychlosti dorucovani e-mailu pres Wedos SMTP
-- P2: UI/UX redesign podle design_guidelines.json (odlozeno az bude vse funkcne)
-- P2: Mobilni aplikace - PAUSOVANO (az bude web 100%)
+- P2: UI/UX redesign podle design_guidelines.json (odlozeno)
+- P2: Mobilni aplikace - PAUSOVANO
