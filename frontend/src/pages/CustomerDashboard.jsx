@@ -798,6 +798,30 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
             )}
           </div>
 
+          {/* Supplier radius */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Okruh dodavatelů</label>
+            <p className="text-xs text-gray-400 mb-2">Pouze dodavatelé působící v tomto okruhu od místa zakázky budou osloveni</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="5"
+                max="150"
+                step="5"
+                value={formData.supplier_radius}
+                onChange={(e) => setFormData(prev => ({ ...prev, supplier_radius: parseInt(e.target.value) }))}
+                className="flex-1 accent-orange-500"
+                data-testid="supplier-radius-slider"
+              />
+              <span className="text-sm font-semibold text-orange-600 w-16 text-right" data-testid="supplier-radius-value">{formData.supplier_radius} km</span>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-300 mt-0.5 px-0.5">
+              <span>5 km</span>
+              <span>75 km</span>
+              <span>150 km</span>
+            </div>
+          </div>
+
           {/* Budget */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Předpokládaná cena (Kč)</label>
@@ -823,30 +847,6 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                   data-testid="demand-budget-max"
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Supplier radius */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Okruh dodavatelů</label>
-            <p className="text-xs text-gray-400 mb-2">Pouze dodavatelé působící v tomto okruhu od místa zakázky budou osloveni</p>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="5"
-                max="150"
-                step="5"
-                value={formData.supplier_radius}
-                onChange={(e) => setFormData(prev => ({ ...prev, supplier_radius: parseInt(e.target.value) }))}
-                className="flex-1 accent-orange-500"
-                data-testid="supplier-radius-slider"
-              />
-              <span className="text-sm font-semibold text-orange-600 w-16 text-right" data-testid="supplier-radius-value">{formData.supplier_radius} km</span>
-            </div>
-            <div className="flex justify-between text-[10px] text-gray-300 mt-0.5 px-0.5">
-              <span>5 km</span>
-              <span>75 km</span>
-              <span>150 km</span>
             </div>
           </div>
 
