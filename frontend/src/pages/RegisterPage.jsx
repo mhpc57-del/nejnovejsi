@@ -98,11 +98,11 @@ const RegisterPage = () => {
     searchTimers.current[name] = setTimeout(async () => {
       try {
         const response = await axios.get(`${API}/geocode/search`, { params: { q: value } });
-        setAddressSuggestions(prev => ({ ...prev, [name]: response.data || [] }));
+        setAddressSuggestions(prev => ({ ...prev, [name]: Array.isArray(response.data) ? response.data : [] }));
       } catch (err) {
         console.error('Geocode search error:', err);
       }
-    }, 400);
+    }, 800);
   };
 
   const selectAddress = (suggestion, fieldName) => {

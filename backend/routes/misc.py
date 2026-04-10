@@ -62,24 +62,104 @@ async def suggest_category(data: CategorySuggestion, current_user: dict = Depend
 
 @router.get("/geocode/search")
 async def geocode_search(q: str):
-    async with httpx.AsyncClient() as client_http:
-        response = await client_http.get(
-            "https://nominatim.openstreetmap.org/search",
-            params={"q": q, "format": "json", "addressdetails": 1, "limit": 5, "countrycodes": "cz", "accept-language": "cs"},
-            headers={"User-Agent": "CraftBolt/1.0"}
-        )
-        return response.json()
+    """Search addresses with Nominatim, fallback to Photon."""
+    # Try Nominatim first
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client_http:
+            response = await client_http.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={
+                    "q": q,
+                    "format": "json",
+                    "addressdetails": 1,
+                    "limit": 5,
+                    "countrycodes": "cz",
+                    "accept-language": "cs",
+                },
+                headers={"User-Agent": "CraftBolt/2.0 (info@craftbolt.cz)"}
+            )
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        return data
+                except Exception:
+                    pass
+    except Exception as e:
+        logger.warning(f"Nominatim failed: {e}")
+
+    # Fallback to Photon (komoot)
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client_http:
+            response = await client_http.get(
+                "https://photon.komoot.io/api/",
+                params={"q": q, "limit": 8, "lat": 49.8, "lon": 15.5},
+                headers={"User-Agent": "CraftBolt/2.0"}
+            )
+            if response.status_code == 200:
+                data = response.json()
+                features = data.get("features", [])
+                # Convert Photon format to Nominatim-compatible format
+                results = []
+                for f in features:
+                    props = f.get("properties", {})
+                    coords = f.get("geometry", {}).get("coordinates", [0, 0])
+                    country = props.get("country", "")
+                    if country and "czech" not in country.lower() and "česk" not in country.lower():
+                        continue
+                    parts = []
+                    if props.get("street"):
+                        street = props["street"]
+                        if props.get("housenumber"):
+                            street += f" {props['housenumber']}"
+                        parts.append(street)
+                    elif props.get("name"):
+                        parts.append(props["name"])
+                    if props.get("postcode"):
+                        parts.append(props["postcode"])
+                    if props.get("city"):
+                        parts.append(props["city"])
+                    elif props.get("county"):
+                        parts.append(props["county"])
+                    display = ", ".join(parts) if parts else props.get("name", q)
+                    results.append({
+                        "display_name": display,
+                        "lat": str(coords[1]) if len(coords) > 1 else "0",
+                        "lon": str(coords[0]) if len(coords) > 0 else "0",
+                        "address": {
+                            "road": props.get("street", ""),
+                            "house_number": props.get("housenumber", ""),
+                            "postcode": props.get("postcode", ""),
+                            "city": props.get("city", ""),
+                            "state": props.get("state", ""),
+                            "country": props.get("country", ""),
+                        }
+                    })
+                return results
+    except Exception as e:
+        logger.warning(f"Photon fallback also failed: {e}")
+
+    return []
 
 
 @router.get("/geocode/reverse")
 async def geocode_reverse(lat: float, lon: float):
-    async with httpx.AsyncClient() as client_http:
-        response = await client_http.get(
-            "https://nominatim.openstreetmap.org/reverse",
-            params={"lat": lat, "lon": lon, "format": "json", "addressdetails": 1, "accept-language": "cs"},
-            headers={"User-Agent": "CraftBolt/1.0"}
-        )
-        return response.json()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client_http:
+            response = await client_http.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={"lat": lat, "lon": lon, "format": "json", "addressdetails": 1, "accept-language": "cs"},
+                headers={"User-Agent": "CraftBolt/2.0 (info@craftbolt.cz)"}
+            )
+            if response.status_code != 200:
+                return {}
+            try:
+                return response.json()
+            except Exception:
+                return {}
+    except Exception as e:
+        logger.error(f"Geocode reverse error: {e}")
+        return {}
 
 
 # ============ ARES ============
