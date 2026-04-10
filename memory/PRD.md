@@ -14,21 +14,22 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - Admin Panel: uzivatele, zakazky, kategorie, faktury, REKLAMA
 - Fakturacni system (PDF/XML/ZIP)
 - Persistentni upload do MongoDB
-- Rozsireny registracni formular: Oblast pusobeni + Portfolio
+- Rozsireny registracni formular + SMS toggle
 - Seskupene kategorie: Remesla (46) + Sluzby (78) = 124
-- Zabraneni prekladu prohlizecem: lang=cs, notranslate
-- Kompletni UI/UX Redesign
-- Homepage: "Jednoduše,"+spolehlive oranzove, rocni cenovy prepinac, 8 karet TOPOVANI DODAVATELE
-- Admin Reklama tab: statistiky, tabulka, akce (prodlouzit/deaktivovat/smazat)
-- Zakaznicky dashboard: Prepracovany seznam poptavek se jmenem/mistem/datem
-- **SMS notifikacni toggle (2026-04-11)**:
-  - Prepinac "Chci dostavat notifikacni SMS" v registraci i editaci profilu
-  - Backend kontroluje flag pred odeslanim SMS (notify_new_demand, notify_new_offer, notify_new_message, notify_status_change, notify_soft_accept, notify_cannot_complete)
-  - Testovano: iterace 31 (16/16, 100%)
-- **Migrace z Twilio na BulkGate (2026-04-11)**:
-  - Twilio kompletne odstranen (vcetne pip balicku)
-  - BulkGate HTTP API integrace - BULKGATE_APP_ID + BULKGATE_APP_TOKEN v .env
-  - Ceka na schvaleni registrace uzivatelem (do 48 hod)
+- Kompletni UI/UX Redesign + Framer Motion
+- Homepage: Jednoduše+spolehlive oranzove, rocni cenovy prepinac, 8 karet TOPOVANI DODAVATELE
+- Admin Reklama tab: statistiky, tabulka, akce
+- Zakaznicky dashboard: Prepracovany seznam poptavek
+- Migrace Twilio -> BulkGate (ceka na schvaleni registrace)
+- SMS notifikacni toggle v registraci i editaci profilu
+- **Mobilni navigace (2026-04-11)**:
+  - Nahrazeno "Odhlasit" za "Vice" bottom drawer
+  - Customer: Domu, Prehled, + Nova poptavka, Profil, Vice
+  - Supplier: Domu, Prehled, Profil, Vice
+  - Drawer: Faktury, Prijmy (supplier), AI Chat, Rezim (dark/light), Prepnout roli, Zkusebni doba, Zrusit ucet, Odhlasit
+  - AI chat floating button skryt na mobilu (hidden lg:flex)
+  - AI chat fullscreen na mobilu
+  - Testovano: iterace 32 (8/8, 100%)
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
@@ -39,5 +40,5 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - P0: BulkGate SMS - ceka na schvaleni registrace (48 hod)
 - P0: Stripe reklamni karty - nastavit spravny Stripe klic
 - P1: Stripe Live finalizace (ceka na ucetni)
-- P2: Sledovani rychlosti dorucovani e-mailu pres Wedos SMTP
+- P2: Wedos SMTP monitoring
 - P2: Mobilni aplikace - PAUSOVANO
