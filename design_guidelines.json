@@ -1,100 +1,127 @@
 {
   "theme_and_archetype": {
-    "domain": "SaaS Marketplace / Services",
-    "theme": "Light",
-    "archetype": "Archetype 4 (Swiss & High-Contrast) mixed with brand Orange accents.",
-    "rationale": "The platform requires authority, clarity, and function-first design to build trust between customers and providers. High contrast (Black/White) provides clarity, while the Orange accent drives action and matches the brand logo (CraftBolt)."
+    "domain": "Service Marketplace Platform",
+    "theme": "Dual (Light & Dark Mode)",
+    "archetype": "Archetype 4: Swiss & High-Contrast",
+    "vibe": "Authority, Clarity, Professional, Reliable, and Premium"
   },
   "typography": {
-    "primary_heading_font": "Outfit",
-    "secondary_body_font": "Manrope",
-    "anti_default_rule": "Inter, Roboto, Open Sans are BANNED. Headings must use Outfit.",
-    "hierarchy": {
-      "h1": "text-5xl sm:text-6xl tracking-tight font-bold",
-      "h2": "text-3xl sm:text-4xl tracking-tight font-semibold",
-      "h3": "text-xl sm:text-2xl font-semibold",
-      "h4": "text-lg sm:text-xl font-medium",
+    "heading_font": "Outfit",
+    "body_font": "Manrope",
+    "banned_fonts": ["Inter", "Roboto", "Open Sans", "Syne"],
+    "scale": {
+      "h1": "text-5xl md:text-6xl tracking-tighter font-semibold leading-tight",
+      "h2": "text-3xl md:text-4xl tracking-tight font-medium leading-snug",
+      "h3": "text-xl md:text-2xl font-medium",
       "body": "text-base leading-relaxed",
       "labels": "text-xs tracking-[0.2em] uppercase font-bold"
+    },
+    "rules": [
+      "No jump greater than 2 tailwind steps between headings and subheadings.",
+      "Always use tight tracking on large headers to create a premium feel.",
+      "Overlines and labels must be uppercase with wide tracking.",
+      "Must ensure robust latin-ext character support for Czech diacritics (ř, č, š, ž, etc.)."
+    ]
+  },
+  "color_palette": {
+    "primary": {
+      "base": "#f97316",
+      "hover": "#ea580c",
+      "focus": "#fdba74"
+    },
+    "light_mode": {
+      "background": "#fafaf9",
+      "surface": "#ffffff",
+      "text_primary": "#18181b",
+      "text_secondary": "#52525b",
+      "border": "#e4e4e7"
+    },
+    "dark_mode": {
+      "background": "#09090b",
+      "surface": "#141418",
+      "text_primary": "#fafafa",
+      "text_secondary": "#a1a1aa",
+      "border": "#27272a"
+    },
+    "accents": {
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "danger": "#ef4444",
+      "info": "#3b82f6"
+    },
+    "rules": [
+      "Tinted neutrals only. Avoid pure #000 or #FFF where possible.",
+      "Ensure text meets APCA high-contrast standards.",
+      "Primary Orange is strictly reserved for primary CTAs, active states, and map markers. Do not overuse."
+    ]
+  },
+  "layout_spacing": {
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "padding_scale": ["p-6", "p-8", "p-12", "p-24"],
+    "grid_modes": {
+      "marketing": "Tetris Grid (grid-cols-1 md:grid-cols-12, wide gap-8 to gap-12). Focus on asymmetric overlaps.",
+      "dashboard": "Control Room Grid (grid-cols-1 lg:grid-cols-4, tight gap-4 or gap-6). High density, utilize full height for children."
+    },
+    "rules": [
+      "Containers with borders must have internal padding (p-6 or p-8) to prevent text collision.",
+      "Never center everything. Left-align dense content and paragraphs.",
+      "Use optical alignment for icons + text in buttons."
+    ]
+  },
+  "component_strategy": {
+    "global": "Shadcn UI base heavily customized. Use sharp or lightly rounded edges (max rounded-md or rounded-lg). Avoid deep soft shadows; prefer 1px solid borders.",
+    "buttons": "Flat colors, no gradients. Primary: bg-orange-500 text-white hover:bg-orange-600. Define explicit focus states.",
+    "cards": "Dashboard cards: Flat background, 1px subtle border. Hover: slight lift (-translate-y-1) and shadow-lg.",
+    "maps": "Leaflet map tiles MUST be styled contextually. Use CartoDB Positron for light mode, Dark Matter for dark mode. Use custom SVG pins colored in Primary Orange.",
+    "forms": "Strictly use Shadcn Forms. No native inputs. Use step-by-step wizard style for Demand Creation.",
+    "tables": "Dense padding for Admin/Invoice tables. Right-align numerical data (CZK prices)."
+  },
+  "visual_enhancers": {
+    "sticky_headers": "Glassmorphism: backdrop-blur-xl bg-white/70 or bg-zinc-950/60 with a 1px bottom border. Saturated backdrop.",
+    "dash_widgets": "Use 'Grid Borders' for technical data sections (border-r border-b border-border/40).",
+    "marketing_hero": "Hero Image Overlay must not exceed bg-zinc-950/50. If image isn't visible, use a gradient overlay instead.",
+    "icons": "Phosphor Icons. 'Regular' weight for dense UI/dashboards, 'Duotone' weight for marketing sections."
+  },
+  "motion_interaction": {
+    "hover_states": "ALWAYS explicitly set text color on hover. E.g. hover:bg-zinc-100 hover:text-zinc-900.",
+    "transitions": "Use specific properties: transition: transform 0.2s ease, opacity 0.2s ease. No 'transition-all'.",
+    "entry_animations": "Use Framer Motion for staggered fade-up lists (Demand feeds, steps).",
+    "loading": "Replace default spinners with a subtle orange tracing beam or progress bar across the top."
+  },
+  "domain_specific_rules": {
+    "marketplace_trust": "Use verified badges and user ratings prominently. Implement high-contrast pricing tiers highlighting the 'Most Popular' subscription.",
+    "service_area": "Display map service area with a semi-transparent orange circle overlay.",
+    "weather_nameday": "Integrate Weather and Nameday subtly into the Dashboard Header using small, clean typography (labels). It should provide utility without stealing focus from the main demand feed."
+  },
+  "media_assets": [
+    {
+      "category": "hero_background",
+      "url": "https://static.prod-images.emergentagent.com/jobs/75886f31-ebb4-4b11-a3f9-2070d0770858/images/423c4f0b767cdf49c3f8656ec121991d87a93418196e2a09539578ae09feca1d.png",
+      "description": "High-end, modern architectural interior under renovation. Use for Landing Page Hero section."
+    },
+    {
+      "category": "craftsman_working",
+      "url": "https://images.unsplash.com/photo-1610259998914-d1b9afe0dc55?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBjcmFmdHNtYW4lMjB3b3JraW5nfGVufDB8fHx8MTc3NTgzNjUyMXww&ixlib=rb-4.1.0&q=85",
+      "description": "Professional craftsman with power tool. Use for 'How it works' or Supplier feature cards."
+    },
+    {
+      "category": "carpenter",
+      "url": "https://images.unsplash.com/photo-1756736668479-140dfe2b0fe6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBjcmFmdHNtYW4lMjB3b3JraW5nfGVufDB8fHx8MTc3NTgzNjUyMXww&ixlib=rb-4.1.0&q=85",
+      "description": "Carpenter working at workbench. Use for Testimonials or Service Categories."
+    },
+    {
+      "category": "interior_renovation",
+      "url": "https://images.unsplash.com/photo-1768321902047-2296fd495fa4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob21lJTIwcmVwYWlyJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1ODM2NTIxfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Exposed framing interior. Use for Customer Dashboard placeholder states or Demand creation background."
     }
-  },
-  "colors": {
-    "background": {
-      "default": "#FFFFFF",
-      "subtle": "#F8F9FA",
-      "muted": "#F1F3F5"
-    },
-    "text": {
-      "primary": "#0A0A0A",
-      "secondary": "#4B5563",
-      "muted": "#9CA3AF"
-    },
-    "brand_accent": {
-      "primary": "#F97316",
-      "hover": "#EA580C",
-      "light": "#FFF7ED"
-    },
-    "borders": {
-      "default": "#E5E7EB",
-      "focus": "#F97316"
-    }
-  },
-  "layout_and_spacing": {
-    "philosophy": "Generous Spacing, Mobile-First, Optical Alignment",
-    "scale": "Tailwind spacing: p-4, p-8, p-12, p-16, p-24, p-32",
-    "grids": {
-      "bento_advantages": "MODE A: Tetris Grid. grid-cols-1 md:grid-cols-8 lg:grid-cols-12, gap-8. Mix spans (col-span-4, col-span-8).",
-      "dashboard_control_room": "MODE B: Control Room Grid for Provider/Customer dashboards. Tight gaps (gap-4 or gap-6).",
-      "steps_how_it_works": "grid-cols-1 md:grid-cols-4 gap-8 with a connecting line (visible on md+)."
-    }
-  },
-  "components_strategy": {
-    "marketing_pages": "Custom HTML + Tailwind for hero, bento grid, and steps. Do NOT use standard Shadcn Cards for creative layouts.",
-    "dashboard_and_forms": "Use highly customized Shadcn components (Input, Select, Form, Dialog, Tabs) for the multi-step registration and dashboard.",
-    "pricing": "3 Cards layout. 1px solid border. The 'Zákazník' card (190 Kč), 'Nepodnikatel' (290 Kč), 'OSVČ/firmy' (490 Kč). Highlight the middle/popular tier with an Orange border.",
-    "video_section": "Large 16:9 aspect ratio container (max-h-[80vh]), rounded-2xl, overflow-hidden, with a play button centered (glassmorphism style).",
-    "cards_dashboard": "Flat backgrounds, 1px subtle border, no shadow by default. On hover: slight lift (-translate-y-1) and shadow-lg."
-  },
-  "surfaces": {
-    "header": "Crystal Glassmorphism: bg-white/70, backdrop-blur-xl, border-b border-black/5. Sticky z-50.",
-    "modals_and_overlays": "High-end glass: backdrop-blur-xl bg-white/80, 1px border border-black/10.",
-    "bento_items": "Solid subtle background (#F8F9FA), 1px border (#E5E7EB), internal padding p-6 or p-8."
-  },
-  "motion_and_interactions": {
-    "hover_states": "Buttons: hover:bg-orange-600 hover:text-white transition-colors duration-200.",
-    "entrance": "Staggered fade-up for bento grid items and pricing cards.",
-    "focus": "focus:ring-2 focus:ring-orange-500/50 focus:outline-none."
-  },
-  "icons_and_assets": {
-    "library": "Phosphor Icons (@phosphor-icons/react) - Duotone weight for marketing, Regular for dashboards.",
-    "data_testid": "ALL interactive elements must include a data-testid attribute (e.g., login-form-submit-button)."
-  },
-  "image_urls": {
-    "hero_background": {
-      "url": "https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHxjcmFmdHNtYW4lMjB3b3JraW5nJTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3NTAxNjAzMXww&ixlib=rb-4.1.0&q=85",
-      "description": "Craftsman with a red/black drill, to be used in the hero section or video section placeholder."
-    },
-    "feature_woodworker": {
-      "url": "https://images.unsplash.com/photo-1756736668479-140dfe2b0fe6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwzfHxjcmFmdHNtYW4lMjB3b3JraW5nJTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3NTAxNjAzMXww&ixlib=rb-4.1.0&q=85",
-      "description": "Carpenter working on wood, suitable for 'How it works' or features grid."
-    },
-    "dashboard_map_tracking": {
-      "url": "https://images.unsplash.com/photo-1767873691315-c9e61c705b25?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwxfHxncHMlMjBtYXAlMjBuYXZpZ2F0aW9uJTIwc2NyZWVufGVufDB8fHx8MTc3NTAxNjA1NXww&ixlib=rb-4.1.0&q=85",
-      "description": "GPS navigation screen, abstract representation for the real-time tracking feature map."
-    },
-    "city_map_route": {
-       "url": "https://images.pexels.com/photos/38271/ipad-map-tablet-internet-38271.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-       "description": "Person holding map on tablet. Use for geolocation feature."
-    }
-  },
+  ],
   "instructions_to_main_agent": [
-    "Strictly follow the JSON guidelines for color, typography, and spacing.",
-    "Start by implementing the Homepage layout first (Hero, 10 Advantages Bento Grid, 4 Steps How it Works, Video Section, Pricing).",
-    "For the Logo, use text 'CraftBolt' with 'Craft' styled in black (#0A0A0A) and 'Bolt' styled in primary orange (#F97316).",
-    "Implement multi-step registration (Basic Info -> Role Selection -> Plan Type -> Details -> Category).",
-    "Use Phosphor icons for all iconography. DO NOT use generic placeholder icons.",
-    "For the dashboards (Customer and Provider), use the Control Room Grid layout, keeping it dense and highly functional. Add tracking map placeholder using 'dashboard_map_tracking' image.",
-    "Ensure all buttons and interactive elements have appropriate focus, hover states, and 'data-testid' attributes.",
-    "For the 3 pricing tiers: 1. Zákazník (190 Kč), 2. Nepodnikatel (290 Kč), 3. OSVČ/firmy (490 Kč)."
+    "Install and setup 'Outfit' and 'Manrope' fonts supporting latin-ext. Remove standard Inter/Roboto imports.",
+    "Refactor dashboard views (Supplier, Customer, Admin) to use the 'Control Room' grid layout.",
+    "Integrate Shadcn UI across all forms, tables, and dialogs. Set the CSS radius to 0.5rem (8px).",
+    "Update tailwind.config.js with the specified color_palette, enforcing the high-contrast light and dark themes.",
+    "Style the Leaflet map component (DraggableMap.jsx / LiveMap.jsx) to load CartoDB base maps dynamically based on the current theme.",
+    "Implement Framer Motion for the Demand Feed cards and Landing page 'How it works' steps.",
+    "Ensure all interactive elements (buttons, inputs, demand cards) have a 'data-testid' attribute in kebab-case."
   ]
 }

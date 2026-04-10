@@ -71,7 +71,7 @@ const HomePage = () => {
   const advantages = [
     { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost přivýdělku jako zaměstnanec. Nepotřebujete živnostenský list." },
     { icon: CurrencyDollar, title: "Nejlevnější platforma na trhu", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
-    { icon: DeviceMobile, title: "Chytrá mobilní aplikace", desc: "Pouze u nás. Nativní aplikace pro Android i iOS." },
+    { icon: DeviceMobile, title: "Chytrá mobilní aplikace", desc: "Nativní aplikace pro Android i iOS je ve vývoji. Registrovaní uživatelé budou informováni o možnosti bezplatného stažení.", badge: "Již brzy" },
     { icon: ShieldCheck, title: "Neřešíme registry", desc: "Každý se může dostat do problémů a mnohdy za to ani nemůže. Dáváme druhou šanci." },
     { icon: MapPin, title: "Geolokace", desc: "Zjištění online polohy mezi zákazníkem a dodavatelem — funkční také na počítačích." },
     { icon: Lightning, title: "Rychlé vkládání a přijímání zakázek", desc: "Bez zbytečného papírování. Zakázka do 5 minut." },
@@ -272,11 +272,36 @@ const HomePage = () => {
                   <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                     <adv.icon weight="duotone" className="w-5 h-5 text-orange-500" />
                   </div>
+                  {adv.badge && (
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wide">{adv.badge}</span>
+                  )}
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{adv.title}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{adv.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile App Coming Soon */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-gray-900 to-gray-800" data-testid="mobile-app-banner">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-shrink-0">
+            <div className="w-20 h-20 bg-orange-500/20 rounded-2xl flex items-center justify-center">
+              <DeviceMobile weight="duotone" className="w-10 h-10 text-orange-400" />
+            </div>
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+              <h3 className="text-xl font-bold text-white">Mobilní aplikace CraftBolt</h3>
+              <span className="px-2.5 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">Ve vývoji</span>
+            </div>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Pracujeme na nativní aplikaci pro <span className="text-white font-semibold">Google Play</span> i <span className="text-white font-semibold">Apple App Store</span>.
+              Všichni registrovaní uživatelé budou automaticky informováni o možnosti bezplatného stažení.
+              Zaregistrujte se již nyní a buďte mezi prvními!
+            </p>
           </div>
         </div>
       </section>
