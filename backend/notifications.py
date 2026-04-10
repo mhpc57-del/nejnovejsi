@@ -485,6 +485,7 @@ class NotificationService:
     
     async def notify_new_demand(self, suppliers: List[dict], demand_title: str, demand_category: str, demand_address: str, customer_name: str = ""):
         """Notify suppliers about new demand in their category (max 20 suppliers)"""
+        logger.info(f"notify_new_demand: title='{demand_title}', category='{demand_category}', total_suppliers={len(suppliers)}")
         subject, html = self.templates.new_demand_email(demand_title, demand_category, demand_address, customer_name)
         sms_text = self.templates.new_demand_sms(demand_title, demand_category)
         
@@ -495,12 +496,14 @@ class NotificationService:
         
         push_tokens = []
         for supplier in limited_suppliers:
-            logger.info(f"Notifying supplier: email={supplier.get('email')}, phone={supplier.get('phone', 'NONE')}")
+            logger.info(f"Notifying supplier: email={supplier.get('email')}, phone='{supplier.get('phone', 'NONE')}', categories={supplier.get('categories', [])}")
             await self.email_service.send_email(supplier["email"], subject, html)
             if supplier.get("phone"):
-                self.sms_service.send_sms(supplier["phone"], sms_text)
+                logger.info(f"Sending demand SMS to {supplier['phone']}")
+                result = self.sms_service.send_sms(supplier["phone"], sms_text)
+                logger.info(f"Demand SMS to {supplier['phone']}: result={result}")
             else:
-                logger.warning(f"Supplier {supplier.get('email')} has no phone number")
+                logger.warning(f"Supplier {supplier.get('email')} has no phone number — skipping SMS")
             if supplier.get("push_token"):
                 push_tokens.append(supplier["push_token"])
         
@@ -527,8 +530,10 @@ class NotificationService:
         now = datetime.now(timezone.utc).timestamp()
         last_sent = _chat_notification_cache.get(cache_key, 0)
         
+        logger.info(f"notify_new_message: to={recipient_email}, phone={recipient_phone}, sender={sender_name}, demand={demand_title}")
+        
         if now - last_sent < CHAT_NOTIFY_COOLDOWN_SECONDS:
-            logger.info(f"Chat notification throttled for {recipient_email} on '{demand_title}' (cooldown active)")
+            logger.info(f"Chat notification throttled for {recipient_email} on '{demand_title}' (cooldown {int(CHAT_NOTIFY_COOLDOWN_SECONDS - (now - last_sent))}s remaining)")
             # Still send push even when email is throttled
             user = await db.users.find_one({"email": recipient_email}, {"_id": 0, "push_token": 1})
             if user and user.get("push_token"):
@@ -538,10 +543,15 @@ class NotificationService:
         _chat_notification_cache[cache_key] = now
         subject, html = self.templates.new_message_email(sender_name, demand_title, message)
         await self.email_service.send_email(recipient_email, subject, html)
+        logger.info(f"Chat email sent to {recipient_email}")
         
         if recipient_phone:
             sms_text = self.templates.new_message_sms(sender_name)
-            self.sms_service.send_sms(recipient_phone, sms_text)
+            logger.info(f"Sending chat SMS to {recipient_phone}")
+            result = self.sms_service.send_sms(recipient_phone, sms_text)
+            logger.info(f"Chat SMS to {recipient_phone}: result={result}")
+        else:
+            logger.warning(f"No phone number for chat notification to {recipient_email}")
         
         # Push notification
         user = await db.users.find_one({"email": recipient_email}, {"_id": 0, "push_token": 1})

@@ -67,13 +67,26 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
         else:
             # Regular demand: notify the other party
             if current_user["id"] == demand["customer_id"]:
+                # Customer is sending — find the supplier to notify
                 recipient_id = demand.get("assigned_supplier_id")
+                
+                # If no assigned supplier (open demand), find the last supplier who messaged
+                if not recipient_id:
+                    last_supplier_msg = await db.messages.find_one(
+                        {"demand_id": message_data.demand_id, "sender_id": {"$ne": current_user["id"]}},
+                        {"_id": 0, "sender_id": 1},
+                        sort=[("created_at", -1)]
+                    )
+                    if last_supplier_msg:
+                        recipient_id = last_supplier_msg["sender_id"]
+                        logger.info(f"Open demand chat: found supplier {recipient_id} from message history")
             else:
                 recipient_id = demand["customer_id"]
             
             if recipient_id:
                 recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0, "email": 1, "phone": 1})
                 if recipient:
+                    logger.info(f"Sending message notification to {recipient.get('email')}, phone={recipient.get('phone', 'NONE')}")
                     await notification_service.notify_new_message(
                         recipient_email=recipient["email"],
                         recipient_phone=recipient.get("phone"),
@@ -81,6 +94,10 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
                         demand_title=demand["title"],
                         message=message_data.content
                     )
+                else:
+                    logger.warning(f"Recipient {recipient_id} not found in DB for message notification")
+            else:
+                logger.warning(f"No recipient found for message notification on demand {message_data.demand_id}")
     except Exception as e:
         logger.error(f"Failed to send message notification: {str(e)}")
     

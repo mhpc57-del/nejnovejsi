@@ -13,7 +13,7 @@ from routes.admin import router as admin_router
 from routes.misc import router as misc_router
 from routes.ai_chat import router as ai_chat_router
 from routes.invoices import router as invoices_router
-from models import ADMIN_EMAIL, UserRole
+from models import ADMIN_EMAIL, UserRole, CATEGORIES
 from auth import hash_password
 from datetime import datetime, timezone, timedelta
 import uuid
@@ -119,6 +119,98 @@ async def startup():
         }
         await db.users.insert_one(admin_user)
         logger.info(f"Admin user seeded: {ADMIN_EMAIL}")
+    
+    # Migrate old category names to new ones
+    CATEGORY_MIGRATION = {
+        "Autoservis": "Autoservis",
+        "Bezpečnostní služby, zabezpečení objektů": "Elektronické zabezpečení majetku",
+        "Čalounictví": "Čalouníci",
+        "Fotografické služby": "Focení, natáčení videí",
+        "Geodetické služby": "Geodetické práce",
+        "Hlídání dětí a zvířat": "Hlídání dětí",
+        "Instalatérství": "Instalatéři",
+        "IT služby, Webdesign": "IT, software",
+        "Izolatérství": "Izolatéři",
+        "Klimatizace, vzduchotechnika": "Klimatizace, vzduchotechnika",
+        "Kominictví": "Kominíci",
+        "Kosmetické služby": "Kosmetika",
+        "Krejčovství": "Švadleny",
+        "Lesnictví, myslivectví": "Lesnictví",
+        "Malířství, natěračství": "Malíři, natěrači",
+        "Masérské služby": "Masáže",
+        "Montáže oken/dveří": "Montáže konstrukcí",
+        "Pečovatelské služby": "Péče o zdravotně nezpůsobilé",
+        "Pískování materiálů": "Tryskání",
+        "Plynaři, topenáři": "Plynaři",
+        "Pojišťovnictví": "Pojišťovnictví",
+        "Požárně bezpečnostní služby": "Elektronické požární systémy",
+        "Právnické služby": "Právo a legislativa",
+        "Projektování staveb": "Projektování staveb",
+        "Půjčky, hypotéky": "Půjčky, úvěry",
+        "Půjčovny": "Pronájem nářadí",
+        "Realitní služby": "Reality",
+        "Reklamní služby": "Reklama, marketing",
+        "Revize": "Revize elektroinstalace",
+        "Sádrokartonářské práce": "Sádrokartonáři",
+        "Sanace zdiva": "Sanace zdiva",
+        "Servis elektrospotřebičů": "Opravy domácích spotřebičů",
+        "Elektromontáže - silnoproud": "Elektrikáři – silnoproud",
+        "Sklenáři": "Sklenáři",
+        "Elektromontáže - slaboproud": "Elektrikáři – slaboproud",
+        "Služby pro zvířata": "Hlídání zvířat",
+        "Stavební práce, rekonstrukce": "Stavební práce",
+        "Stěhování, doprava": "Stěhování, vyklízení",
+        "Strojní a ruční výkopové práce": "Výkopové práce",
+        "Tesaři, pokrývači": "Tesaři",
+        "Truhláři, stolaři, výroba nábytku": "Truhláři, stolaři",
+        "Účetnictví, správa firem": "Účetnictví, daně, zpracování mezd",
+        "Údržba zeleně": "Údržba zahrad a zeleně",
+        "Úklidové služby": "Úklidové práce",
+        "Veřejné osvětlení": "Projektování veřejného osvětlení",
+        "Výroba z kovu": "Obráběči kovů",
+        "Výškové práce": "Výškové práce",
+        "Výuka": "Doučování, vzdělávání",
+        "Zahradní architektura": "Zahradní architektura",
+        "Zámečnictví, svářeči": "Zámečníci, nástrojaři",
+        "Zednictví, obkladačství, dlaždičství": "Zedníci",
+        "Zemnění, hromosvody": "Hromosvody",
+        "Ostatní": "Hodinový manžel",
+    }
+    
+    migrated_users = 0
+    migrated_demands = 0
+    async for user in db.users.find({"categories": {"$exists": True, "$ne": []}}):
+        old_cats = user.get("categories", [])
+        new_cats = []
+        changed = False
+        for cat in old_cats:
+            if cat in CATEGORY_MIGRATION and cat != CATEGORY_MIGRATION[cat]:
+                new_cats.append(CATEGORY_MIGRATION[cat])
+                changed = True
+            elif cat in CATEGORIES:
+                new_cats.append(cat)
+            else:
+                # Old category not in migration map — try to keep if it's valid
+                mapped = CATEGORY_MIGRATION.get(cat, cat)
+                new_cats.append(mapped)
+                if mapped != cat:
+                    changed = True
+        if changed:
+            await db.users.update_one({"id": user["id"]}, {"$set": {"categories": new_cats}})
+            migrated_users += 1
+            logger.info(f"Migrated categories for user {user.get('email')}: {old_cats} -> {new_cats}")
+    
+    # Also migrate demand categories
+    async for demand in db.demands.find({"category": {"$exists": True}}):
+        old_cat = demand.get("category", "")
+        if old_cat in CATEGORY_MIGRATION and old_cat != CATEGORY_MIGRATION[old_cat]:
+            new_cat = CATEGORY_MIGRATION[old_cat]
+            await db.demands.update_one({"id": demand["id"]}, {"$set": {"category": new_cat}})
+            migrated_demands += 1
+            logger.info(f"Migrated demand '{demand.get('title')}' category: {old_cat} -> {new_cat}")
+    
+    if migrated_users or migrated_demands:
+        logger.info(f"Category migration complete: {migrated_users} users, {migrated_demands} demands updated")
     
     logger.info("CraftBolt API started successfully")
 
