@@ -15,26 +15,23 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - Admin Panel: uzivatele, zakazky, kategorie
 - Fakturacni system (PDF/XML/ZIP)
 - Persistentni upload do MongoDB
-- **Rozsireny registracni formular (2026-04-09)**: 2 nove kroky (Oblast pusobeni + Portfolio)
-- **Seskupene kategorie (2026-04-10)**:
-  - Kategorie rozdeleny do 2 skupin: Remesla (46) a Sluzby (78) = 124 celkem
-  - Backend `/api/categories` vraci flat i grouped data
-  - Registrace, Profil, Poptavky - vsude seskupene s hlavickami
-  - Filtr funguje pres obe skupiny
-  - Testovano: 11/11 testu proslo (100%)
-- **Zabraneni prekladu prohlizecem (2026-04-10)**:
-  - `lang="cs"` misto `lang="en"` v index.html
-  - `translate="no"`, `class="notranslate"`, `<meta name="google" content="notranslate">`
-  - `<meta http-equiv="Content-Language" content="cs">`
+- Rozsireny registracni formular: Oblast pusobeni + Portfolio
+- **Seskupene kategorie (2026-04-10)**: Remesla (46) + Sluzby (78) = 124
+- **Zabraneni prekladu prohlizecem (2026-04-10)**: lang=cs, notranslate
+- **UI/UX Redesign (2026-04-10)**:
+  - HomePage: Swiss & High-Contrast archetype, Framer Motion animace, glassmorphism header, tinted neutrals (stone-50, zinc-*), Outfit + Manrope fonty, stagger reveal, lepsi spacing, asymetricky layout
+  - LoginPage: Konzistentni redesign s zinc paletou a backdrop-blur headerem
+  - RegisterPage: Aktualizovany header a form wrapper
+  - Testovano: 18/18 testu proslo (100%)
 
 ## Architektura
-- Frontend: React + Vite + Tailwind CSS (/app/frontend)
+- Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
 - Backend: FastAPI + MongoDB (/app/backend)
 - Mobile: React Native Expo (/app/mobile) - PAUSOVANO
 
 ## Backlog
 - P1: Overeni Twilio SMS doruceni (ceka na potvrzeni uzivatele)
 - P1: Stripe Live finalizace (ceka na uzivatele + ucetni)
+- P2: Redesign dalsich stranek (dashboardy, profil, admin) - pokracovani
 - P2: Sledovani rychlosti dorucovani e-mailu pres Wedos SMTP
-- P2: UI/UX redesign podle design_guidelines.json (odlozeno)
 - P2: Mobilni aplikace - PAUSOVANO
