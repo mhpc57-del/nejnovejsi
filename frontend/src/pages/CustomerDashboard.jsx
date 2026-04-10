@@ -107,19 +107,19 @@ const CustomerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 p-6 hidden lg:block">
+      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-200/60 dark:border-zinc-800/60 p-6 hidden lg:block">
         <Link to="/" className="flex items-center mb-10">
-          <span className="text-2xl font-bold text-gray-900">Craft</span>
-          <span className="text-2xl font-bold text-orange-500">Bolt</span>
+          <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
+          <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
         </Link>
 
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           <Link 
             to="/zakaznik" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-              location.pathname === '/zakaznik' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              location.pathname === '/zakaznik' ? 'bg-orange-500 text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
             }`}
             data-testid="nav-dashboard"
           >
@@ -128,7 +128,7 @@ const CustomerDashboard = () => {
           </Link>
           <Link 
             to="/profil" 
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
             data-testid="nav-profile"
           >
             <User className="w-5 h-5" />
@@ -136,7 +136,7 @@ const CustomerDashboard = () => {
           </Link>
           <Link 
             to="/faktury" 
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
             data-testid="nav-invoices"
           >
             <Receipt className="w-5 h-5" />
@@ -145,7 +145,7 @@ const CustomerDashboard = () => {
           {user?.role === 'customer_supplier' && (
             <Link 
               to="/dodavatel" 
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors font-medium"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-orange-600 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors font-medium"
               data-testid="nav-switch-to-supplier"
             >
               <Briefcase className="w-5 h-5" />
@@ -156,9 +156,9 @@ const CustomerDashboard = () => {
 
         <div className="absolute bottom-6 left-6 right-6">
           {user?.trial_ends_at && (
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3" data-testid="trial-info-sidebar">
-              <p className="text-sm text-orange-700 font-medium mb-1">Zkušební doba</p>
-              <p className="text-xs text-orange-600">
+            <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-3 mb-3" data-testid="trial-info-sidebar">
+              <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
+              <p className="text-xs text-orange-600 dark:text-orange-400">
                 {new Date(user.trial_ends_at) > new Date()
                   ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}`
                   : 'Zkušební doba vypršela'}
@@ -167,7 +167,7 @@ const CustomerDashboard = () => {
           )}
           <button 
             onClick={() => setShowDeactivate(true)}
-            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl transition-colors mb-1"
+            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors mb-1"
             data-testid="deactivate-btn-sidebar"
           >
             <Trash className="w-5 h-5" />
@@ -175,7 +175,7 @@ const CustomerDashboard = () => {
           </button>
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
+            className="flex items-center gap-3 px-4 py-3 w-full text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg transition-colors"
             data-testid="logout-btn"
           >
             <SignOut className="w-5 h-5" />
@@ -190,17 +190,17 @@ const CustomerDashboard = () => {
       {/* Main Content */}
       <main className="lg:ml-64 min-h-screen pb-20 lg:pb-0">
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40">
+        <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Profil zákazníka</h1>
-              <p className="text-sm text-gray-500">Vítejte zpět, {user?.company_name || user?.email}</p>
+              <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Profil zákazníka</h1>
+              <p className="text-sm text-zinc-500">Vítejte zpět, {user?.company_name || user?.email}</p>
               <div className="mt-1"><HeaderWidget /></div>
             </div>
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setShowNewDemand(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/20 text-sm"
                 data-testid="new-demand-btn"
               >
                 <Plus weight="bold" className="w-5 h-5" />
@@ -216,14 +216,13 @@ const CustomerDashboard = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Celkem poptávek', value: demands.length, color: 'bg-blue-500', filter: 'all' },
-              { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-green-500', filter: 'open' },
+              { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-emerald-500', filter: 'open' },
               { label: 'Probíhající', value: demands.filter(d => d.status === 'in_progress').length, color: 'bg-orange-500', filter: 'in_progress' },
-              { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-gray-500', filter: 'completed' },
+              { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-zinc-500', filter: 'completed' },
             ].map((stat, i) => {
               const unreadCount = stat.filter === 'all' 
                 ? unreadDemands.length
                 : unreadDemands.filter(u => u.demand_status === stat.filter).length;
-              // Green badge only for incoming activity (not own actions)
               const now = new Date();
               const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
               let newCount = 0;
@@ -235,8 +234,8 @@ const CustomerDashboard = () => {
               return (
               <button key={i} 
                 onClick={() => setActiveFilter(activeFilter === stat.filter ? null : stat.filter)}
-                className={`bg-white rounded-xl p-5 border transition-all text-left relative ${
-                  activeFilter === stat.filter ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                className={`bg-white dark:bg-zinc-900 rounded-xl p-5 border transition-all text-left relative ${
+                  activeFilter === stat.filter ? 'border-orange-400 ring-2 ring-orange-200/50 dark:ring-orange-800/40 shadow-md' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm'
                 }`}
                 data-testid={`stat-card-${stat.filter}`}
               >
@@ -246,15 +245,15 @@ const CustomerDashboard = () => {
                   </span>
                 )}
                 {unreadCount === 0 && newCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`new-badge-${stat.filter}`}>
+                  <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`new-badge-${stat.filter}`}>
                     {newCount}
                   </span>
                 )}
                 <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
                   <List weight="bold" className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-500">{stat.label}</p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">{stat.value}</p>
+                <p className="text-sm text-zinc-500">{stat.label}</p>
               </button>
               );
             })}
@@ -262,24 +261,24 @@ const CustomerDashboard = () => {
 
           {/* Unread messages notification */}
           {unreadDemands.length > 0 && (
-            <div className="mb-6 bg-orange-50 border border-orange-200 rounded-xl p-4" data-testid="unread-messages-banner">
+            <div className="mb-6 bg-orange-50 dark:bg-orange-500/5 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-4" data-testid="unread-messages-banner">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                   <ChatCircle weight="fill" className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-orange-800">Nové zprávy ({unreadDemands.length})</p>
-                  <p className="text-sm text-orange-600">Máte nepřečtené zprávy v následujících poptávkách</p>
+                  <p className="font-semibold text-orange-800 dark:text-orange-300">Nové zprávy ({unreadDemands.length})</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">Máte nepřečtené zprávy v následujících poptávkách</p>
                 </div>
               </div>
               <div className="space-y-2">
                 {unreadDemands.slice(0, 5).map((item) => (
                   <Link key={item.demand_id} to={`/zakazka/${item.demand_id}`}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-orange-50 transition-colors border border-orange-100"
+                    className="flex items-center justify-between p-3 bg-white dark:bg-zinc-900 rounded-lg hover:bg-orange-50 dark:hover:bg-zinc-800/50 transition-colors border border-orange-100 dark:border-zinc-800"
                     data-testid={`unread-${item.demand_id}`}>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate text-sm">{item.demand_title}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.last_sender}: {item.last_message}</p>
+                      <p className="font-medium text-zinc-900 dark:text-white truncate text-sm">{item.demand_title}</p>
+                      <p className="text-xs text-zinc-500 truncate">{item.last_sender}: {item.last_message}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />
                   </Link>
@@ -290,13 +289,13 @@ const CustomerDashboard = () => {
 
           {/* Map overview of demands */}
           {demands.length > 0 && demands.some(d => d.latitude && d.longitude) && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6" data-testid="customer-demands-map">
-              <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 mb-6" data-testid="customer-demands-map">
+              <h2 className="font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2" style={{ fontFamily: 'Outfit' }}>
                 <MapPin weight="fill" className="w-5 h-5 text-orange-500" />
                 Mapa poptávek
               </h2>
               <div className="flex items-center gap-4 mb-3 text-xs">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Otevřené</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Otevřené</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Probíhající</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
               </div>
@@ -330,16 +329,16 @@ const CustomerDashboard = () => {
           {activeFilter && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setActiveFilter(null)}>
               <div 
-                className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[85vh] flex flex-col"
+                className="bg-white dark:bg-zinc-900 w-full sm:max-w-lg sm:rounded-xl rounded-t-xl max-h-[85vh] flex flex-col border border-zinc-200/50 dark:border-zinc-800"
                 onClick={(e) => e.stopPropagation()}
                 data-testid="filtered-demands-modal"
               >
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-                  <h2 className="font-semibold text-gray-900">
+                <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between flex-shrink-0">
+                  <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
                     {activeFilter === 'all' ? 'Všechny poptávky' : activeFilter === 'open' ? 'Otevřené poptávky' : activeFilter === 'in_progress' ? 'Probíhající poptávky' : 'Dokončené poptávky'}
                   </h2>
-                  <button onClick={() => setActiveFilter(null)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" data-testid="close-filter-btn">
-                    <X className="w-4 h-4 text-gray-600" />
+                  <button onClick={() => setActiveFilter(null)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors" data-testid="close-filter-btn">
+                    <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                   </button>
                 </div>
 
@@ -405,7 +404,7 @@ const CustomerDashboard = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40" data-testid="mobile-bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-800/60 lg:hidden z-40" data-testid="mobile-bottom-nav">
         <div className="flex items-center justify-around py-2">
           <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
             <House className="w-6 h-6" />
@@ -420,11 +419,11 @@ const CustomerDashboard = () => {
               <Plus weight="bold" className="w-6 h-6 text-white" />
             </div>
           </button>
-          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
+          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
             <User className="w-6 h-6" />
             <span className="text-[10px] font-medium">Profil</span>
           </Link>
-          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
+          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
             <SignOut className="w-6 h-6" />
             <span className="text-[10px] font-medium">Odhlásit</span>
           </button>

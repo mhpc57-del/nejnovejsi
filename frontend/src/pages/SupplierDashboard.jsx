@@ -385,28 +385,28 @@ const SupplierDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 p-6 hidden lg:block">
+      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-200/60 dark:border-zinc-800/60 p-6 hidden lg:block">
         <Link to="/" className="flex items-center mb-10">
-          <span className="text-2xl font-bold text-gray-900">Craft</span>
-          <span className="text-2xl font-bold text-orange-500">Bolt</span>
+          <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
+          <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
         </Link>
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           <Link to="/dodavatel"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location.pathname === '/dodavatel' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/dodavatel' ? 'bg-orange-500 text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'}`}
             data-testid="nav-dashboard">
             <House weight={location.pathname === '/dodavatel' ? 'fill' : 'regular'} className="w-5 h-5" /> Hlavní menu
           </Link>
-          <Link to="/profil" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-profile">
+          <Link to="/profil" className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors" data-testid="nav-profile">
             <User className="w-5 h-5" /> Profil
           </Link>
-          <Link to="/faktury" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50" data-testid="nav-invoices">
+          <Link to="/faktury" className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors" data-testid="nav-invoices">
             <Receipt className="w-5 h-5" /> Faktury
           </Link>
           {user?.role === 'customer_supplier' && (
             <Link to="/zakaznik"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors font-medium"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-orange-600 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors font-medium"
               data-testid="nav-switch-to-customer">
               <User className="w-5 h-5" /> Přepnout na - Zákazník
             </Link>
@@ -415,31 +415,31 @@ const SupplierDashboard = () => {
         <div className="absolute bottom-6 left-6 right-6">
           {/* Finance widget */}
           {finances && (
-            <div className="bg-green-50 rounded-xl p-4 mb-3" data-testid="sidebar-finance">
-              <p className="text-xs text-green-600 font-medium">Potvrzené příjmy</p>
-              <p className="text-lg font-bold text-green-800">{(finances.total_income || 0).toLocaleString('cs-CZ')} Kč</p>
-              <p className="text-xs text-green-600 mt-0.5">{finances.confirmed_jobs || 0} zakázek</p>
+            <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-800/40 rounded-lg p-4 mb-3" data-testid="sidebar-finance">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Potvrzené příjmy</p>
+              <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300">{(finances.total_income || 0).toLocaleString('cs-CZ')} Kč</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">{finances.confirmed_jobs || 0} zakázek</p>
               {finances.total_pending > 0 && (
-                <div className="mt-2 pt-2 border-t border-green-200">
-                  <p className="text-xs text-orange-600 font-medium">Čeká na potvrzení</p>
-                  <p className="text-sm font-semibold text-orange-700">{(finances.total_pending || 0).toLocaleString('cs-CZ')} Kč</p>
+                <div className="mt-2 pt-2 border-t border-emerald-200 dark:border-emerald-800/40">
+                  <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Čeká na potvrzení</p>
+                  <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">{(finances.total_pending || 0).toLocaleString('cs-CZ')} Kč</p>
                   <p className="text-xs text-orange-500">{finances.pending_jobs || 0} zakázek</p>
                 </div>
               )}
             </div>
           )}
-          <div className="bg-orange-50 rounded-xl p-4 mb-4">
-            <p className="text-sm text-orange-700 font-medium mb-1">Zkušební doba</p>
-            <p className="text-xs text-orange-600">
+          <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-4 mb-4">
+            <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400">
               {user?.trial_ends_at ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}` : 'Aktivní předplatné'}
             </p>
           </div>
           <button onClick={() => setShowDeactivate(true)}
-            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl mb-1" data-testid="deactivate-btn-sidebar">
+            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg mb-1 transition-colors" data-testid="deactivate-btn-sidebar">
             <Trash className="w-5 h-5" /> Zrušit účet
           </button>
           <button onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="logout-btn">
+            className="flex items-center gap-3 px-4 py-3 w-full text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg transition-colors" data-testid="logout-btn">
             <SignOut className="w-5 h-5" /> Odhlásit se
           </button>
           <div className="px-4 py-2">
@@ -450,19 +450,19 @@ const SupplierDashboard = () => {
 
       {/* Main */}
       <main className="lg:ml-64 min-h-screen pb-20 lg:pb-0">
-        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40">
+        <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Hlavní menu dodavatele</h1>
-              <p className="text-sm text-gray-500">Vítejte zpět, {user?.company_name || user?.email}</p>
+              <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Hlavní menu dodavatele</h1>
+              <p className="text-sm text-zinc-500">Vítejte zpět, {user?.company_name || user?.email}</p>
               <div className="mt-1"><HeaderWidget /></div>
             </div>
             {/* Rating */}
             <div className="flex items-center gap-2">
               <Star weight="fill" className="w-5 h-5 text-orange-500" />
-              <span className="font-semibold">{user?.rating?.toFixed(1) || '0.0'}</span>
+              <span className="font-semibold text-zinc-900 dark:text-white">{user?.rating?.toFixed(1) || '0.0'}</span>
               {user?.rating_percentage > 0 && (
-                <span className={`text-sm font-semibold ${user.rating_percentage >= 80 ? 'text-green-600' : user.rating_percentage >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                <span className={`text-sm font-semibold ${user.rating_percentage >= 80 ? 'text-emerald-600' : user.rating_percentage >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
                   ({user.rating_percentage.toFixed(0)}%)
                 </span>
               )}
@@ -525,10 +525,10 @@ const SupplierDashboard = () => {
                 }
                 const totalBadge = tabUnread + newCount;
                 return (
-                <div key={tab.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden" data-testid={`tab-section-${tab.id}`}>
+                <div key={tab.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden" data-testid={`tab-section-${tab.id}`}>
                   {/* Tab header - clickable */}
                   <button onClick={() => toggleTab(tab.id)}
-                    className={`w-full flex items-center justify-between p-5 transition-colors ${activeTab === tab.id ? tab.bgLight : 'hover:bg-gray-50'}`}
+                    className={`w-full flex items-center justify-between p-5 transition-colors ${activeTab === tab.id ? tab.bgLight + ' dark:bg-zinc-800/50' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
                     data-testid={`tab-${tab.id}`}>
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 ${tab.color} rounded-lg flex items-center justify-center relative`}>
@@ -580,8 +580,8 @@ const SupplierDashboard = () => {
                 const unique = Object.values(uniqueMap);
                 if (unique.length === 0) return null;
                 return (
-                  <div className="bg-white rounded-xl border border-gray-100 p-5 mt-4" data-testid="supplier-overview-map">
-                    <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 mt-4" data-testid="supplier-overview-map">
+                    <h2 className="font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2" style={{ fontFamily: 'Outfit' }}>
                       <MapPin weight="fill" className="w-5 h-5 text-orange-500" />
                       Mapa zakázek
                     </h2>
@@ -623,9 +623,9 @@ const SupplierDashboard = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40" data-testid="mobile-bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-800/60 lg:hidden z-40" data-testid="mobile-bottom-nav">
         <div className="flex items-center justify-around py-2">
-          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
+          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
             <House className="w-6 h-6" />
             <span className="text-[10px] font-medium">Domů</span>
           </Link>
@@ -633,11 +633,11 @@ const SupplierDashboard = () => {
             <List className="w-6 h-6" weight="fill" />
             <span className="text-[10px] font-medium">Přehled</span>
           </Link>
-          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
+          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
             <User className="w-6 h-6" />
             <span className="text-[10px] font-medium">Profil</span>
           </Link>
-          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
+          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
             <SignOut className="w-6 h-6" />
             <span className="text-[10px] font-medium">Odhlásit</span>
           </button>
@@ -647,13 +647,13 @@ const SupplierDashboard = () => {
       {/* Deactivate Account Modal */}
       {/* Cannot Complete Dialog */}
       {cancelDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setCancelDialog(null)}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setCancelDialog(null)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 max-w-md w-full shadow-xl border border-zinc-200/50 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-500/15 rounded-lg flex items-center justify-center">
                 <Warning weight="bold" className="w-5 h-5 text-red-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Zakázku nemohu provést</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Zakázku nemohu provést</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Popište prosím důvod, proč zakázku nemůžete provést. Zákazník bude o tomto informován emailem.
@@ -724,10 +724,10 @@ const DeactivateSupplierModal = ({ token, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden" data-testid="deactivate-modal">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-red-600">Zrušení účtu</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-deactivate-btn">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl w-full max-w-md overflow-hidden border border-zinc-200/50 dark:border-zinc-800" data-testid="deactivate-modal">
+        <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-red-600" style={{ fontFamily: 'Outfit' }}>Zrušení účtu</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors" data-testid="close-deactivate-btn">
             <X className="w-4 h-4 text-gray-600" />
           </button>
         </div>
