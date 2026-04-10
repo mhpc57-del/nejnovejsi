@@ -798,6 +798,34 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
             )}
           </div>
 
+          {/* Budget */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Předpokládaná cena (Kč)</label>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 relative">
+                <input
+                  type="number"
+                  placeholder="Od"
+                  value={formData.budget_min}
+                  onChange={(e) => setFormData(prev => ({ ...prev, budget_min: e.target.value }))}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                  data-testid="demand-budget-min"
+                />
+              </div>
+              <span className="text-gray-400 text-sm">—</span>
+              <div className="flex-1 relative">
+                <input
+                  type="number"
+                  placeholder="Do"
+                  value={formData.budget_max}
+                  onChange={(e) => setFormData(prev => ({ ...prev, budget_max: e.target.value }))}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                  data-testid="demand-budget-max"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Supplier radius */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Okruh dodavatelů</label>
