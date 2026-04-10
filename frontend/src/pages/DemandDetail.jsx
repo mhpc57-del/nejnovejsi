@@ -976,7 +976,7 @@ const DemandDetail = () => {
             {/* Chat - shown only after clicking "Spustit chat" */}
             {canChat && (showChat || autoShowChat) && (
               <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+                <div className="p-4 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
                   <ChatCircle className="w-5 h-5 text-zinc-400" />
                   <h2 className="font-semibold text-zinc-900 dark:text-white">Chat</h2>
                 </div>
@@ -995,9 +995,9 @@ const DemandDetail = () => {
                         <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                           msg.sender_id === user?.id 
                             ? 'bg-orange-500 text-white' 
-                            : 'bg-zinc-100 text-gray-900'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                         }`}>
-                          <p className={`text-xs mb-1 ${msg.sender_id === user?.id ? 'text-orange-100' : 'text-zinc-500'}`}>
+                          <p className={`text-xs mb-1 ${msg.sender_id === user?.id ? 'text-orange-100' : 'text-zinc-500 dark:text-zinc-400'}`}>
                             {msg.sender_name}
                           </p>
                           <p className="text-sm">{msg.content}</p>
@@ -1008,13 +1008,13 @@ const DemandDetail = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-100 flex gap-3">
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-zinc-200 dark:border-zinc-700 flex gap-3">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Napište zprávu..."
-                    className="flex-1 px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="flex-1 px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                     data-testid="message-input"
                   />
                   <button

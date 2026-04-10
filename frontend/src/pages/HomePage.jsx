@@ -22,7 +22,8 @@ import {
   Wrench,
   House,
   CaretDown,
-  Play
+  Play,
+  Plus
 } from '@phosphor-icons/react';
 import HeroSlider from '../components/HeroSlider';
 import StepsSlider from '../components/StepsSlider';

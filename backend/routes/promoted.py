@@ -75,7 +75,7 @@ async def create_promo_checkout(supplier_id: str):
     import os
     import stripe
     
-    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+    stripe.api_key = os.environ.get("STRIPE_API_KEY")
     if not stripe.api_key:
         raise HTTPException(status_code=500, detail="Stripe not configured")
     
@@ -83,9 +83,9 @@ async def create_promo_checkout(supplier_id: str):
     if not supplier:
         raise HTTPException(status_code=404, detail="Reklamní banner nenalezen")
     
-    backend_url = os.environ.get("REACT_APP_BACKEND_URL", os.environ.get("BACKEND_URL", ""))
-    success_url = backend_url.replace("/api", "") + f"/?promo_success={supplier_id}"
-    cancel_url = backend_url.replace("/api", "") + "/?promo_cancel=1"
+    frontend_url = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
+    success_url = frontend_url + f"/?promo_success={supplier_id}"
+    cancel_url = frontend_url + "/?promo_cancel=1"
     
     try:
         session = stripe.checkout.Session.create(

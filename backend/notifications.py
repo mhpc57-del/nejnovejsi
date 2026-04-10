@@ -100,6 +100,7 @@ class SMSService:
         self.account_sid = os.environ.get('TWILIO_ACCOUNT_SID', '')
         self.auth_token = os.environ.get('TWILIO_AUTH_TOKEN', '')
         self.phone_number = os.environ.get('TWILIO_PHONE_NUMBER', '')
+        self.messaging_service_sid = os.environ.get('TWILIO_MESSAGING_SERVICE_SID', '')
         self.client = None
         
         if self.account_sid and self.auth_token:
@@ -109,13 +110,13 @@ class SMSService:
                 logger.error(f"Failed to initialize Twilio client: {str(e)}")
     
     def send_sms(self, to_phone: str, message: str) -> bool:
-        """Send an SMS using Twilio"""
+        """Send an SMS using Twilio Messaging Service"""
         if not self.client:
             logger.warning("Twilio client not initialized - SMS skipped")
             return False
             
-        if not self.phone_number:
-            logger.warning("Twilio phone number not configured - SMS skipped")
+        if not self.messaging_service_sid and not self.phone_number:
+            logger.warning("Twilio messaging service SID and phone number not configured - SMS skipped")
             return False
         
         if not to_phone:
@@ -137,11 +138,19 @@ class SMSService:
         logger.info(f"SMS: sending to {to_phone} (original: {original_phone})")
         
         try:
-            msg = self.client.messages.create(
-                body=message,
-                from_=self.phone_number,
-                to=to_phone
-            )
+            # Prefer Messaging Service SID (supports Alpha Sender ID)
+            if self.messaging_service_sid:
+                msg = self.client.messages.create(
+                    body=message,
+                    messaging_service_sid=self.messaging_service_sid,
+                    to=to_phone
+                )
+            else:
+                msg = self.client.messages.create(
+                    body=message,
+                    from_=self.phone_number,
+                    to=to_phone
+                )
             logger.info(f"SMS sent to {to_phone}: SID={msg.sid} Status={msg.status}")
             return True
             
@@ -607,7 +616,7 @@ class NotificationService:
         subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
         if customer_phone:
-            self.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} projevil zajem o vasi poptavku '{demand_title}' s podminkou. Prihlas se pro detaily.")
+            self.sms_service.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} projevil zajem o vasi poptavku '{demand_title}' s podminkou. Prihlas se pro detaily.")
 
     async def notify_cannot_complete(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str, demand_id: str = ""):
         """Notify customer that supplier cannot complete the demand"""
@@ -639,7 +648,7 @@ class NotificationService:
         _, html = subject, self.templates.email_base(content, subject)
         await self.email_service.send_email(customer_email, subject, html)
         if customer_phone:
-            self.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} nemuze provest zakazku '{demand_title}'. Duvod: {reason[:80]}. Poptavka znovu zverejnena.")
+            self.sms_service.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} nemuze provest zakazku '{demand_title}'. Duvod: {reason[:80]}. Poptavka znovu zverejnena.")
 
     async def notify_quick_demand_confirmation(self, email: str, phone: str, name: str):
         """Send confirmation to quick demand customer"""

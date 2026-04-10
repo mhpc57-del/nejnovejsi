@@ -1,0 +1,100 @@
+{
+  "summary": "Iteration 28 - Testing Promoted Suppliers API fixes, SMS notifications, Chat dark mode, and Homepage features. All backend APIs working correctly. Frontend features verified including promoted suppliers section (6 cards), billing toggle, and dark mode.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/promoted-suppliers/{id}/create-checkout",
+        "issue": "Returns 500 because STRIPE_API_KEY is placeholder (sk_test_emergent) - EXPECTED behavior as noted in review request",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration28_promoted_suppliers.py",
+    "/app/test_reports/pytest/pytest_results_iteration28.xml",
+    ".screenshots/homepage_iteration28.png",
+    ".screenshots/demand_detail_dark_mode.png",
+    ".screenshots/completed_demand_dark.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration28_promoted_suppliers.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "Created test promoted suppliers during API testing (TEST_PromoCompany_*, TEST_ActivatePromo_*, TEST_CheckoutPromo_*)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All fixes verified: 1) Promoted Suppliers API (GET, POST, activate) working. 2) Stripe checkout correctly fails with placeholder key. 3) Chat dark mode text visibility fixed - chat bubbles use dark:bg-zinc-800 dark:text-zinc-100 for received messages. 4) Homepage promoted suppliers section shows 6 card slots. 5) Billing toggle switches between monthly/yearly prices correctly. 6) SMS notifications configured with Twilio Messaging Service SID.",
+  "features_tested": {
+    "PROMOTED_SUPPLIERS_GET": {
+      "status": "PASSED",
+      "details": "GET /api/promoted-suppliers returns suppliers list with active flag and total_active count"
+    },
+    "PROMOTED_SUPPLIERS_CREATE": {
+      "status": "PASSED",
+      "details": "POST /api/promoted-suppliers creates entry with company_name, bio, phone and returns ID"
+    },
+    "PROMOTED_SUPPLIERS_ACTIVATE": {
+      "status": "PASSED",
+      "details": "POST /api/promoted-suppliers/{id}/activate sets active=true and paid_until (24 hours from now)"
+    },
+    "ADMIN_LOGIN": {
+      "status": "PASSED",
+      "details": "POST /api/auth/login with admin credentials returns access_token and user with role=admin"
+    },
+    "CUSTOMER_LOGIN": {
+      "status": "PASSED",
+      "details": "POST /api/auth/login with customer credentials returns access_token and user with role=customer"
+    },
+    "SUPPLIER_LOGIN": {
+      "status": "PASSED",
+      "details": "POST /api/auth/login with supplier credentials returns access_token and user with role=supplier"
+    },
+    "CREATE_DEMAND": {
+      "status": "PASSED",
+      "details": "POST /api/demands with auth token creates demand successfully"
+    },
+    "HOMEPAGE_PROMOTED_SUPPLIERS_SECTION": {
+      "status": "PASSED",
+      "details": "Homepage shows promoted suppliers section with 6 card slots (data-testid='promoted-suppliers-section')"
+    },
+    "HOMEPAGE_BILLING_TOGGLE": {
+      "status": "PASSED",
+      "details": "Billing toggle switches between monthly (199/299/399) and yearly (2149/3229/4309) prices"
+    },
+    "HOMEPAGE_DARK_MODE": {
+      "status": "PASSED",
+      "details": "Dark mode toggle works on homepage - background changes to zinc-950, text has good contrast"
+    },
+    "CHAT_DARK_MODE": {
+      "status": "PASSED",
+      "details": "Chat bubbles in dark mode have proper text visibility - received messages use dark:bg-zinc-800 dark:text-zinc-100"
+    },
+    "TWILIO_CONFIG": {
+      "status": "PASSED",
+      "details": "Twilio configuration verified in backend/.env with TWILIO_MESSAGING_SERVICE_SID for Alpha Sender support"
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": [
+      "Stripe checkout - uses placeholder key sk_test_emergent, checkout creation fails as expected"
+    ]
+  },
+  "rca_of_the_issue": "N/A - All features working as expected. Stripe checkout failure is expected due to placeholder API key."
+}
