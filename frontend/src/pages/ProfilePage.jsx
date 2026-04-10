@@ -271,6 +271,7 @@ const ProfilePage = () => {
           first_name: profileData?.first_name || '',
           last_name: profileData?.last_name || '',
           phone: profileData?.phone || '',
+          sms_notifications: profileData?.sms_notifications || false,
           ico: profileData?.ico || '',
           dic: profileData?.dic || '',
           address: profileData?.address || '',
@@ -610,6 +611,13 @@ const ProfilePage = () => {
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Telefon</label>
                   <input type="text" value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="+420 xxx xxx xxx" className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="edit-phone-input" />
+                  <label className="flex items-center gap-3 mt-3 cursor-pointer" data-testid="edit-sms-toggle">
+                    <div className="relative" onClick={() => setFormData(prev => ({ ...prev, sms_notifications: !prev.sms_notifications }))}>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${formData.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}></div>
+                      <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.sms_notifications ? 'translate-x-5' : ''}`}></div>
+                    </div>
+                    <span className="text-sm text-zinc-600 dark:text-zinc-400">Chci dostávat notifikační SMS</span>
+                  </label>
                 </div>
 
                 {/* Email readonly */}

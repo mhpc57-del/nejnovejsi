@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 PROFILE_FIELDS = [
-    "company_name", "first_name", "last_name", "phone", "ico", "dic", "address", "branch_address",
+    "company_name", "first_name", "last_name", "phone", "sms_notifications", "ico", "dic", "address", "branch_address",
     "permanent_address", "actual_address", "date_of_birth", "profile_image",
     "bio", "website", "categories", "custom_categories", "reference_photos",
     "service_areas", "account_type"

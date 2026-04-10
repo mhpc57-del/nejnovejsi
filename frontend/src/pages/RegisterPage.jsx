@@ -159,6 +159,7 @@ const RegisterPage = () => {
     email: searchParams.get('email') || '',
     password: '',
     phone: '',
+    sms_notifications: false,
     role: searchParams.get('role') || '',
     account_type: searchParams.get('type') || '',
     has_ico: null,
@@ -894,6 +895,13 @@ const RegisterPage = () => {
                 placeholder="+420 xxx xxx xxx"
                 className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="register-phone-input" />
+              <label className="flex items-center gap-3 mt-3 cursor-pointer" data-testid="register-sms-toggle">
+                <div className="relative" onClick={() => setFormData(prev => ({ ...prev, sms_notifications: !prev.sms_notifications }))}>
+                  <div className={`w-11 h-6 rounded-full transition-colors ${formData.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}></div>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.sms_notifications ? 'translate-x-5' : ''}`}></div>
+                </div>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">Chci dostávat notifikační SMS</span>
+              </label>
             </div>
 
             {/* Email readonly */}

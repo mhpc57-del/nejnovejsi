@@ -21,6 +21,7 @@ class UserCreate(BaseModel):
     password: str
     phone: str
     role: str
+    sms_notifications: Optional[bool] = False
     account_type: Optional[str] = None
     supplier_type: Optional[str] = None
     company_name: Optional[str] = None
@@ -86,6 +87,7 @@ class UserResponse(BaseModel):
     rating_percentage: float = 0.0
     certifications: List[dict] = []
     trust_score: int = 0
+    sms_notifications: bool = False
     punctuality_score: Optional[float] = None
     avg_arrival_minutes: Optional[float] = None
     preferred_languages: List[str] = []
@@ -214,6 +216,7 @@ class ProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    sms_notifications: Optional[bool] = None
     ico: Optional[str] = None
     dic: Optional[str] = None
     address: Optional[str] = None

@@ -43,6 +43,7 @@ async def register(user_data: UserCreate, request: Request, background_tasks: Ba
         "email": user_data.email,
         "password": hash_password(user_data.password),
         "phone": user_data.phone,
+        "sms_notifications": user_data.sms_notifications or False,
         "role": user_data.role,
         "account_type": account_type,
         "supplier_type": account_type,

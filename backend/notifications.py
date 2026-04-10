@@ -508,12 +508,14 @@ class NotificationService:
         
         push_tokens = []
         for supplier in limited_suppliers:
-            logger.info(f"Notifying supplier: email={supplier.get('email')}, phone='{supplier.get('phone', 'NONE')}', categories={supplier.get('categories', [])}")
+            logger.info(f"Notifying supplier: email={supplier.get('email')}, phone='{supplier.get('phone', 'NONE')}', sms_opt={supplier.get('sms_notifications', False)}, categories={supplier.get('categories', [])}")
             await self.email_service.send_email(supplier["email"], subject, html)
-            if supplier.get("phone"):
+            if supplier.get("phone") and supplier.get("sms_notifications"):
                 logger.info(f"Sending demand SMS to {supplier['phone']}")
                 result = self.sms_service.send_sms(supplier["phone"], sms_text)
                 logger.info(f"Demand SMS to {supplier['phone']}: result={result}")
+            elif supplier.get("phone") and not supplier.get("sms_notifications"):
+                logger.info(f"Supplier {supplier.get('email')} has SMS disabled — skipping SMS")
             else:
                 logger.warning(f"Supplier {supplier.get('email')} has no phone number — skipping SMS")
             if supplier.get("push_token"):
@@ -522,12 +524,19 @@ class NotificationService:
         if push_tokens:
             await send_expo_push(push_tokens, f"Nová poptávka: {demand_category}", f"{demand_title} — {demand_address}", {"type": "new_demand"})
     
+    async def _should_send_sms(self, email: str, phone: Optional[str]) -> bool:
+        """Check if user has SMS notifications enabled"""
+        if not phone:
+            return False
+        user = await db.users.find_one({"email": email}, {"_id": 0, "sms_notifications": 1})
+        return bool(user and user.get("sms_notifications"))
+
     async def notify_new_offer(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, demand_id: str = ""):
         """Notify customer about new offer"""
         subject, html = self.templates.new_offer_email(supplier_name, demand_title, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
         
-        if customer_phone:
+        if await self._should_send_sms(customer_email, customer_phone):
             sms_text = self.templates.new_offer_sms(supplier_name)
             self.sms_service.send_sms(customer_phone, sms_text)
         
@@ -558,10 +567,15 @@ class NotificationService:
         logger.info(f"Chat email sent to {recipient_email}")
         
         if recipient_phone:
-            sms_text = self.templates.new_message_sms(sender_name)
-            logger.info(f"Sending chat SMS to {recipient_phone}")
-            result = self.sms_service.send_sms(recipient_phone, sms_text)
-            logger.info(f"Chat SMS to {recipient_phone}: result={result}")
+            # Check if recipient has SMS enabled
+            recipient_user = await db.users.find_one({"email": recipient_email}, {"_id": 0, "sms_notifications": 1})
+            if recipient_user and recipient_user.get("sms_notifications"):
+                sms_text = self.templates.new_message_sms(sender_name)
+                logger.info(f"Sending chat SMS to {recipient_phone}")
+                result = self.sms_service.send_sms(recipient_phone, sms_text)
+                logger.info(f"Chat SMS to {recipient_phone}: result={result}")
+            else:
+                logger.info(f"SMS disabled for {recipient_email} — skipping chat SMS")
         else:
             logger.warning(f"No phone number for chat notification to {recipient_email}")
         
@@ -575,7 +589,7 @@ class NotificationService:
         subject, html = self.templates.status_change_email(demand_title, old_status, new_status)
         await self.email_service.send_email(user_email, subject, html)
         
-        if user_phone:
+        if await self._should_send_sms(user_email, user_phone):
             sms_text = self.templates.status_change_sms(demand_title, new_status)
             self.sms_service.send_sms(user_phone, sms_text)
         
@@ -618,7 +632,7 @@ class NotificationService:
         """Notify customer about supplier's conditional acceptance"""
         subject, html = self.templates.soft_accept_email(supplier_name, demand_title, reason, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
-        if customer_phone:
+        if await self._should_send_sms(customer_email, customer_phone):
             self.sms_service.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} projevil zajem o vasi poptavku '{demand_title}' s podminkou. Prihlas se pro detaily.")
 
     async def notify_cannot_complete(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, reason: str, demand_id: str = ""):
@@ -650,7 +664,7 @@ class NotificationService:
         subject = f"Dodavatel nemůže provést zakázku: {demand_title}"
         _, html = subject, self.templates.email_base(content, subject)
         await self.email_service.send_email(customer_email, subject, html)
-        if customer_phone:
+        if await self._should_send_sms(customer_email, customer_phone):
             self.sms_service.send_sms(customer_phone, f"CraftBolt: Dodavatel {supplier_name} nemuze provest zakazku '{demand_title}'. Duvod: {reason[:80]}. Poptavka znovu zverejnena.")
 
     async def notify_quick_demand_confirmation(self, email: str, phone: str, name: str):
