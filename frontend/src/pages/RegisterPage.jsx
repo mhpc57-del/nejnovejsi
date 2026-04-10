@@ -8,7 +8,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Eye, EyeSlash, ArrowLeft, ArrowRight, User, Briefcase, 
-  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X, Image as ImageIcon, Plus
+  Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X, Image as ImageIcon, Plus, Trash, MapTrifold
 } from '@phosphor-icons/react';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -28,6 +28,116 @@ function MapUpdater({ center }) {
   return null;
 }
 
+// Interactive map for selecting service areas during registration
+const RegServiceAreaMap = ({ areas, onChange }) => {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const circlesRef = useRef([]);
+  const radiusRef = useRef(20);
+  const selectedRef = useRef(null);
+  const [radius, setRadius] = useState(20);
+  const [selectedIdx, setSelectedIdx] = useState(null);
+
+  useEffect(() => {
+    if (mapInstanceRef.current) return;
+    const map = L.map(mapRef.current, { center: [49.8175, 15.4730], zoom: 7 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+    if (areas?.length > 0) {
+      areas.forEach((area, idx) => addCircle(map, area, idx));
+    }
+
+    map.on('click', (e) => {
+      const r = radiusRef.current;
+      const newArea = { lat: e.latlng.lat, lng: e.latlng.lng, radius_km: r };
+      const idx = circlesRef.current.length;
+      addCircle(map, newArea, idx);
+      onChange(circlesRef.current.map(c => c.data));
+      doSelect(idx);
+    });
+
+    mapInstanceRef.current = map;
+    setTimeout(() => map.invalidateSize(), 100);
+    return () => { map.remove(); mapInstanceRef.current = null; circlesRef.current = []; };
+  }, []);
+
+  const addCircle = (map, area, idx) => {
+    const circle = L.circle([area.lat, area.lng], {
+      radius: (area.radius_km || 20) * 1000,
+      color: '#f97316', fillColor: '#f97316', fillOpacity: 0.15, weight: 2
+    }).addTo(map);
+    circle.on('click', (e) => { L.DomEvent.stopPropagation(e); doSelect(idx); });
+    circlesRef.current.push({ circle, data: area });
+  };
+
+  const doSelect = (idx) => {
+    circlesRef.current.forEach((c, i) => {
+      c.circle.setStyle({ color: i === idx ? '#ea580c' : '#f97316', weight: i === idx ? 3 : 2, fillOpacity: i === idx ? 0.25 : 0.15 });
+    });
+    selectedRef.current = idx;
+    setSelectedIdx(idx);
+    if (circlesRef.current[idx]) {
+      const r = circlesRef.current[idx].data.radius_km || 20;
+      setRadius(r);
+      radiusRef.current = r;
+    }
+  };
+
+  const handleRadiusChange = (val) => {
+    setRadius(val);
+    radiusRef.current = val;
+    const idx = selectedRef.current;
+    if (idx !== null && circlesRef.current[idx]) {
+      circlesRef.current[idx].circle.setRadius(val * 1000);
+      circlesRef.current[idx].data = { ...circlesRef.current[idx].data, radius_km: val };
+      onChange(circlesRef.current.map(c => c.data));
+    }
+  };
+
+  const removeSelected = () => {
+    const idx = selectedRef.current;
+    if (idx === null || !circlesRef.current[idx]) return;
+    mapInstanceRef.current.removeLayer(circlesRef.current[idx].circle);
+    circlesRef.current.splice(idx, 1);
+    selectedRef.current = null;
+    setSelectedIdx(null);
+    onChange(circlesRef.current.map(c => c.data));
+  };
+
+  const clearAll = () => {
+    circlesRef.current.forEach(c => mapInstanceRef.current.removeLayer(c.circle));
+    circlesRef.current = [];
+    selectedRef.current = null;
+    setSelectedIdx(null);
+    onChange([]);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-2">
+        <label className="text-sm text-gray-600">Poloměr:</label>
+        <input type="range" min="5" max="100" value={radius} onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
+          className="flex-1 accent-orange-500" data-testid="reg-radius-slider" />
+        <span className="text-sm font-medium text-gray-700 w-14 text-right">{radius} km</span>
+      </div>
+      <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-xl border border-gray-200" data-testid="reg-service-area-map" />
+      <div className="flex gap-2 mt-2">
+        {selectedIdx !== null && (
+          <button type="button" onClick={removeSelected}
+            className="text-xs px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg text-red-600 hover:bg-red-100" data-testid="reg-remove-selected-area">
+            Odebrat vybranou
+          </button>
+        )}
+        <button type="button" onClick={clearAll}
+          className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50" data-testid="reg-clear-areas">
+          Smazat vše
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 mt-1">Klikněte na mapu pro přidání oblasti. Klikněte na kruh pro úpravu poloměru.</p>
+    </div>
+  );
+};
+
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
@@ -37,6 +147,7 @@ const RegisterPage = () => {
   const [categories, setCategories] = useState([]);
   const [aresLoading, setAresLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingRef, setUploadingRef] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -68,7 +179,9 @@ const RegisterPage = () => {
     categories: [],
     custom_categories: [],
     custom_category_input: '',
-    preferred_languages: []
+    preferred_languages: [],
+    service_areas: [],
+    reference_photos: []
   });
 
   const claimDemandId = searchParams.get('claim_demand');
@@ -210,6 +323,38 @@ const RegisterPage = () => {
     }
   };
 
+  // Reference photo upload during registration (public endpoint, no auth)
+  const handleRefPhotoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (formData.reference_photos.length + files.length > 20) {
+      setError('Maximálně 20 referenčních fotografií');
+      return;
+    }
+    setUploadingRef(true);
+    setError('');
+    for (const file of files) {
+      if (file.size > 25 * 1024 * 1024) {
+        setError(`Soubor ${file.name} je příliš velký (max 25 MB).`);
+        continue;
+      }
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const response = await axios.post(`${API}/upload/public`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setFormData(prev => ({ ...prev, reference_photos: [...prev.reference_photos, response.data.url] }));
+      } catch (err) {
+        setError('Nepodařilo se nahrát fotografii. Zkuste jiný formát.');
+      }
+    }
+    setUploadingRef(false);
+  };
+
+  const removeRefPhoto = (index) => {
+    setFormData(prev => ({ ...prev, reference_photos: prev.reference_photos.filter((_, i) => i !== index) }));
+  };
+
   // Determine steps based on role + IČ choice
   const getSteps = () => {
     const base = ['basic', 'role', 'ico_choice'];
@@ -219,6 +364,8 @@ const RegisterPage = () => {
     base.push('details');
     if (formData.role === 'supplier' || formData.role === 'customer_supplier') {
       base.push('categories');
+      base.push('service_areas');
+      base.push('portfolio');
     }
     return base;
   };
@@ -298,6 +445,8 @@ const RegisterPage = () => {
       }
       if (!submitData.categories) submitData.categories = [];
       if (!submitData.custom_categories) submitData.custom_categories = [];
+      if (!submitData.reference_photos) submitData.reference_photos = [];
+      if (!submitData.service_areas) submitData.service_areas = [];
       
       await register(submitData);
       
@@ -355,6 +504,13 @@ const RegisterPage = () => {
         ? prev.preferred_languages.filter(l => l !== lang)
         : [...prev.preferred_languages, lang]
     }));
+  };
+
+  const getImageUrl = (url) => {
+    if (!url || url === 'None' || url === 'null') return null;
+    if (url.startsWith('http')) return url;
+    const path = url.startsWith('/api/') ? url : url.startsWith('/') ? `/api${url}` : `/api/${url}`;
+    return `${API.replace('/api', '')}${path}`;
   };
 
   const renderStep = () => {
@@ -892,6 +1048,59 @@ const RegisterPage = () => {
           </div>
         );
 
+      case 'service_areas':
+        return (
+          <div data-testid="reg-step-service-areas">
+            <p className="text-gray-600 mb-3">Označte na mapě oblasti, kde nabízíte své služby:</p>
+            <RegServiceAreaMap
+              areas={formData.service_areas}
+              onChange={(areas) => setFormData(prev => ({ ...prev, service_areas: areas }))}
+            />
+            {formData.service_areas.length > 0 && (
+              <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl" data-testid="reg-areas-count">
+                <p className="text-sm text-orange-700 font-medium">
+                  Přidáno oblastí: {formData.service_areas.length}
+                </p>
+              </div>
+            )}
+            <p className="text-xs text-gray-400 mt-2">Tento krok můžete přeskočit a nastavit oblast působení později v profilu.</p>
+          </div>
+        );
+
+      case 'portfolio':
+        return (
+          <div data-testid="reg-step-portfolio">
+            <p className="text-gray-600 mb-4">Nahrajte referenční fotografie vaší práce (max 20):</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {formData.reference_photos.map((url, i) => (
+                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group" data-testid={`reg-ref-photo-${i}`}>
+                  <img src={getImageUrl(url)} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => removeRefPhoto(i)}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`reg-remove-ref-${i}`}>
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {formData.reference_photos.length < 20 && (
+                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="reg-upload-ref-btn">
+                  {uploadingRef ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div>
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5 text-gray-400" />
+                      <span className="text-[10px] text-gray-400 mt-1">Přidat</span>
+                    </>
+                  )}
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" multiple
+                    onChange={handleRefPhotoUpload} className="hidden" disabled={uploadingRef} />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mb-4">Nahráno: {formData.reference_photos.length}/20</p>
+            <p className="text-xs text-gray-400">Tento krok můžete přeskočit a přidat fotografie i certifikace později v profilu.</p>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -905,7 +1114,9 @@ const RegisterPage = () => {
       ico_choice: 'Máte IČ?',
       ico_type: 'Typ podnikání',
       details: 'Údaje o účtu',
-      categories: 'Kategorie služeb'
+      categories: 'Kategorie služeb',
+      service_areas: 'Oblast působení',
+      portfolio: 'Portfolio a reference'
     };
     return titles[step] || '';
   };

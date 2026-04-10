@@ -1,0 +1,101 @@
+{
+  "summary": "Iteration 23 - Complete frontend testing of new registration flow steps for suppliers. Verified 'Oblast působení' (Service Areas) and 'Portfolio a reference' (Portfolio) steps appear correctly for supplier and customer_supplier roles, but NOT for customer role. All features working as expected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_23.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (all 12 features verified)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "None - used test emails for registration flow testing without actual submission",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Registration flow fully tested. Supplier role has 8 steps (with IČ) or 7 steps (without IČ). Customer role has 4 steps (without IČ) or 5 steps (with IČ). Customer_supplier role has 7 steps (without IČ) or 8 steps (with IČ). Service areas and portfolio steps are optional and can be skipped.",
+  "features_tested": {
+    "SUPPLIER_8_STEPS_WITH_ICO": {
+      "status": "PASSED",
+      "details": "Supplier with IČ has 8 steps: basic, role, ico_choice, ico_type, details, categories, service_areas, portfolio"
+    },
+    "CUSTOMER_4_STEPS_NO_ICO": {
+      "status": "PASSED",
+      "details": "Customer without IČ has 4 steps: basic, role, ico_choice, details. NO categories/service_areas/portfolio"
+    },
+    "CUSTOMER_SUPPLIER_7_STEPS_NO_ICO": {
+      "status": "PASSED",
+      "details": "Customer_supplier without IČ has 7 steps: basic, role, ico_choice, details, categories, service_areas, portfolio"
+    },
+    "SERVICE_AREAS_STEP_VISIBLE_SUPPLIER": {
+      "status": "PASSED",
+      "details": "Service areas step (Oblast působení) visible for supplier role with data-testid='reg-step-service-areas'"
+    },
+    "SERVICE_AREAS_STEP_VISIBLE_CUSTOMER_SUPPLIER": {
+      "status": "PASSED",
+      "details": "Service areas step visible for customer_supplier role"
+    },
+    "SERVICE_AREAS_NOT_VISIBLE_CUSTOMER": {
+      "status": "PASSED",
+      "details": "Service areas step NOT visible for customer role"
+    },
+    "PORTFOLIO_STEP_VISIBLE_SUPPLIER": {
+      "status": "PASSED",
+      "details": "Portfolio step (Portfolio a reference) visible for supplier role with data-testid='reg-step-portfolio'"
+    },
+    "PORTFOLIO_STEP_VISIBLE_CUSTOMER_SUPPLIER": {
+      "status": "PASSED",
+      "details": "Portfolio step visible for customer_supplier role"
+    },
+    "PORTFOLIO_NOT_VISIBLE_CUSTOMER": {
+      "status": "PASSED",
+      "details": "Portfolio step NOT visible for customer role"
+    },
+    "LEAFLET_MAP_INTERACTIVE": {
+      "status": "PASSED",
+      "details": "Leaflet map centered on Czech Republic [49.8175, 15.4730], click adds service area circle"
+    },
+    "RADIUS_SLIDER_WORKS": {
+      "status": "PASSED",
+      "details": "Radius slider (data-testid='reg-radius-slider') changes from default 20km, tested with 50km"
+    },
+    "SERVICE_AREAS_OPTIONAL": {
+      "status": "PASSED",
+      "details": "Service areas step can be skipped - user can click 'Pokračovat' without adding areas"
+    },
+    "PORTFOLIO_OPTIONAL": {
+      "status": "PASSED",
+      "details": "Portfolio step can be skipped - user can click 'Dokončit registraci' without uploading photos"
+    },
+    "PROGRESS_BAR_CORRECT_COUNT": {
+      "status": "PASSED",
+      "details": "Progress bar shows 8 dots for supplier with IČ, 4 dots for customer without IČ, 7 dots for customer_supplier without IČ"
+    },
+    "BACK_NAVIGATION_WORKS": {
+      "status": "PASSED",
+      "details": "Back button navigates correctly between all steps"
+    },
+    "LAST_STEP_BUTTON_TEXT": {
+      "status": "PASSED",
+      "details": "Last step shows 'Dokončit registraci' button, intermediate steps show 'Pokračovat'"
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
