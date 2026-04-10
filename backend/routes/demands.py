@@ -142,8 +142,52 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
         
         logger.info(f"New demand '{demand_data.title}' category='{demand_data.category}': found {len(all_suppliers)} matching suppliers")
         
-        # Radius is saved on the demand for display, but ALL matching suppliers get notified
-        suppliers = all_suppliers
+        # Filter by distance if radius is set and demand has coordinates
+        if demand_data.supplier_radius and demand_data.latitude and demand_data.longitude:
+            from math import radians, sin, cos, sqrt, atan2
+            
+            def haversine(lat1, lon1, lat2, lon2):
+                R = 6371
+                dlat = radians(lat2 - lat1)
+                dlon = radians(lon2 - lon1)
+                a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+                return R * 2 * atan2(sqrt(a), sqrt(1-a))
+            
+            filtered = []
+            for s in all_suppliers:
+                areas = s.get("service_areas", [])
+                if not areas:
+                    # No service area defined — include them (they haven't restricted themselves)
+                    logger.info(f"  Supplier {s.get('email')}: no service_areas -> INCLUDED")
+                    filtered.append(s)
+                    continue
+                included = False
+                for area in areas:
+                    # Support both lat/lng and latitude/longitude formats
+                    area_lat = area.get("lat") or area.get("latitude") or 0
+                    area_lng = area.get("lng") or area.get("longitude") or area.get("lon") or 0
+                    area_radius = area.get("radius_km") or area.get("radius") or 20
+                    
+                    if not area_lat or not area_lng:
+                        logger.info(f"  Supplier {s.get('email')}: area has no coords {area} -> INCLUDED")
+                        included = True
+                        break
+                    
+                    dist = haversine(demand_data.latitude, demand_data.longitude, float(area_lat), float(area_lng))
+                    logger.info(f"  Supplier {s.get('email')}: area({area_lat},{area_lng} r={area_radius}km) dist={dist:.1f}km, demand_radius={demand_data.supplier_radius}km, overlap={dist <= demand_data.supplier_radius + area_radius}")
+                    
+                    if dist <= demand_data.supplier_radius + float(area_radius):
+                        included = True
+                        break
+                if included:
+                    filtered.append(s)
+                else:
+                    logger.info(f"  Supplier {s.get('email')}: EXCLUDED by radius filter")
+            
+            logger.info(f"Radius filter ({demand_data.supplier_radius}km from {demand_data.latitude},{demand_data.longitude}): {len(all_suppliers)} -> {len(filtered)} suppliers")
+            suppliers = filtered
+        else:
+            suppliers = all_suppliers
         
         logger.info(f"Notifying {len(suppliers)} suppliers: {[s.get('email','?') for s in suppliers[:10]]}")
         
