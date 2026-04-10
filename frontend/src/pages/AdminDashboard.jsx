@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 
 import HeaderWidget from '../components/HeaderWidget';
+import ThemeToggle from '../components/ThemeToggle';
 
 const AdminDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -885,6 +886,9 @@ const AdminDashboard = () => {
             <SignOut className="w-5 h-5" />
             Odhlásit se
           </button>
+          <div className="px-4 py-2">
+            <ThemeToggle className="w-full justify-center" />
+          </div>
         </div>
       </aside>
 

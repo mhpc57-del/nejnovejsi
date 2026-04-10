@@ -9,20 +9,24 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - Dark mode, SMS (Twilio), SMTP (Wedos), Stripe (199/299/399 Kc)
 - Poptavky s mapou, chat s read tracking, profily, certifikaty, service area
 - AI Chat (GPT), Quick Demand, Weather widget
-- 3-option dokonceni (Standard/Navyseni/Blacklist), Nemohu provest
-- Financni prehled + Fotodokumentace (max 20, lightbox)
+- 3-option dokonceni, Nemohu provest, Financni prehled, Fotodokumentace
 - Potvrzeni ceny dodavatelem, Prijmy dodavatele
-- Admin Panel: uzivatele, zakazky, kategorie
+- Admin Panel: uzivatele, zakazky, kategorie, faktury
 - Fakturacni system (PDF/XML/ZIP)
 - Persistentni upload do MongoDB
-- Rozsireny registracni formular: Oblast pusobeni + Portfolio
-- **Seskupene kategorie (2026-04-10)**: Remesla (46) + Sluzby (78) = 124
-- **Zabraneni prekladu prohlizecem (2026-04-10)**: lang=cs, notranslate
-- **UI/UX Redesign (2026-04-10)**:
-  - HomePage: Swiss & High-Contrast archetype, Framer Motion animace, glassmorphism header, tinted neutrals (stone-50, zinc-*), Outfit + Manrope fonty, stagger reveal, lepsi spacing, asymetricky layout
-  - LoginPage: Konzistentni redesign s zinc paletou a backdrop-blur headerem
-  - RegisterPage: Aktualizovany header a form wrapper
-  - Testovano: 18/18 testu proslo (100%)
+- Rozsireny registracni formular: Oblast pusobeni + Portfolio (2026-04-09)
+- Seskupene kategorie: Remesla (46) + Sluzby (78) = 124 (2026-04-10)
+- Zabraneni prekladu prohlizecem: lang=cs, notranslate (2026-04-10)
+- **Kompletni UI/UX Redesign (2026-04-10)**:
+  - Vsechny stranky: zinc/stone paleta, dark mode, glassmorphism header/sidebar
+  - HomePage: Swiss & High-Contrast, Framer Motion animace, stagger reveal
+  - LoginPage + RegisterPage: konzistentni redesign
+  - CustomerDashboard + SupplierDashboard: backdrop-blur sidebar, aktualizovane karty
+  - ProfilePage: nove barvy, dark mode podpora
+  - DemandDetail: kompletni migrace z gray na zinc
+  - AdminDashboard: dark mode toggle pridany do sidebaru
+  - Dalsi stranky: InvoicesPage, ContactPage, TermsPage, PaymentPage, atd.
+  - Testovano: iterace 25 (18/18), 26 (19/19), 27 (95% - vsechny hlavni funkce OK)
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
@@ -32,6 +36,5 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 ## Backlog
 - P1: Overeni Twilio SMS doruceni (ceka na potvrzeni uzivatele)
 - P1: Stripe Live finalizace (ceka na uzivatele + ucetni)
-- P2: Redesign dalsich stranek (dashboardy, profil, admin) - pokracovani
 - P2: Sledovani rychlosti dorucovani e-mailu pres Wedos SMTP
 - P2: Mobilni aplikace - PAUSOVANO
