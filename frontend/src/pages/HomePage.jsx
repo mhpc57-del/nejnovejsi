@@ -208,9 +208,9 @@ const HomePage = () => {
                 Poptávky — Nabídky — Služby
               </motion.p>
               <motion.h1 variants={fadeUp} custom={2} className="text-5xl sm:text-6xl font-semibold tracking-tighter leading-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-                Jednoduše, rychle,{' '}
+                <span className="text-orange-500">Jednoduše,</span> rychle,{' '}
                 efektivně,{' '}
-                <span className="text-orange-500">spolehlivě.</span>
+                spolehlivě.
               </motion.h1>
               <motion.p variants={fadeUp} custom={3} className="text-lg text-zinc-500 dark:text-zinc-400 mt-6 leading-relaxed max-w-md">
                 Zadejte poptávku, nebo se registrujte jako dodavatel. Začněte teď hned.
@@ -611,9 +611,8 @@ const HomePage = () => {
       <section className="py-24 px-6 md:px-12" data-testid="promoted-suppliers-section">
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Doporučení dodavatelé</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
-              Spolehliví partneři
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-bold tracking-tight text-orange-500 uppercase mt-4" style={{ fontFamily: 'Outfit' }}>
+              Topovaní dodavatelé
             </motion.h2>
           </motion.div>
 

@@ -360,15 +360,15 @@ const CustomerDashboard = () => {
                       </div>
                     );
                     return (
-                      <div className="divide-y divide-gray-100">
+                      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
                         {filtered.map((demand) => (
                           <Link key={demand.id} to={`/zakazka/${demand.id}`}
-                            className="block p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                            className="block p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                             data-testid={`demand-item-${demand.id}`}>
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center justify-between gap-3">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="font-semibold text-zinc-900 dark:text-white truncate">{demand.title}</h3>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{demand.title}</h3>
                                   {getStatusBadge(demand.status)}
                                   {(demand.soft_accepts?.length > 0 || demand.status === 'in_progress') && demand.status !== 'completed' && demand.status !== 'cancelled' && (
                                     <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" data-testid={`response-badge-${demand.id}`}>
@@ -377,19 +377,28 @@ const CustomerDashboard = () => {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-zinc-500 line-clamp-2 mb-3">{demand.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-zinc-400">
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4" />
-                                    {demand.address}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
-                                  </span>
+                                <div className="space-y-1 text-sm text-zinc-500">
+                                  <div className="flex items-center gap-1.5">
+                                    <User className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+                                    <span className="truncate">{demand.customer_name || 'Neznámý zadavatel'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+                                    <span className="truncate">{demand.address || 'Neuvedeno'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+                                    <span>
+                                      {demand.deadline 
+                                        ? (demand.deadline === 'ASAP' ? 'Co nejdříve' 
+                                          : demand.deadline === 'URGENT' ? 'IHNED!' 
+                                          : `Termín: ${new Date(demand.deadline).toLocaleDateString('cs-CZ')}`)
+                                        : `Zadáno: ${new Date(demand.created_at).toLocaleDateString('cs-CZ')}`}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                              <ArrowRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                              <ArrowRight className="w-5 h-5 text-zinc-300 flex-shrink-0" />
                             </div>
                           </Link>
                         ))}
