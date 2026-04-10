@@ -1139,16 +1139,16 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-100 py-4 px-4">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex flex-col">
+      <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-gray-900">Craft</span>
-            <span className="text-2xl font-bold text-orange-500">Bolt</span>
+            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
+            <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
+            <Link to="/" className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-sm">
+              <ArrowLeft className="w-4 h-4" />
               Zpět
             </Link>
             <ThemeToggle />
@@ -1160,7 +1160,7 @@ const RegisterPage = () => {
         <div className="w-full max-w-lg">
           {registrationComplete ? (
             /* ========= VERIFICATION SCREEN ========= */
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center" data-testid="verification-pending-screen">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 p-8 text-center" data-testid="verification-pending-screen">
               <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -1211,29 +1211,29 @@ const RegisterPage = () => {
               </Link>
             </div>
           ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 p-8">
             {/* Progress */}
             <div className="flex items-center gap-2 mb-8">
               {steps.map((step, index) => (
                 <React.Fragment key={step}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                    index <= currentStep ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'
+                    index <= currentStep ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'
                   }`}>
                     {index < currentStep ? <Check weight="bold" className="w-4 h-4" /> : index + 1}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 rounded-full transition-colors ${index < currentStep ? 'bg-orange-500' : 'bg-gray-100'}`} />
+                    <div className={`flex-1 h-1 rounded-full transition-colors ${index < currentStep ? 'bg-orange-500' : 'bg-zinc-100 dark:bg-zinc-800'}`} />
                   )}
                 </React.Fragment>
               ))}
             </div>
 
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{getStepTitle()}</h1>
+            <div className="mb-8">
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>{getStepTitle()}</h1>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm" data-testid="register-error">
+              <div className="mb-5 p-3.5 bg-red-500/5 border border-red-200 dark:border-red-900/30 rounded-lg text-red-600 text-sm" data-testid="register-error">
                 {error}
               </div>
             )}
@@ -1244,13 +1244,13 @@ const RegisterPage = () => {
               <div className="flex gap-4 mt-8">
                 {currentStep > 0 && (
                   <button type="button" onClick={handleBack}
-                    className="flex-1 py-3 px-6 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 py-3 px-6 border border-zinc-200 dark:border-zinc-700 rounded-lg font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm"
                     data-testid="register-back-btn">
                     Zpět
                   </button>
                 )}
                 <button type="submit" disabled={loading}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/20 text-sm"
                   data-testid="register-next-btn">
                   {loading ? (
                     <span className="flex items-center gap-2">

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
 import { Eye, EyeSlash, ArrowLeft } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
 
 const LoginPage = () => {
@@ -27,17 +28,9 @@ const LoginPage = () => {
 
     try {
       const user = await login(email, password);
-      
-      // Redirect based on role
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else if (user.role === 'supplier') {
-        navigate('/dodavatel');
-      } else if (user.role === 'customer_supplier') {
-        navigate('/zakaznik');
-      } else {
-        navigate('/zakaznik');
-      }
+      if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'supplier') navigate('/dodavatel');
+      else navigate('/zakaznik');
     } catch (err) {
       const detail = err.response?.data?.detail || '';
       if (detail === 'EMAIL_NOT_VERIFIED') {
@@ -57,59 +50,54 @@ const LoginPage = () => {
     setResending(true);
     try {
       await axios.post(`${API}/auth/resend-verification`, { email });
-    } catch (err) {
-      // silently ignore
-    } finally {
-      setResending(false);
-    }
+    } catch (err) { /* silently ignore */ }
+    finally { setResending(false); }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 py-4 px-4">
+      <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-gray-900">Craft</span>
-            <span className="text-2xl font-bold text-orange-500">Bolt</span>
+            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
+            <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-              Zpět na hlavní stránku
+            <Link to="/" className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-sm">
+              <ArrowLeft className="w-4 h-4" />
+              Zpět
             </Link>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Přihlášení</h1>
-              <p className="text-gray-500">Vítejte zpět v CraftBolt</p>
+      {/* Main */}
+      <div className="flex-1 flex items-center justify-center px-6 py-16">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="w-full max-w-md">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 p-8">
+            <div className="mb-8">
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Přihlášení</h1>
+              <p className="text-sm text-zinc-500 mt-1">Vítejte zpět v CraftBolt</p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm" data-testid="login-error">
+              <div className="mb-5 p-3.5 bg-red-500/5 border border-red-200 dark:border-red-900/30 rounded-lg text-red-600 text-sm" data-testid="login-error">
                 {error}
               </div>
             )}
 
             {showVerificationMessage && (
-              <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg" data-testid="login-verification-message">
-                <p className="text-orange-700 text-sm font-medium mb-2">Email nebyl ověřen</p>
-                <p className="text-orange-600 text-sm mb-3">
-                  Pro přihlášení musíte nejprve ověřit svůj email. Zkontrolujte svou emailovou schránku (včetně složky SPAM).
+              <div className="mb-5 p-3.5 bg-orange-500/5 border border-orange-200 dark:border-orange-900/30 rounded-lg" data-testid="login-verification-message">
+                <p className="text-orange-700 dark:text-orange-400 text-sm font-medium mb-1.5">Email nebyl ověřen</p>
+                <p className="text-orange-600 dark:text-orange-400/80 text-sm mb-3">
+                  Pro přihlášení musíte nejprve ověřit svůj email. Zkontrolujte svou schránku (včetně složky SPAM).
                 </p>
-                <button
-                  onClick={handleResendVerification}
-                  disabled={resending}
+                <button onClick={handleResendVerification} disabled={resending}
                   className="text-orange-600 hover:text-orange-700 font-medium text-sm underline transition-colors disabled:opacity-50"
-                  data-testid="login-resend-verification-btn"
-                >
+                  data-testid="login-resend-verification-btn">
                   {resending ? 'Odesílám...' : 'Odeslat ověřovací email znovu'}
                 </button>
               </div>
@@ -117,83 +105,59 @@ const LoginPage = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  E-mail
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vas@email.cz"
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
-                  data-testid="login-email-input"
-                />
+                <label htmlFor="email" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">E-mail</label>
+                <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vas@email.cz" required
+                  className="w-full px-3.5 py-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-sm"
+                  data-testid="login-email-input" />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Heslo
-                </label>
+                <label htmlFor="password" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Heslo</label>
                 <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors pr-12"
-                    data-testid="login-password-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    data-testid="toggle-password-btn"
-                  >
-                    {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <input type={showPassword ? 'text' : 'password'} id="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••" required
+                    className="w-full px-3.5 py-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors pr-12 text-sm"
+                    data-testid="login-password-input" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    data-testid="toggle-password-btn">
+                    {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               <div className="flex justify-end">
-                <Link to="/zapomenute-heslo" className="text-sm text-orange-500 hover:text-orange-600" data-testid="forgot-password-link">
+                <Link to="/zapomenute-heslo" className="text-sm text-orange-500 hover:text-orange-600 transition-colors" data-testid="forgot-password-link">
                   Zapomněli jste heslo?
                 </Link>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                data-testid="login-submit-btn"
-              >
+              <button type="submit" disabled={loading}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/20 text-sm"
+                data-testid="login-submit-btn">
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Přihlašování...
                   </span>
-                ) : (
-                  'Přihlásit se'
-                )}
+                ) : 'Přihlásit se'}
               </button>
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-gray-500">
+              <p className="text-sm text-zinc-500">
                 Nemáte účet?{' '}
-                <Link to="/registrace" className="text-orange-500 hover:text-orange-600 font-medium" data-testid="register-link">
+                <Link to="/registrace" className="text-orange-500 hover:text-orange-600 font-medium transition-colors" data-testid="register-link">
                   Registrujte se
                 </Link>
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
