@@ -453,7 +453,7 @@ const HomePage = () => {
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
             className="relative rounded-xl overflow-hidden bg-zinc-900 aspect-video shadow-2xl ring-1 ring-zinc-200/50 dark:ring-zinc-800">
-            <iframe src="https://www.youtube.com/embed/eR8_-m_mYoE?rel=0" title="Jak CraftBolt funguje"
+            <iframe src="https://www.youtube.com/embed/eR8_-m_mYoE?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3" title="Jak CraftBolt funguje"
               frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen className="w-full h-full" data-testid="promo-video-youtube" />
           </motion.div>
