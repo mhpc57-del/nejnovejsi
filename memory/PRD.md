@@ -17,26 +17,19 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - Rozsireny registracni formular: Oblast pusobeni + Portfolio (2026-04-09)
 - Seskupene kategorie: Remesla (46) + Sluzby (78) = 124 (2026-04-10)
 - Zabraneni prekladu prohlizecem: lang=cs, notranslate (2026-04-10)
-- **Kompletni UI/UX Redesign (2026-04-10)**:
-  - Vsechny stranky: zinc/stone paleta, dark mode, glassmorphism header/sidebar
-  - HomePage: Swiss & High-Contrast, Framer Motion animace, stagger reveal
-  - LoginPage + RegisterPage: konzistentni redesign
-  - CustomerDashboard + SupplierDashboard: backdrop-blur sidebar, aktualizovane karty
-  - ProfilePage: nove barvy, dark mode podpora
-  - DemandDetail: kompletni migrace z gray na zinc
-  - AdminDashboard: dark mode toggle pridany do sidebaru
-  - Dalsi stranky: InvoicesPage, ContactPage, TermsPage, PaymentPage, atd.
-  - Testovano: iterace 25 (18/18), 26 (19/19), 27 (95% - vsechny hlavni funkce OK)
-- **Homepage updaty (2026-04-10)**:
-  - Hero heading: "spolehlive" v oranzove
-  - Rocni cenovy prepinac (10% sleva)
-  - Promoted Suppliers sekce (6 karet, 300 Kc/den + DPH)
+- Kompletni UI/UX Redesign (2026-04-10)
+- Homepage updaty: "spolehlive", rocni cenovy prepinac, Promoted Suppliers sekce (2026-04-10)
 - **Bug fixy (2026-04-11)**:
   - SMS: Opraveno pouzitim Twilio Messaging Service SID s Alpha Sender 'CraftBolt'
   - Chat dark mode: Opravena viditelnost textu v tmavem rezimu
   - Promoted suppliers: Opraveny 3 bugy (STRIPE_API_KEY, FRONTEND_URL, Plus import)
   - notifications.py: Opraveno self.sms_service.send_sms() na 2 mistech
-  - Testovano: iterace 28 (100% backend, 100% frontend)
+- **Admin Reklama tab (2026-04-11)**:
+  - Nova zalozka "Reklama" v Admin Panelu (Megaphone ikona)
+  - 4 statisticke karty: Aktivni bannery, Expirovane, Prijmy za mesic, Prijmy celkem
+  - Tabulka vsech promo dodavatelu s akcemi: prodlouzit (+1 den), deaktivovat, smazat
+  - Backend endpointy: GET /api/admin/promoted-stats, DELETE/PUT /api/admin/promoted/{id}
+  - Testovano: iterace 28 (100%) + iterace 29 (12/12 testu, 100%)
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
