@@ -3,35 +3,57 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 
 const slides = [
   {
-    image: "https://images.pexels.com/photos/5691589/pexels-photo-5691589.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Předání zakázky - zákazník a uklízečka
+    image: "https://images.pexels.com/photos/4107120/pexels-photo-4107120.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
+    // Elektrikář u rozvaděče
+    image: "https://images.pexels.com/photos/5691640/pexels-photo-5691640.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+  {
+    // Montér klimatizace
+    image: "https://images.pexels.com/photos/5463576/pexels-photo-5463576.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+  {
+    // Zedník
+    image: "https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+  {
+    // Instalatér
     image: "https://images.pexels.com/photos/6419128/pexels-photo-6419128.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/19688828/pexels-photo-19688828.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Topenář u kotle
+    image: "https://images.pexels.com/photos/6419137/pexels-photo-6419137.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/374861/pexels-photo-374861.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Hromosvod / práce na střeše
+    image: "https://images.pexels.com/photos/8853502/pexels-photo-8853502.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/6196239/pexels-photo-6196239.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Sádrokartonář
+    image: "https://images.pexels.com/photos/5089178/pexels-photo-5089178.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/5691536/pexels-photo-5691536.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Úklidové práce - blondýnka
+    image: "https://images.pexels.com/photos/4107112/pexels-photo-4107112.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/8481711/pexels-photo-8481711.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Hodinový manžel - opravář
+    image: "https://images.pexels.com/photos/5691589/pexels-photo-5691589.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.unsplash.com/photo-1731168273756-e02cae42265b?w=1200&h=800&fit=crop",
+    // Rekonstrukce RD
+    image: "https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/5691521/pexels-photo-5691521.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Ruční výkopové práce
+    image: "https://images.pexels.com/photos/585419/pexels-photo-585419.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    image: "https://images.pexels.com/photos/4981793/pexels-photo-4981793.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  }
+    // Strojní výkopové práce - bagr
+    image: "https://images.pexels.com/photos/2058911/pexels-photo-2058911.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
 ];
 
 const HeroSlider = () => {
