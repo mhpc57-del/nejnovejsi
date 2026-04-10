@@ -4,15 +4,15 @@ import { ArrowLeft, Envelope, MapPin, Clock } from '@phosphor-icons/react';
 
 const ContactPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold">
-            <span className="text-gray-900">Craft</span>
+            <span className="text-zinc-900 dark:text-white">Craft</span>
             <span className="text-orange-500">Bolt</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+          <Link to="/" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-white">
             <ArrowLeft weight="bold" />
             Zpět na hlavní stránku
           </Link>
@@ -22,16 +22,16 @@ const ContactPage = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Kontaktujte nás</h1>
-          <p className="text-gray-600 text-lg">
+          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">Kontaktujte nás</h1>
+          <p className="text-zinc-600 text-lg">
             Máte dotaz nebo potřebujete pomoc? Jsme tu pro vás.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Contact Info */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Kontaktní údaje</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Kontaktní údaje</h2>
             
             <div className="space-y-6">
               <div className="flex items-start gap-4">
@@ -39,7 +39,7 @@ const ContactPage = () => {
                   <Envelope weight="fill" className="w-6 h-6 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">E-mail</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">E-mail</h3>
                   <a href="mailto:info@craftbolt.cz" className="text-orange-500 hover:text-orange-600">
                     info@craftbolt.cz
                   </a>
@@ -51,8 +51,8 @@ const ContactPage = () => {
                   <MapPin weight="fill" className="w-6 h-6 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Adresa</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Adresa</h3>
+                  <p className="text-zinc-600">
                     Provozovatel: AC/DC MONT s.r.o.<br />
                     Sportovní 7<br />
                     789 63 Ruda nad Moravou<br />
@@ -66,8 +66,8 @@ const ContactPage = () => {
                   <Clock weight="fill" className="w-6 h-6 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Provozní doba podpory</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Provozní doba podpory</h3>
+                  <p className="text-zinc-600">
                     Pondělí – Pátek: 8:00 – 16:00<br />
                     Sobota – Neděle: Zavřeno
                   </p>
@@ -77,12 +77,12 @@ const ContactPage = () => {
           </div>
 
           {/* Contact Form */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Napište nám</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Napište nám</h2>
             
             <form className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="name" className="block text-sm font-medium text-zinc-700 mb-1">
                   Jméno a příjmení
                 </label>
                 <input
@@ -95,7 +95,7 @@ const ContactPage = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1">
                   E-mail
                 </label>
                 <input
@@ -108,7 +108,7 @@ const ContactPage = () => {
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="subject" className="block text-sm font-medium text-zinc-700 mb-1">
                   Předmět
                 </label>
                 <select
@@ -126,7 +126,7 @@ const ContactPage = () => {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="message" className="block text-sm font-medium text-zinc-700 mb-1">
                   Zpráva
                 </label>
                 <textarea
@@ -149,9 +149,9 @@ const ContactPage = () => {
         </div>
 
         {/* Company Info */}
-        <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Fakturační údaje</h2>
-          <div className="grid md:grid-cols-2 gap-6 text-gray-600">
+        <div className="mt-12 bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Fakturační údaje</h2>
+          <div className="grid md:grid-cols-2 gap-6 text-zinc-600">
             <div>
               <p><strong>Provozovatel:</strong> AC/DC MONT s.r.o.</p>
               <p><strong>Sídlo:</strong> Sportovní 7, 789 63 Ruda nad Moravou</p>
@@ -179,7 +179,7 @@ const ContactPage = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 px-4 mt-12">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="text-zinc-400 text-sm">
             © 2026 CraftBolt. Všechna práva vyhrazena.
           </p>
         </div>

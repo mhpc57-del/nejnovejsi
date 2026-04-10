@@ -27,13 +27,13 @@ const ForgotPasswordPage = () => {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle weight="fill" className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Email odeslán</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Email odeslán</h2>
+          <p className="text-zinc-600 mb-6">
             Pokud je email <strong>{email}</strong> registrován, odeslali jsme na něj odkaz pro obnovení hesla. Zkontrolujte i složku SPAM.
           </p>
           <Link to="/prihlaseni" className="text-orange-500 hover:text-orange-600 font-medium" data-testid="back-to-login-link">
@@ -45,15 +45,15 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-6">
           <Link to="/" className="inline-block mb-4">
-            <span className="text-2xl font-bold text-gray-900">Craft</span>
+            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
             <span className="text-2xl font-bold text-orange-500">Bolt</span>
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900">Zapomenuté heslo</h2>
-          <p className="text-gray-500 mt-1">Zadejte váš email a pošleme vám odkaz pro obnovení hesla</p>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Zapomenuté heslo</h2>
+          <p className="text-zinc-500 mt-1">Zadejte váš email a pošleme vám odkaz pro obnovení hesla</p>
         </div>
 
         {error && (
@@ -65,16 +65,16 @@ const ForgotPasswordPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">E-mail</label>
             <div className="relative">
-              <EnvelopeSimple className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <EnvelopeSimple className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vas@email.cz"
                 required
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full pl-12 pr-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="forgot-email-input"
               />
             </div>
@@ -91,7 +91,7 @@ const ForgotPasswordPage = () => {
         </form>
 
         <div className="text-center mt-4">
-          <Link to="/prihlaseni" className="text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center gap-1">
+          <Link to="/prihlaseni" className="text-zinc-500 hover:text-zinc-700 text-sm flex items-center justify-center gap-1">
             <ArrowLeft className="w-4 h-4" />
             Zpět na přihlášení
           </Link>
@@ -144,13 +144,13 @@ const ResetPasswordPage = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle weight="fill" className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Heslo změněno</h2>
-          <p className="text-gray-600 mb-4">Vaše heslo bylo úspěšně změněno. Přesměrováváme vás na přihlášení...</p>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Heslo změněno</h2>
+          <p className="text-zinc-600 mb-4">Vaše heslo bylo úspěšně změněno. Přesměrováváme vás na přihlášení...</p>
           <Link to="/prihlaseni" className="text-orange-500 hover:text-orange-600 font-medium" data-testid="goto-login-link">
             Přihlásit se
           </Link>
@@ -160,14 +160,14 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-6">
           <Link to="/" className="inline-block mb-4">
-            <span className="text-2xl font-bold text-gray-900">Craft</span>
+            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
             <span className="text-2xl font-bold text-orange-500">Bolt</span>
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900">Nastavení nového hesla</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Nastavení nového hesla</h2>
         </div>
 
         {error && (
@@ -179,9 +179,9 @@ const ResetPasswordPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nové heslo</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">Nové heslo</label>
             <div className="relative">
-              <LockKey className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <LockKey className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
               <input
                 type="password"
                 value={password}
@@ -189,23 +189,23 @@ const ResetPasswordPage = () => {
                 placeholder="Min. 8 znaků"
                 required
                 minLength={8}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full pl-12 pr-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="reset-password-input"
               />
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Potvrzení hesla</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">Potvrzení hesla</label>
             <div className="relative">
-              <LockKey className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <LockKey className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Zadejte heslo znovu"
                 required
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full pl-12 pr-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="reset-confirm-input"
               />
             </div>

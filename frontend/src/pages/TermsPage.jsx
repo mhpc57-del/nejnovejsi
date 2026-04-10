@@ -4,15 +4,15 @@ import { ArrowLeft } from '@phosphor-icons/react';
 
 const TermsPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold">
-            <span className="text-gray-900">Craft</span>
+            <span className="text-zinc-900 dark:text-white">Craft</span>
             <span className="text-orange-500">Bolt</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+          <Link to="/" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-white">
             <ArrowLeft weight="bold" />
             Zpět na hlavní stránku
           </Link>
@@ -21,12 +21,12 @@ const TermsPage = () => {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">Obchodní podmínky</h1>
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-8">Obchodní podmínky</h1>
         
-        <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8 text-gray-700 leading-relaxed">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 space-y-8 text-zinc-700 leading-relaxed">
           
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Úvodní ustanovení</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">1. Úvodní ustanovení</h2>
             <p className="mb-4">
               Tyto obchodní podmínky (dále jen „Podmínky") upravují smluvní vztahy mezi provozovatelem služby 
               CraftBolt.cz – společností AC/DC MONT s.r.o., IČ: 097 44 550, se sídlem Sportovní 7, 789 63 Ruda nad Moravou 
@@ -42,7 +42,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Definice pojmů</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">2. Definice pojmů</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Zákazník</strong> – fyzická nebo právnická osoba, která prostřednictvím Služby poptává řemeslnické práce nebo služby.</li>
               <li><strong>Dodavatel</strong> – fyzická nebo právnická osoba (řemeslník, firma), která prostřednictvím Služby nabízí své služby a reaguje na poptávky Zákazníků.</li>
@@ -52,7 +52,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Popis služby</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">3. Popis služby</h2>
             <p className="mb-4">
               CraftBolt.cz umožňuje Zákazníkům zadat poptávku na řemeslnické práce a získat nabídky od ověřených 
               Dodavatelů. Dodavatelům umožňuje přístup k poptávkám a možnost nabízet své služby Zákazníkům.
@@ -70,7 +70,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Registrace a uživatelský účet</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">4. Registrace a uživatelský účet</h2>
             <p className="mb-4">
               Pro využívání Služby je nutná registrace. Uživatel je povinen uvést pravdivé a úplné údaje.
             </p>
@@ -84,7 +84,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Tarify a platební podmínky</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">5. Tarify a platební podmínky</h2>
             <p className="mb-4">
               Služba nabízí následující tarify:
             </p>
@@ -105,7 +105,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Práva a povinnosti Zákazníka</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">6. Práva a povinnosti Zákazníka</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>Zákazník je povinen zadávat poptávky pravdivě a s vážným úmyslem realizace.</li>
               <li>Zákazník nesmí zneužívat Službu k monitoringu trhu, nekalé soutěži nebo jiným negativním účelům.</li>
@@ -115,7 +115,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Práva a povinnosti Dodavatele</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">7. Práva a povinnosti Dodavatele</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>Dodavatel je povinen uvádět pravdivé informace o své činnosti a kvalifikaci.</li>
               <li>Dodavatel nesmí kontaktovat Zákazníky za jiným účelem než je nabídka služeb souvisejících s poptávkou.</li>
@@ -126,7 +126,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Odpovědnost Provozovatele</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">8. Odpovědnost Provozovatele</h2>
             <p className="mb-4">
               Provozovatel pouze zprostředkovává kontakt mezi Zákazníkem a Dodavatelem. Provozovatel nenese 
               odpovědnost za:
@@ -140,7 +140,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Ochrana osobních údajů</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">9. Ochrana osobních údajů</h2>
             <p className="mb-4">
               Provozovatel zpracovává osobní údaje Uživatelů v souladu s nařízením GDPR a zákonem o ochraně 
               osobních údajů. Podrobnosti jsou uvedeny v samostatném dokumentu Zásady ochrany osobních údajů.
@@ -151,7 +151,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Ukončení služby</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">10. Ukončení služby</h2>
             <p className="mb-4">
               Uživatel může kdykoliv zrušit svůj účet v nastavení profilu nebo kontaktováním podpory.
             </p>
@@ -167,7 +167,7 @@ const TermsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Závěrečná ustanovení</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">11. Závěrečná ustanovení</h2>
             <p className="mb-4">
               Tyto Podmínky se řídí právním řádem České republiky.
             </p>
@@ -179,7 +179,7 @@ const TermsPage = () => {
               V případě sporů se smluvní strany pokusí o smírné řešení. Pokud to nebude možné, budou spory 
               řešeny u příslušného soudu v České republice.
             </p>
-            <p className="text-sm text-gray-500 mt-8">
+            <p className="text-sm text-zinc-500 mt-8">
               Tyto obchodní podmínky nabývají účinnosti dnem 1. 4. 2026.
             </p>
           </section>
@@ -190,7 +190,7 @@ const TermsPage = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 px-4 mt-12">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="text-zinc-400 text-sm">
             © 2026 CraftBolt. Všechna práva vyhrazena.
           </p>
         </div>

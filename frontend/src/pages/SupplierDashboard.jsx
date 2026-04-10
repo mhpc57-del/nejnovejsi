@@ -162,7 +162,7 @@ const SupplierDashboard = () => {
   const tabs = [
     { id: 'available', label: 'Dostupné', count: availableDemands.length, color: 'bg-green-500', textColor: 'text-green-600', borderColor: 'border-green-500', bgLight: 'bg-green-50' },
     { id: 'in_progress', label: 'Rozdělané', count: inProgress.length, color: 'bg-red-500', textColor: 'text-red-600', borderColor: 'border-red-500', bgLight: 'bg-red-50' },
-    { id: 'completed', label: 'Dokončené', count: completed.length, color: 'bg-gray-500', textColor: 'text-gray-600', borderColor: 'border-gray-500', bgLight: 'bg-gray-50' },
+    { id: 'completed', label: 'Dokončené', count: completed.length, color: 'bg-zinc-50 dark:bg-zinc-800/500', textColor: 'text-zinc-600 dark:text-zinc-400', borderColor: 'border-gray-500', bgLight: 'bg-zinc-50 dark:bg-zinc-800/50' },
     { id: 'cancelled', label: 'Nedokončené', count: cancelled.length, color: 'bg-orange-500', textColor: 'text-orange-600', borderColor: 'border-orange-500', bgLight: 'bg-orange-50' },
   ];
 
@@ -170,16 +170,16 @@ const SupplierDashboard = () => {
 
   const renderDemandCard = (demand, type) => (
     <Link key={demand.id} to={`/zakazka/${demand.id}`}
-      className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+      className="block p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors border-b border-zinc-200/80 dark:border-zinc-800 last:border-0"
       data-testid={`demand-${type}-${demand.id}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+            <h3 className="font-semibold text-zinc-900 dark:text-white">{demand.title}</h3>
             <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-sm">{demand.category}</span>
           </div>
-          <p className="text-sm text-gray-900 line-clamp-1 mb-2">{demand.description}</p>
-          <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap">
+          <p className="text-sm text-zinc-900 dark:text-white line-clamp-1 mb-2">{demand.description}</p>
+          <div className="flex items-center gap-3 text-sm text-zinc-700 dark:text-zinc-300 flex-wrap">
             <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
             <span className="flex items-center gap-1"><User className="w-4 h-4" />{demand.customer_name}</span>
             <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
@@ -212,7 +212,7 @@ const SupplierDashboard = () => {
     <div>
       {/* Map for available demands */}
       {availableDemands.length > 0 && availableDemands.some(d => d.latitude && d.longitude) && (
-        <div className="rounded-xl overflow-hidden border border-gray-200 mb-4 h-80" data-testid="available-map">
+        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 mb-4 h-80" data-testid="available-map">
           <MapContainer center={myLocation ? [myLocation.lat, myLocation.lng] : [49.8, 15.5]} zoom={9}
             style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
@@ -229,20 +229,20 @@ const SupplierDashboard = () => {
       {availableDemands.length === 0 ? (
         <div className="p-8 text-center">
           <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-700">Momentálně nejsou dostupné žádné zakázky ve vašich kategoriích</p>
+          <p className="text-zinc-700 dark:text-zinc-300">Momentálně nejsou dostupné žádné zakázky ve vašich kategoriích</p>
         </div>
       ) : (
         <div>
           {availableDemands.map(demand => (
-            <div key={demand.id} className="p-4 border-b border-gray-100 last:border-0">
+            <div key={demand.id} className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 last:border-0">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">{demand.title}</h3>
                     <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm">{demand.category}</span>
                   </div>
-                  <p className="text-sm text-gray-900 line-clamp-2 mb-2">{demand.description}</p>
-                  <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap mb-3">
+                  <p className="text-sm text-zinc-900 dark:text-white line-clamp-2 mb-2">{demand.description}</p>
+                  <div className="flex items-center gap-3 text-sm text-zinc-700 dark:text-zinc-300 flex-wrap mb-3">
                     <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
                     {demand.deadline && (
@@ -254,7 +254,7 @@ const SupplierDashboard = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/zakazka/${demand.id}`}
-                      className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                       data-testid={`view-${demand.id}`}>Detail</Link>
                     <button onClick={() => handleAcceptDemand(demand.id)}
                       className="px-3 py-1.5 bg-green-500 hover:bg-green-600 rounded-lg text-xs font-medium text-white"
@@ -274,14 +274,14 @@ const SupplierDashboard = () => {
       {inProgress.length === 0 ? (
         <div className="p-8 text-center">
           <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-700">Žádné rozdělané zakázky</p>
+          <p className="text-zinc-700 dark:text-zinc-300">Žádné rozdělané zakázky</p>
         </div>
       ) : (
         inProgress.map(demand => (
-          <div key={demand.id} className="p-4 border-b border-gray-100 last:border-0">
+          <div key={demand.id} className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 last:border-0">
             <Link to={`/zakazka/${demand.id}`} className="block" data-testid={`demand-progress-${demand.id}`}>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h3 className="font-semibold text-gray-900">{demand.title}</h3>
+                <h3 className="font-semibold text-zinc-900 dark:text-white">{demand.title}</h3>
                 <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-sm">Probíhá</span>
                 {demand.supplier_arrived && (
                   <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm flex items-center gap-1">
@@ -289,8 +289,8 @@ const SupplierDashboard = () => {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-900 line-clamp-1 mb-2">{demand.description}</p>
-              <div className="flex items-center gap-3 text-sm text-gray-700 flex-wrap">
+              <p className="text-sm text-zinc-900 dark:text-white line-clamp-1 mb-2">{demand.description}</p>
+              <div className="flex items-center gap-3 text-sm text-zinc-700 dark:text-zinc-300 flex-wrap">
                 <span className="flex items-center gap-1"><User className="w-4 h-4" />{demand.customer_name}</span>
                 <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{demand.address}</span>
               </div>
@@ -298,21 +298,21 @@ const SupplierDashboard = () => {
             {/* Progress photos + cannot complete */}
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               {(demand.progress_photos || []).map((url, i) => (
-                <div key={i} className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
+                <div key={i} className="w-12 h-12 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
                   <img src={(() => { const u = url; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="" className="w-full h-full object-cover" />
                 </div>
               ))}
-              <label className={`w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors ${uploadingPhoto === demand.id ? 'opacity-50' : ''}`}>
+              <label className={`w-12 h-12 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors ${uploadingPhoto === demand.id ? 'opacity-50' : ''}`}>
                 {uploadingPhoto === demand.id ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-orange-500"></div>
                 ) : (
-                  <Camera className="w-5 h-5 text-gray-400" />
+                  <Camera className="w-5 h-5 text-zinc-400" />
                 )}
                 <input type="file" accept="image/*" className="hidden" disabled={uploadingPhoto === demand.id}
                   onChange={(e) => handleProgressPhoto(demand.id, e.target.files[0])}
                   data-testid={`progress-photo-${demand.id}`} />
               </label>
-              <span className="text-sm text-gray-700">Přidat foto</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">Přidat foto</span>
               <div className="ml-auto">
                 <button
                   onClick={(e) => { e.preventDefault(); setCancelDialog(demand.id); }}
@@ -353,7 +353,7 @@ const SupplierDashboard = () => {
       {completed.length === 0 ? (
         <div className="p-8 text-center">
           <Check className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-700">Žádné dokončené zakázky</p>
+          <p className="text-zinc-700 dark:text-zinc-300">Žádné dokončené zakázky</p>
         </div>
       ) : (
         completed.map(demand => renderDemandCard(demand, 'completed'))
@@ -366,7 +366,7 @@ const SupplierDashboard = () => {
       {cancelled.length === 0 ? (
         <div className="p-8 text-center">
           <Warning className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-700">Žádné nedokončené zakázky</p>
+          <p className="text-zinc-700 dark:text-zinc-300">Žádné nedokončené zakázky</p>
         </div>
       ) : (
         cancelled.map(demand => renderDemandCard(demand, 'cancelled'))
@@ -489,8 +489,8 @@ const SupplierDashboard = () => {
                     className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-orange-50 transition-colors border border-orange-100"
                     data-testid={`supplier-unread-${item.demand_id}`}>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate text-sm">{item.demand_title}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.last_sender}: {item.last_message}</p>
+                      <p className="font-medium text-zinc-900 dark:text-white truncate text-sm">{item.demand_title}</p>
+                      <p className="text-xs text-zinc-500 truncate">{item.last_sender}: {item.last_message}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />
                   </Link>
@@ -549,7 +549,7 @@ const SupplierDashboard = () => {
                       </div>
                       <div className="text-left">
                         <p className={`font-semibold ${tab.textColor}`}>{tab.label}</p>
-                        <p className="text-sm text-gray-600">{tab.count} zakázek</p>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">{tab.count} zakázek</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -557,13 +557,13 @@ const SupplierDashboard = () => {
                       {activeTab === tab.id ? (
                         <CaretUp className={`w-5 h-5 ${tab.textColor}`} />
                       ) : (
-                        <CaretDown className="w-5 h-5 text-gray-400" />
+                        <CaretDown className="w-5 h-5 text-zinc-400" />
                       )}
                     </div>
                   </button>
                   {/* Tab content - expandable */}
                   {activeTab === tab.id && (
-                    <div className={`border-t ${activeTab === tab.id ? 'border-gray-200' : ''}`}>
+                    <div className={`border-t ${activeTab === tab.id ? 'border-zinc-200 dark:border-zinc-700' : ''}`}>
                       {renderTabContent(tab.id)}
                     </div>
                   )}
@@ -591,7 +591,7 @@ const SupplierDashboard = () => {
                       <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
                       <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Nedokončené</span>
                     </div>
-                    <div className="rounded-xl overflow-hidden border border-gray-200 h-80">
+                    <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
                       <MapContainer
                         center={myLocation ? [myLocation.lat, myLocation.lng] : [unique[0].latitude, unique[0].longitude]}
                         zoom={8} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
@@ -655,7 +655,7 @@ const SupplierDashboard = () => {
               </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Zakázku nemohu provést</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
               Popište prosím důvod, proč zakázku nemůžete provést. Zákazník bude o tomto informován emailem.
             </p>
             <textarea
@@ -663,14 +663,14 @@ const SupplierDashboard = () => {
               onChange={e => setCancelReason(e.target.value)}
               placeholder="Např. Po příjezdu na místo jsem zjistil, že rozsah prací je výrazně větší, než bylo popsáno v poptávce..."
               rows={4}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none mb-4"
+              className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none mb-4"
               data-testid="cannot-complete-reason"
               autoFocus
             />
             <div className="flex gap-3">
               <button
                 onClick={() => { setCancelDialog(null); setCancelReason(''); }}
-                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 py-3 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                 data-testid="cannot-complete-cancel"
               >
                 Zpět
@@ -728,7 +728,7 @@ const DeactivateSupplierModal = ({ token, onClose, onSuccess }) => {
         <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-red-600" style={{ fontFamily: 'Outfit' }}>Zrušení účtu</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors" data-testid="close-deactivate-btn">
-            <X className="w-4 h-4 text-gray-600" />
+            <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
           </button>
         </div>
         <div className="p-6">
@@ -737,12 +737,12 @@ const DeactivateSupplierModal = ({ token, onClose, onSuccess }) => {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Warning className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-center font-semibold text-gray-900 mb-2">Opravdu chcete zrušit účet?</h3>
-              <p className="text-center text-sm text-gray-500 mb-6">
+              <h3 className="text-center font-semibold text-zinc-900 dark:text-white mb-2">Opravdu chcete zrušit účet?</h3>
+              <p className="text-center text-sm text-zinc-500 mb-6">
                 Váš účet bude deaktivován. Nebudete se moci přihlásit, dokud administrátor účet neobnoví. Vaše data zůstanou zachována.
               </p>
               <div className="flex gap-3">
-                <button onClick={onClose} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-testid="cancel-deactivate-btn">
+                <button onClick={onClose} className="flex-1 py-3 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="cancel-deactivate-btn">
                   Zpět
                 </button>
                 <button onClick={() => setStep(2)} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors" data-testid="confirm-deactivate-step1-btn">
@@ -752,19 +752,19 @@ const DeactivateSupplierModal = ({ token, onClose, onSuccess }) => {
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-600 mb-4">Pro potvrzení deaktivace zadejte své heslo:</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">Pro potvrzení deaktivace zadejte své heslo:</p>
               {error && <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm mb-4">{error}</div>}
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Vaše heslo"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-4"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-4"
                 data-testid="deactivate-password-input"
                 autoFocus
               />
               <div className="flex gap-3">
-                <button onClick={() => { setStep(1); setError(''); }} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <button onClick={() => { setStep(1); setError(''); }} className="flex-1 py-3 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                   Zpět
                 </button>
                 <button onClick={handleDeactivate} disabled={loading} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50" data-testid="confirm-deactivate-final-btn">

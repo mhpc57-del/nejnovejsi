@@ -475,7 +475,7 @@ const DemandDetail = () => {
     const styles = {
       open: 'bg-green-100 text-green-700',
       in_progress: 'bg-blue-100 text-blue-700',
-      completed: 'bg-gray-100 text-gray-700',
+      completed: 'bg-zinc-100 text-zinc-700',
       cancelled: 'bg-red-100 text-red-700'
     };
     const labels = {
@@ -500,7 +500,7 @@ const DemandDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     );
@@ -508,9 +508,9 @@ const DemandDetail = () => {
 
   if (!demand) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Zakázka nenalezena</p>
+          <p className="text-zinc-500 mb-4">Zakázka nenalezena</p>
           <button onClick={() => navigate(-1)} className="text-orange-500 hover:text-orange-600">
             Zpět
           </button>
@@ -536,11 +536,11 @@ const DemandDetail = () => {
     : { lat: 49.8175 + (Math.random() * 0.1 - 0.05), lng: 15.4730 + (Math.random() * 0.1 - 0.05) };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 relative">
       {/* Chat notification toast */}
       {notificationToast && (
         <div
-          className="fixed top-4 right-4 z-[9999] bg-white rounded-2xl shadow-2xl border border-orange-200 p-4 max-w-sm animate-slide-in cursor-pointer"
+          className="fixed top-4 right-4 z-[9999] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-orange-200 p-4 max-w-sm animate-slide-in cursor-pointer"
           onClick={() => { setNotificationToast(null); setShowChat(true); }}
           data-testid="chat-notification-toast"
         >
@@ -549,12 +549,12 @@ const DemandDetail = () => {
               <ChatCircle weight="fill" className="w-5 h-5 text-orange-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900">{notificationToast.sender}</p>
-              <p className="text-sm text-gray-500 truncate">{notificationToast.text}</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">{notificationToast.sender}</p>
+              <p className="text-sm text-zinc-500 truncate">{notificationToast.text}</p>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); setNotificationToast(null); }}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-zinc-400 hover:text-zinc-600"
             >
               <X className="w-4 h-4" />
             </button>
@@ -562,18 +562,18 @@ const DemandDetail = () => {
         </div>
       )}
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-4 sticky top-0 z-40">
+      <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200/60 dark:border-zinc-800/60 px-4 sm:px-6 py-4 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto flex items-center gap-4">
           <button 
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-xl bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors"
             data-testid="back-btn"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-zinc-600" />
           </button>
           <div className="flex-1">
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">Craft</span>
+              <span className="text-xl font-bold text-zinc-900 dark:text-white">Craft</span>
               <span className="text-xl font-bold text-orange-500">Bolt</span>
             </Link>
           </div>
@@ -598,8 +598,8 @@ const DemandDetail = () => {
       <div className="max-w-5xl mx-auto p-4 sm:p-6">
         {/* Live Map */}
         {showMap && demand.status === 'in_progress' && (
-          <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-6 mb-6">
+            <h2 className="font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <NavigationArrow className="w-5 h-5 text-orange-500" />
               Live sledování
             </h2>
@@ -635,7 +635,7 @@ const DemandDetail = () => {
                 {statusNotification.message}
               </p>
             </div>
-            <button onClick={() => setStatusNotification(null)} className="text-gray-400 hover:text-gray-600" data-testid="dismiss-notification-btn">
+            <button onClick={() => setStatusNotification(null)} className="text-zinc-400 hover:text-zinc-600" data-testid="dismiss-notification-btn">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -658,28 +658,28 @@ const DemandDetail = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Demand Info */}
-            <div className="bg-white rounded-xl border border-gray-100 p-6">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-6">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{demand.title}</h1>
+                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">{demand.title}</h1>
                   <div className="flex items-center gap-3">
                     {getStatusBadge(demand.status)}
-                    <span className="text-sm text-gray-500 px-3 py-1 bg-gray-100 rounded-full">
+                    <span className="text-sm text-zinc-500 px-3 py-1 bg-zinc-100 rounded-full">
                       {demand.category}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <p className="text-gray-600 mb-6">{demand.description}</p>
+              <p className="text-zinc-600 mb-6">{demand.description}</p>
 
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <MapPin className="w-5 h-5 text-gray-400" />
+                <div className="flex items-center gap-2 text-zinc-500">
+                  <MapPin className="w-5 h-5 text-zinc-400" />
                   {demand.address}
                 </div>
-                <div className="flex items-center gap-2 text-gray-500">
-                  <Calendar className="w-5 h-5 text-gray-400" />
+                <div className="flex items-center gap-2 text-zinc-500">
+                  <Calendar className="w-5 h-5 text-zinc-400" />
                   {new Date(demand.created_at).toLocaleDateString('cs-CZ')}
                 </div>
                 {demand.budget_max && (
@@ -700,11 +700,11 @@ const DemandDetail = () => {
               {/* Financial Summary for completed demands */}
               {demand.status === 'completed' && demand.agreed_price > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-100" data-testid="completed-financial-summary">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Finanční přehled</h3>
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-3">Finanční přehled</h3>
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Dohodnutá cena</span>
-                      <span className="font-semibold text-gray-900" data-testid="agreed-price-display">
+                      <span className="text-sm text-zinc-600">Dohodnutá cena</span>
+                      <span className="font-semibold text-zinc-900 dark:text-white" data-testid="agreed-price-display">
                         {Number(demand.agreed_price).toLocaleString('cs-CZ')} Kč
                       </span>
                     </div>
@@ -717,15 +717,15 @@ const DemandDetail = () => {
                       </div>
                     )}
                     {demand.final_price > 0 && demand.final_price !== demand.agreed_price && (
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                        <span className="text-sm font-medium text-gray-900">Konečná cena</span>
+                      <div className="flex items-center justify-between pt-2 border-t border-zinc-200">
+                        <span className="text-sm font-medium text-zinc-900 dark:text-white">Konečná cena</span>
                         <span className="font-bold text-lg text-gray-900" data-testid="final-price-display">
                           {Number(demand.final_price).toLocaleString('cs-CZ')} Kč
                         </span>
                       </div>
                     )}
                     {demand.completion_type === 'blacklist' && demand.blacklist_reason && (
-                      <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="mt-2 pt-2 border-t border-zinc-200">
                         <div className="flex items-start gap-2">
                           <Warning weight="bold" className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                           <div>
@@ -736,7 +736,7 @@ const DemandDetail = () => {
                       </div>
                     )}
                     {demand.completed_at && (
-                      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-200">
+                      <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-zinc-200">
                         <span>Dokončeno</span>
                         <span data-testid="completed-at-display">{new Date(demand.completed_at).toLocaleDateString('cs-CZ')}</span>
                       </div>
@@ -753,10 +753,10 @@ const DemandDetail = () => {
                     <div className="mt-6 pt-6 border-t border-gray-100" data-testid="price-confirmation-section">
                       <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
                         <h3 className="text-sm font-semibold text-orange-700 uppercase tracking-wider mb-2">Potvrzení ceny</h3>
-                        <p className="text-sm text-gray-700 mb-1">
+                        <p className="text-sm text-zinc-700 mb-1">
                           Zákazník uvedl konečnou cenu za tuto zakázku:
                         </p>
-                        <p className="text-2xl font-bold text-gray-900 mb-4" data-testid="price-to-confirm">
+                        <p className="text-2xl font-bold text-zinc-900 dark:text-white mb-4" data-testid="price-to-confirm">
                           {Number(demand.final_price || demand.agreed_price).toLocaleString('cs-CZ')} Kč
                         </p>
                         {!showDisputeForm ? (
@@ -773,14 +773,14 @@ const DemandDetail = () => {
                         ) : (
                           <div className="space-y-3">
                             <textarea value={priceDisputeReason} onChange={e => setPriceDisputeReason(e.target.value)} rows={3}
-                              placeholder="Uveďte důvod nesouhlasu..." className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500" data-testid="dispute-reason-input" />
+                              placeholder="Uveďte důvod nesouhlasu..." className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500" data-testid="dispute-reason-input" />
                             <div className="flex gap-3">
                               <button onClick={() => handleConfirmPrice(false)} disabled={confirmingPrice || !priceDisputeReason.trim()}
                                 className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50" data-testid="submit-dispute-btn">
                                 {confirmingPrice ? 'Odesílám...' : 'Odeslat nesouhlas'}
                               </button>
                               <button onClick={() => { setShowDisputeForm(false); setPriceDisputeReason(''); }}
-                                className="px-6 py-2.5 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors">
+                                className="px-6 py-2.5 text-zinc-600 hover:bg-zinc-50 rounded-xl text-sm font-medium transition-colors">
                                 Zrušit
                               </button>
                             </div>
@@ -819,15 +819,15 @@ const DemandDetail = () => {
               {demand.status === 'completed' && (
                 <div className="mt-6 pt-6 border-t border-gray-100" data-testid="completion-photos-section">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Fotodokumentace</h3>
-                    <span className="text-xs text-gray-400">
+                    <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Fotodokumentace</h3>
+                    <span className="text-xs text-zinc-400">
                       {(demand.completion_photos || []).length} / 20 fotek
                     </span>
                   </div>
                   {(demand.completion_photos || []).length > 0 ? (
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                       {demand.completion_photos.map((photo, i) => (
-                        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 cursor-pointer"
+                        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-zinc-200 cursor-pointer"
                           onClick={() => setLightboxPhoto(photo)}>
                           <img src={`${API.replace('/api', '')}${photo.url}`} alt={`Foto ${i + 1}`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
@@ -846,11 +846,11 @@ const DemandDetail = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400 italic">Zatím žádné fotky.</p>
+                    <p className="text-sm text-zinc-400 italic">Zatím žádné fotky.</p>
                   )}
                   {(demand.completion_photos || []).length < 20 && (
                     (user?.id === demand.customer_id || user?.id === demand.assigned_supplier_id) && (
-                      <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-sm text-gray-700 cursor-pointer transition-colors" data-testid="add-post-completion-photo-btn">
+                      <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 border border-zinc-200 hover:bg-zinc-50 rounded-xl font-medium text-sm text-zinc-700 cursor-pointer transition-colors" data-testid="add-post-completion-photo-btn">
                         {uploadingPostPhoto ? (
                           <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
@@ -891,7 +891,7 @@ const DemandDetail = () => {
                 {canChat && !showChat && (
                   <button
                     onClick={() => setShowChat(true)}
-                    className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-gray-700 transition-colors flex items-center gap-2"
+                    className="px-5 py-2.5 border border-zinc-200 hover:bg-zinc-50 rounded-xl font-medium text-zinc-700 transition-colors flex items-center gap-2"
                     data-testid="start-chat-btn"
                   >
                     <ChatCircle weight="bold" className="w-5 h-5" />
@@ -921,7 +921,7 @@ const DemandDetail = () => {
                 {canEdit && (
                   <button
                     onClick={openEditModal}
-                    className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-medium text-gray-700 transition-colors flex items-center gap-2"
+                    className="px-5 py-2.5 border border-zinc-200 hover:bg-zinc-50 rounded-xl font-medium text-zinc-700 transition-colors flex items-center gap-2"
                     data-testid="edit-demand-btn"
                   >
                     <PencilSimple weight="bold" className="w-5 h-5" />
@@ -956,16 +956,16 @@ const DemandDetail = () => {
               {/* Soft Accepts display */}
               {demand.soft_accepts && demand.soft_accepts.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-100" data-testid="soft-accepts-section">
-                  <h3 className="font-semibold text-gray-900 mb-3">Nezávazné nabídky dodavatelů</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">Nezávazné nabídky dodavatelů</h3>
                   <div className="space-y-3">
                     {demand.soft_accepts.map((sa, i) => (
                       <div key={i} className="p-4 bg-orange-50 border border-orange-200 rounded-xl" data-testid={`soft-accept-${i}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <User className="w-4 h-4 text-orange-500" />
-                          <span className="font-medium text-gray-900">{sa.supplier_name}</span>
-                          <span className="text-sm text-gray-500">{new Date(sa.created_at).toLocaleDateString('cs-CZ')}</span>
+                          <span className="font-medium text-zinc-900 dark:text-white">{sa.supplier_name}</span>
+                          <span className="text-sm text-zinc-500">{new Date(sa.created_at).toLocaleDateString('cs-CZ')}</span>
                         </div>
-                        <p className="text-gray-800">{sa.reason}</p>
+                        <p className="text-zinc-800 dark:text-zinc-200">{sa.reason}</p>
                       </div>
                     ))}
                   </div>
@@ -975,15 +975,15 @@ const DemandDetail = () => {
 
             {/* Chat - shown only after clicking "Spustit chat" */}
             {canChat && (showChat || autoShowChat) && (
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                  <ChatCircle className="w-5 h-5 text-gray-400" />
-                  <h2 className="font-semibold text-gray-900">Chat</h2>
+                  <ChatCircle className="w-5 h-5 text-zinc-400" />
+                  <h2 className="font-semibold text-zinc-900 dark:text-white">Chat</h2>
                 </div>
 
                 <div className="h-80 overflow-y-auto p-4 space-y-4">
                   {messages.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                    <div className="h-full flex items-center justify-center text-zinc-400 text-sm">
                       Zatím žádné zprávy. Začněte konverzaci.
                     </div>
                   ) : (
@@ -995,9 +995,9 @@ const DemandDetail = () => {
                         <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                           msg.sender_id === user?.id 
                             ? 'bg-orange-500 text-white' 
-                            : 'bg-gray-100 text-gray-900'
+                            : 'bg-zinc-100 text-gray-900'
                         }`}>
-                          <p className={`text-xs mb-1 ${msg.sender_id === user?.id ? 'text-orange-100' : 'text-gray-500'}`}>
+                          <p className={`text-xs mb-1 ${msg.sender_id === user?.id ? 'text-orange-100' : 'text-zinc-500'}`}>
                             {msg.sender_name}
                           </p>
                           <p className="text-sm">{msg.content}</p>
@@ -1014,7 +1014,7 @@ const DemandDetail = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Napište zprávu..."
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="flex-1 px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     data-testid="message-input"
                   />
                   <button
@@ -1033,34 +1033,34 @@ const DemandDetail = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Customer Info */}
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Zákazník</h3>
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5">
+              <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Zákazník</h3>
               <Link to={`/profil/${demand.customer_id}`} className="flex items-center gap-3 group cursor-pointer" data-testid="customer-profile-link">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-orange-100 transition-colors">
-                  <User className="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                  <User className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{customerDisplayName || demand.customer_name}</p>
-                  <p className="text-sm text-gray-500">Zákazník — zobrazit profil</p>
+                  <p className="font-medium text-zinc-900 dark:text-white group-hover:text-orange-600 transition-colors">{customerDisplayName || demand.customer_name}</p>
+                  <p className="text-sm text-zinc-500">Zákazník — zobrazit profil</p>
                 </div>
               </Link>
             </div>
 
             {/* Supplier Info */}
             {demand.assigned_supplier_id && (
-              <div className="bg-white rounded-xl border border-gray-100 p-5">
-                <h3 className="font-semibold text-gray-900 mb-4">Přiřazený dodavatel</h3>
+              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5">
+                <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Přiřazený dodavatel</h3>
                 <Link to={`/profil/${demand.assigned_supplier_id}`} className="flex items-center gap-3 group cursor-pointer" data-testid="supplier-profile-link">
                   <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
                     <User className="w-6 h-6 text-orange-500 group-hover:text-orange-700 transition-colors" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{demand.assigned_supplier_name}</p>
-                    <p className="text-sm text-gray-500">Dodavatel — zobrazit profil</p>
+                    <p className="font-medium text-zinc-900 dark:text-white group-hover:text-orange-600 transition-colors">{demand.assigned_supplier_name}</p>
+                    <p className="text-sm text-zinc-500">Dodavatel — zobrazit profil</p>
                   </div>
                 </Link>
                 {demand.accepted_at && (
-                  <p className="text-xs text-gray-400 mt-3">
+                  <p className="text-xs text-zinc-400 mt-3">
                     Přijato: {new Date(demand.accepted_at).toLocaleDateString('cs-CZ')}
                   </p>
                 )}
@@ -1069,9 +1069,9 @@ const DemandDetail = () => {
 
             {/* Quick Map Preview (when not in full map mode) */}
             {demand.status === 'in_progress' && !showMap && (
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">Poloha</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Poloha</h3>
                   <button
                     onClick={() => setShowMap(true)}
                     className="text-orange-500 hover:text-orange-600 text-sm font-medium"
@@ -1080,10 +1080,10 @@ const DemandDetail = () => {
                     Zobrazit mapu
                   </button>
                 </div>
-                <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                <div className="aspect-video bg-zinc-100 flex items-center justify-center">
                   <div className="text-center p-4">
                     <NavigationArrow className="w-12 h-12 text-orange-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">Klikněte pro sledování polohy</p>
+                    <p className="text-sm text-zinc-500">Klikněte pro sledování polohy</p>
                   </div>
                 </div>
               </div>
@@ -1096,50 +1096,50 @@ const DemandDetail = () => {
       {/* Complete Demand Dialog */}
       {showCompleteDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowCompleteDialog(false); setCompleteType(null); }}>
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Dokončení zakázky</h3>
-            <p className="text-sm text-gray-500 mb-5">Vyberte, jak byla zakázka dokončena:</p>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Dokončení zakázky</h3>
+            <p className="text-sm text-zinc-500 mb-5">Vyberte, jak byla zakázka dokončena:</p>
 
             {!completeType && (
               <div className="space-y-3">
                 <button onClick={() => setCompleteType('standard')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all"
+                  className="w-full text-left p-4 rounded-xl border-2 border-zinc-200 hover:border-green-500 hover:bg-green-50 transition-all"
                   data-testid="complete-standard-btn">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Check weight="bold" className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Dokončeno za sjednanou cenu</p>
-                      <p className="text-sm text-gray-500 mt-0.5">Zakázka byla v pořádku dokončena za sjednanou cenu dle domluvy.</p>
+                      <p className="font-semibold text-zinc-900 dark:text-white">Dokončeno za sjednanou cenu</p>
+                      <p className="text-sm text-zinc-500 mt-0.5">Zakázka byla v pořádku dokončena za sjednanou cenu dle domluvy.</p>
                     </div>
                   </div>
                 </button>
 
                 <button onClick={() => setCompleteType('price_increase')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                  className="w-full text-left p-4 rounded-xl border-2 border-zinc-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
                   data-testid="complete-price-increase-btn">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <CurrencyCircleDollar weight="bold" className="w-4 h-4 text-orange-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Dokončeno s navýšením ceny</p>
-                      <p className="text-sm text-gray-500 mt-0.5">Zakázka byla v pořádku dokončena s navýšením ceny oproti původní domluvě.</p>
+                      <p className="font-semibold text-zinc-900 dark:text-white">Dokončeno s navýšením ceny</p>
+                      <p className="text-sm text-zinc-500 mt-0.5">Zakázka byla v pořádku dokončena s navýšením ceny oproti původní domluvě.</p>
                     </div>
                   </div>
                 </button>
 
                 <button onClick={() => setCompleteType('blacklist')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 hover:bg-red-50 transition-all"
+                  className="w-full text-left p-4 rounded-xl border-2 border-zinc-200 hover:border-red-500 hover:bg-red-50 transition-all"
                   data-testid="complete-blacklist-btn">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Warning weight="bold" className="w-4 h-4 text-red-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Dokončeno — příště nebudu poskytovat</p>
-                      <p className="text-sm text-gray-500 mt-0.5">Zakázka dokončena, ale příště už tomuto zákazníkovi služby poskytovat nebudu.</p>
+                      <p className="font-semibold text-zinc-900 dark:text-white">Dokončeno — příště nebudu poskytovat</p>
+                      <p className="text-sm text-zinc-500 mt-0.5">Zakázka dokončena, ale příště už tomuto zákazníkovi služby poskytovat nebudu.</p>
                     </div>
                   </div>
                 </button>
@@ -1151,17 +1151,17 @@ const DemandDetail = () => {
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
                   <p className="text-green-800 font-medium">Zakázka bude označena jako dokončená za sjednanou cenu.</p>
                 </div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
                 <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
                   placeholder="Zadejte cenu zakázky v Kč"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-4"
                   data-testid="agreed-price-input" autoFocus />
                 {/* Photo upload section */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fotodokumentace (nepovinné)</label>
                   <div className="flex flex-wrap gap-2">
                     {completePhotos.map((url, i) => (
-                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-200">
                         <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
                         <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
                           className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5" data-testid={`remove-complete-photo-${i}`}>
@@ -1170,11 +1170,11 @@ const DemandDetail = () => {
                       </div>
                     ))}
                     {completePhotos.length < 20 && (
-                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-complete-photo-btn">
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-complete-photo-btn">
                         {uploadingCompletePhoto ? (
                           <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <Camera className="w-5 h-5 text-gray-400" />
+                          <Camera className="w-5 h-5 text-zinc-400" />
                         )}
                         <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
                           accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
@@ -1182,11 +1182,11 @@ const DemandDetail = () => {
                       </label>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                  <p className="text-xs text-zinc-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setCompleteType(null)}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    className="flex-1 py-3 px-4 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50">
                     Zpět
                   </button>
                   <button onClick={handleCompleteDemand} disabled={completing || !completeAgreedPrice}
@@ -1203,28 +1203,28 @@ const DemandDetail = () => {
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
                   <p className="text-orange-800 font-medium">Zakázka dokončena s navýšením ceny</p>
                 </div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Původně sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Původně sjednaná cena (Kč) <span className="text-red-500">*</span></label>
                 <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
                   placeholder="Původní cena v Kč"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
                   data-testid="agreed-price-input" autoFocus />
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">O kolik bylo navýšení? (Kč) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">O kolik bylo navýšení? (Kč) <span className="text-red-500">*</span></label>
                 <input type="number" value={completePriceIncrease} onChange={e => setCompletePriceIncrease(e.target.value)}
                   placeholder="Částka navýšení v Kč"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
                   data-testid="price-increase-input" />
                 {completeAgreedPrice && completePriceIncrease && (
-                  <div className="bg-gray-50 rounded-xl p-3 mb-4 text-sm">
-                    <span className="text-gray-600">Konečná cena: </span>
-                    <span className="font-bold text-gray-900">{(parseFloat(completeAgreedPrice) + parseFloat(completePriceIncrease)).toLocaleString('cs-CZ')} Kč</span>
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 mb-4 text-sm">
+                    <span className="text-zinc-600">Konečná cena: </span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{(parseFloat(completeAgreedPrice) + parseFloat(completePriceIncrease)).toLocaleString('cs-CZ')} Kč</span>
                   </div>
                 )}
                 {/* Photo upload section */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fotodokumentace (nepovinné)</label>
                   <div className="flex flex-wrap gap-2">
                     {completePhotos.map((url, i) => (
-                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-200">
                         <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
                         <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
                           className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5">
@@ -1233,11 +1233,11 @@ const DemandDetail = () => {
                       </div>
                     ))}
                     {completePhotos.length < 20 && (
-                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
                         {uploadingCompletePhoto ? (
                           <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <Camera className="w-5 h-5 text-gray-400" />
+                          <Camera className="w-5 h-5 text-zinc-400" />
                         )}
                         <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
                           accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
@@ -1245,11 +1245,11 @@ const DemandDetail = () => {
                       </label>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                  <p className="text-xs text-zinc-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => { setCompleteType(null); setCompletePriceIncrease(''); setCompleteAgreedPrice(''); }}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    className="flex-1 py-3 px-4 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50">
                     Zpět
                   </button>
                   <button onClick={handleCompleteDemand} disabled={completing || !completePriceIncrease || !completeAgreedPrice}
@@ -1266,23 +1266,23 @@ const DemandDetail = () => {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
                   <p className="text-red-800 font-medium">Zakázka dokončena — zákazník bude označen</p>
                 </div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Sjednaná cena (Kč) <span className="text-red-500">*</span></label>
                 <input type="number" value={completeAgreedPrice} onChange={e => setCompleteAgreedPrice(e.target.value)}
                   placeholder="Cena zakázky v Kč"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 mb-3"
                   data-testid="agreed-price-input" autoFocus />
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Důvod: <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Důvod: <span className="text-red-500">*</span></label>
                 <textarea value={completeBlacklistReason} onChange={e => setCompleteBlacklistReason(e.target.value)}
                   placeholder="Popište důvod..."
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none mb-4"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none mb-4"
                   data-testid="blacklist-reason-input" />
                 {/* Photo upload section */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotodokumentace (nepovinné)</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fotodokumentace (nepovinné)</label>
                   <div className="flex flex-wrap gap-2">
                     {completePhotos.map((url, i) => (
-                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                      <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-200">
                         <img src={`${API.replace('/api', '')}${url}`} alt="" className="w-full h-full object-cover" />
                         <button onClick={() => setCompletePhotos(prev => prev.filter((_, idx) => idx !== i))}
                           className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5">
@@ -1291,11 +1291,11 @@ const DemandDetail = () => {
                       </div>
                     ))}
                     {completePhotos.length < 20 && (
-                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
                         {uploadingCompletePhoto ? (
                           <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <Camera className="w-5 h-5 text-gray-400" />
+                          <Camera className="w-5 h-5 text-zinc-400" />
                         )}
                         <input type="file" className="hidden" onChange={handleCompletePhotoUpload}
                           accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
@@ -1303,11 +1303,11 @@ const DemandDetail = () => {
                       </label>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
+                  <p className="text-xs text-zinc-400 mt-1">Max 20 fotek. Můžete přidat i po dokončení.</p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => { setCompleteType(null); setCompleteBlacklistReason(''); setCompleteAgreedPrice(''); }}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+                    className="flex-1 py-3 px-4 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50">
                     Zpět
                   </button>
                   <button onClick={handleCompleteDemand} disabled={completing || !completeBlacklistReason.trim() || !completeAgreedPrice}
@@ -1321,7 +1321,7 @@ const DemandDetail = () => {
 
             {!completeType && (
               <button onClick={() => setShowCompleteDialog(false)}
-                className="w-full mt-4 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                className="w-full mt-4 py-3 px-4 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50"
                 data-testid="cancel-complete-btn">
                 Zrušit
               </button>
@@ -1369,81 +1369,81 @@ const DemandDetail = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setShowEditModal(false)}>
           <div className="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="edit-demand-modal">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="font-bold text-gray-900 text-lg">Upravit zakázku</h2>
-              <button onClick={() => setShowEditModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-edit-modal-btn">
-                <X className="w-4 h-4 text-gray-600" />
+              <h2 className="font-bold text-zinc-900 dark:text-white text-lg">Upravit zakázku</h2>
+              <button onClick={() => setShowEditModal(false)} className="w-8 h-8 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center" data-testid="close-edit-modal-btn">
+                <X className="w-4 h-4 text-zinc-600" />
               </button>
             </div>
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Název</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Název</label>
                 <input
                   type="text"
                   value={editForm.title || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   data-testid="edit-demand-title"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Popis</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Popis</label>
                 <textarea
                   value={editForm.description || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
                   rows={4}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
                   data-testid="edit-demand-description"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Adresa</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Adresa</label>
                 <input
                   type="text"
                   value={editForm.address || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   data-testid="edit-demand-address"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rozpočet od (Kč)</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">Rozpočet od (Kč)</label>
                   <input
                     type="number"
                     value={editForm.budget_min || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, budget_min: e.target.value ? parseFloat(e.target.value) : null }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     data-testid="edit-demand-budget-min"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rozpočet do (Kč)</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">Rozpočet do (Kč)</label>
                   <input
                     type="number"
                     value={editForm.budget_max || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, budget_max: e.target.value ? parseFloat(e.target.value) : null }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     data-testid="edit-demand-budget-max"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Termín</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Termín</label>
                 <input
                   type="date"
                   value={editForm.deadline || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, deadline: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   data-testid="edit-demand-deadline"
                 />
               </div>
 
               {/* Photos */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fotografie</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-2">Fotografie</label>
                 <div className="flex flex-wrap gap-3">
                   {(editForm.images || []).map((img, i) => (
-                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200">
                       <img src={(() => { const u = img; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="" className="w-full h-full object-cover" />
                       <button
                         type="button"
@@ -1455,13 +1455,13 @@ const DemandDetail = () => {
                       </button>
                     </div>
                   ))}
-                  <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-edit-photo-btn">
+                  <label className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="add-edit-photo-btn">
                     {uploadingEditPhoto ? (
                       <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div>
                     ) : (
                       <>
-                        <Plus className="w-5 h-5 text-gray-400" />
-                        <span className="text-xs text-gray-400 mt-1">Přidat</span>
+                        <Plus className="w-5 h-5 text-zinc-400" />
+                        <span className="text-xs text-zinc-400 mt-1">Přidat</span>
                       </>
                     )}
                     <input
@@ -1478,7 +1478,7 @@ const DemandDetail = () => {
               <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-3 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
                 >
                   Zrušit
                 </button>
@@ -1538,21 +1538,21 @@ const ReviewModal = ({ demandId, token, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-md">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Ohodnoťte spolupráci</h2>
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Ohodnoťte spolupráci</h2>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+            className="w-10 h-10 rounded-xl bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-zinc-600" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Star rating */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Hodnocení hvězdičkami</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-3">Hodnocení hvězdičkami</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
@@ -1564,7 +1564,7 @@ const ReviewModal = ({ demandId, token, onClose }) => {
                 >
                   <Star 
                     weight={value <= rating ? 'fill' : 'regular'} 
-                    className={`w-8 h-8 ${value <= rating ? 'text-orange-500' : 'text-gray-300'}`}
+                    className={`w-8 h-8 ${value <= rating ? 'text-orange-500' : 'text-zinc-300'}`}
                   />
                 </button>
               ))}
@@ -1573,7 +1573,7 @@ const ReviewModal = ({ demandId, token, onClose }) => {
 
           {/* Percentage slider */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Celkové hodnocení</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">Celkové hodnocení</label>
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <input
@@ -1588,7 +1588,7 @@ const ReviewModal = ({ demandId, token, onClose }) => {
                   }}
                   data-testid="rating-percentage-slider"
                 />
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <div className="flex justify-between text-xs text-zinc-400 mt-1">
                   <span>0%</span>
                   <span>50%</span>
                   <span>100%</span>
@@ -1598,7 +1598,7 @@ const ReviewModal = ({ demandId, token, onClose }) => {
                 {ratingPercentage}%
               </div>
             </div>
-            <div className="mt-2 h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div className="mt-2 h-3 bg-zinc-100 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-300 ${getPercentageBarColor(ratingPercentage)}`}
                 style={{ width: `${ratingPercentage}%` }}
@@ -1607,13 +1607,13 @@ const ReviewModal = ({ demandId, token, onClose }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Komentář</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">Komentář</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Popište svou zkušenost..."
               rows={4}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
               data-testid="review-comment-input"
             />
           </div>
@@ -1622,7 +1622,7 @@ const ReviewModal = ({ demandId, token, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 py-3 border border-zinc-200 rounded-xl font-medium text-zinc-700 hover:bg-zinc-50"
             >
               Přeskočit
             </button>
@@ -1655,9 +1655,9 @@ const SoftAcceptModal = ({ onSelect, onClose, loading }) => (
   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
     <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="soft-accept-modal">
       <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="font-bold text-gray-900 text-lg">Nezávazné přijetí — vyberte důvod</h2>
-        <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-soft-accept-btn">
-          <X className="w-4 h-4 text-gray-600" />
+        <h2 className="font-bold text-zinc-900 dark:text-white text-lg">Nezávazné přijetí — vyberte důvod</h2>
+        <button onClick={onClose} className="w-8 h-8 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center" data-testid="close-soft-accept-btn">
+          <X className="w-4 h-4 text-zinc-600" />
         </button>
       </div>
       <div className="p-5 space-y-3">
@@ -1666,7 +1666,7 @@ const SoftAcceptModal = ({ onSelect, onClose, loading }) => (
             key={i}
             onClick={() => onSelect(reason)}
             disabled={loading}
-            className="w-full text-left p-4 border border-gray-200 hover:border-orange-400 hover:bg-orange-50 rounded-xl transition-all text-gray-800 disabled:opacity-50"
+            className="w-full text-left p-4 border border-zinc-200 hover:border-orange-400 hover:bg-orange-50 rounded-xl transition-all text-zinc-800 dark:text-zinc-200 disabled:opacity-50"
             data-testid={`soft-accept-reason-${i}`}
           >
             <span className="font-medium text-orange-500 mr-2">{i + 1}.</span>

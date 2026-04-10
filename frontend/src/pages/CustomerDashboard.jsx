@@ -90,7 +90,7 @@ const CustomerDashboard = () => {
     const styles = {
       open: 'bg-green-100 text-green-700',
       in_progress: 'bg-blue-100 text-blue-700',
-      completed: 'bg-gray-100 text-gray-700',
+      completed: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
       cancelled: 'bg-red-100 text-red-700'
     };
     const labels = {
@@ -299,7 +299,7 @@ const CustomerDashboard = () => {
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Probíhající</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
               </div>
-              <div className="rounded-xl overflow-hidden border border-gray-200 h-80">
+              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
                 <MapContainer 
                   center={(() => {
                     const withCoords = demands.filter(d => d.latitude && d.longitude);
@@ -353,7 +353,7 @@ const CustomerDashboard = () => {
                     if (filtered.length === 0) return (
                       <div className="p-10 text-center">
                         <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-4">Žádné poptávky v této kategorii</p>
+                        <p className="text-zinc-500 mb-4">Žádné poptávky v této kategorii</p>
                         <button onClick={() => { setActiveFilter(null); setShowNewDemand(true); }} className="text-orange-500 hover:text-orange-600 font-medium" data-testid="empty-new-demand-btn">
                           Vytvořit poptávku
                         </button>
@@ -363,12 +363,12 @@ const CustomerDashboard = () => {
                       <div className="divide-y divide-gray-100">
                         {filtered.map((demand) => (
                           <Link key={demand.id} to={`/zakazka/${demand.id}`}
-                            className="block p-5 hover:bg-gray-50 transition-colors"
+                            className="block p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                             data-testid={`demand-item-${demand.id}`}>
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="font-semibold text-gray-900 truncate">{demand.title}</h3>
+                                  <h3 className="font-semibold text-zinc-900 dark:text-white truncate">{demand.title}</h3>
                                   {getStatusBadge(demand.status)}
                                   {(demand.soft_accepts?.length > 0 || demand.status === 'in_progress') && demand.status !== 'completed' && demand.status !== 'cancelled' && (
                                     <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" data-testid={`response-badge-${demand.id}`}>
@@ -377,8 +377,8 @@ const CustomerDashboard = () => {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-500 line-clamp-2 mb-3">{demand.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-gray-400">
+                                <p className="text-sm text-zinc-500 line-clamp-2 mb-3">{demand.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-zinc-400">
                                   <span className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4" />
                                     {demand.address}
@@ -406,7 +406,7 @@ const CustomerDashboard = () => {
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-800/60 lg:hidden z-40" data-testid="mobile-bottom-nav">
         <div className="flex items-center justify-around py-2">
-          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-gray-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
+          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
             <House className="w-6 h-6" />
             <span className="text-[10px] font-medium">Domů</span>
           </Link>
@@ -638,14 +638,14 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Nová poptávka</h2>
+        <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Nová poptávka</h2>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center transition-colors"
             data-testid="close-modal-btn"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
           </button>
         </div>
 
@@ -657,20 +657,20 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Název zakázky</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Název zakázky</label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="např. Oprava elektroinstalace"
               required
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
               data-testid="demand-title-input"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategorie</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Kategorie</label>
             <div className="relative">
               <input
                 type="text"
@@ -678,17 +678,17 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 onChange={(e) => { setCatSearch(e.target.value); setCatDropdownOpen(true); if (!e.target.value) setFormData(prev => ({ ...prev, category: '' })); }}
                 onFocus={() => setCatDropdownOpen(true)}
                 placeholder="Hledat kategorii..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="demand-category-search"
               />
               {formData.category && !catSearch && (
                 <button type="button" onClick={() => { setFormData(prev => ({ ...prev, category: '' })); setCatSearch(''); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">&times;</button>
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-400">&times;</button>
               )}
               {catDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setCatDropdownOpen(false)} />
-                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                     {(() => {
                       const searchLower = catSearch.toLowerCase();
                       const hasGroups = Object.keys(groupedCategories).length > 0;
@@ -696,17 +696,17 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                         ? Object.entries(groupedCategories).map(([g, items]) => [g, catSearch ? items.filter(c => c.toLowerCase().includes(searchLower)) : items]).filter(([, items]) => items.length > 0)
                         : [['', catSearch ? categories.filter(c => c.toLowerCase().includes(searchLower)) : categories]];
                       const total = entries.reduce((s, [, items]) => s + items.length, 0);
-                      if (total === 0) return <p className="px-4 py-3 text-sm text-gray-400 text-center">Žádná kategorie nenalezena</p>;
+                      if (total === 0) return <p className="px-4 py-3 text-sm text-zinc-400 text-center">Žádná kategorie nenalezena</p>;
                       return entries.map(([group, items]) => (
                         <div key={group || 'all'}>
                           {group && (
-                            <div className="sticky top-0 bg-gray-50 z-10 px-4 py-1.5 border-b border-gray-100">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{group}</span>
+                            <div className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10 px-4 py-1.5 border-b border-zinc-200/80 dark:border-zinc-800">
+                              <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{group}</span>
                             </div>
                           )}
                           {items.map((cat) => (
                             <button key={cat} type="button" onClick={() => { setFormData(prev => ({ ...prev, category: cat })); setCatSearch(''); setCatDropdownOpen(false); }}
-                              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${formData.category === cat ? 'bg-orange-500 text-white hover:bg-orange-600' : 'text-gray-700'}`}
+                              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${formData.category === cat ? 'bg-orange-500 text-white hover:bg-orange-600' : 'text-zinc-700 dark:text-zinc-300'}`}
                               data-testid={`demand-cat-option-${cat.replace(/\s+/g, '-').toLowerCase()}`}>
                               {cat}
                             </button>
@@ -722,23 +722,23 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Popis práce</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Popis práce</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Popište co potřebujete..."
               required
               rows={4}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+              className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
               data-testid="demand-description-input"
             />
           </div>
 
           {/* Address with autocomplete */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa realizace</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Adresa realizace</label>
             <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 z-10" />
               <input
                 type="text"
                 value={formData.address}
@@ -747,18 +747,18 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 400)}
                 placeholder="Začněte psát adresu..."
                 required
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full pl-12 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="demand-address-input"
               />
               {/* Suggestions dropdown */}
               {showSuggestions && addressSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg max-h-48 overflow-y-auto" data-testid="address-suggestions">
+                <div className="absolute top-full left-0 right-0 z-50 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl mt-1 shadow-lg max-h-48 overflow-y-auto" data-testid="address-suggestions">
                   {addressSuggestions.map((s, i) => (
                     <button
                       key={i}
                       type="button"
                       onMouseDown={() => selectSuggestion(s)}
-                      className="w-full text-left px-4 py-3 hover:bg-orange-50 text-sm text-gray-700 border-b border-gray-50 last:border-0 flex items-start gap-2"
+                      className="w-full text-left px-4 py-3 hover:bg-orange-50 text-sm text-zinc-700 dark:text-zinc-300 border-b border-gray-50 last:border-0 flex items-start gap-2"
                       data-testid={`address-suggestion-${i}`}
                     >
                       <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
@@ -775,7 +775,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 type="button"
                 onClick={useCurrentLocation}
                 disabled={geoLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-orange-400 hover:text-orange-600 transition-colors disabled:opacity-50"
                 data-testid="use-current-location-btn"
               >
                 {geoLoading ? (
@@ -788,7 +788,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
               <button
                 type="button"
                 onClick={toggleMap}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-orange-400 hover:text-orange-600 transition-colors"
                 data-testid="toggle-map-btn"
               >
                 <MapPin className="w-3.5 h-3.5" />
@@ -798,7 +798,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
             {/* Coordinates info */}
             {formData.latitude && formData.longitude && (
-              <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+              <p className="text-xs text-zinc-400 mt-1.5 flex items-center gap-1">
                 <Check className="w-3 h-3 text-green-500" />
                 Poloha: {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
               </p>
@@ -806,7 +806,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
             {/* Interactive map */}
             {showMap && (
-              <div className="mt-3 rounded-xl overflow-hidden border border-gray-200" data-testid="demand-location-map">
+              <div className="mt-3 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700" data-testid="demand-location-map">
                 <DemandRadiusMap
                   key={mapKey}
                   lat={formData.latitude || 49.8175}
@@ -830,8 +830,8 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Supplier radius */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Okruh dodavatelů</label>
-            <p className="text-xs text-gray-400 mb-2">Pouze dodavatelé působící v tomto okruhu od místa zakázky budou osloveni</p>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Okruh dodavatelů</label>
+            <p className="text-xs text-zinc-400 mb-2">Pouze dodavatelé působící v tomto okruhu od místa zakázky budou osloveni</p>
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -854,7 +854,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Budget */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Předpokládaná cena (Kč)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Předpokládaná cena (Kč)</label>
             <div className="flex items-center gap-3">
               <div className="flex-1 relative">
                 <input
@@ -862,18 +862,18 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                   placeholder="Od"
                   value={formData.budget_min}
                   onChange={(e) => setFormData(prev => ({ ...prev, budget_min: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                  className="w-full px-3 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
                   data-testid="demand-budget-min"
                 />
               </div>
-              <span className="text-gray-400 text-sm">—</span>
+              <span className="text-zinc-400 text-sm">—</span>
               <div className="flex-1 relative">
                 <input
                   type="number"
                   placeholder="Do"
                   value={formData.budget_max}
                   onChange={(e) => setFormData(prev => ({ ...prev, budget_max: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                  className="w-full px-3 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
                   data-testid="demand-budget-max"
                 />
               </div>
@@ -882,10 +882,10 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Photo upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Fotografie (max 5)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Fotografie (max 5)</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {uploadedImages.map((url, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 group">
                   <img src={(() => { const u = url; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -898,13 +898,13 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 </div>
               ))}
               {uploadedImages.length < 5 && (
-                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="upload-photo-btn">
+                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="upload-photo-btn">
                   {uploading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div>
                   ) : (
                     <>
-                      <ImageIcon className="w-5 h-5 text-gray-400" />
-                      <span className="text-[10px] text-gray-400 mt-1">Přidat</span>
+                      <ImageIcon className="w-5 h-5 text-zinc-400" />
+                      <span className="text-[10px] text-zinc-400 mt-1">Přidat</span>
                     </>
                   )}
                   <input
@@ -918,12 +918,12 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 </label>
               )}
             </div>
-            <p className="text-xs text-gray-400">JPEG, PNG nebo WebP. Max 10 MB na soubor.</p>
+            <p className="text-xs text-zinc-400">JPEG, PNG nebo WebP. Max 10 MB na soubor.</p>
           </div>
 
           {/* Payment method */}
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1.5">Způsob platby</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1.5">Způsob platby</label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { value: 'cash', label: 'Hotově' },
@@ -937,7 +937,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                   className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all ${
                     formData.payment_method === opt.value
                       ? 'border-orange-500 bg-orange-50 text-orange-600'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                      : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-zinc-600'
                   }`}
                   data-testid={`payment-${opt.value}-btn`}
                 >
@@ -949,7 +949,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Deadline */}
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1.5">Požadovaný termín realizace</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1.5">Požadovaný termín realizace</label>
             <div className="flex gap-2 mb-2">
               <button
                 type="button"
@@ -957,7 +957,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
                   formData.deadline === 'ASAP'
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                 }`}
                 data-testid="deadline-asap-btn"
               >
@@ -969,7 +969,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
                 className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
                   formData.deadline === 'URGENT'
                     ? 'border-red-500 bg-red-50 text-red-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                 }`}
                 data-testid="deadline-urgent-btn"
               >
@@ -981,17 +981,17 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
               value={formData.deadline === 'ASAP' || formData.deadline === 'URGENT' ? '' : formData.deadline}
               onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-gray-900"
+              className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-zinc-900 dark:text-white"
               data-testid="demand-deadline-input"
             />
-            <p className="text-xs text-gray-500 mt-1">Vyberte tlačítko nebo konkrétní datum z kalendáře</p>
+            <p className="text-xs text-zinc-500 mt-1">Vyberte tlačítko nebo konkrétní datum z kalendáře</p>
           </div>
 
           <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-6 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3 px-6 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
               data-testid="cancel-demand-btn"
             >
               Zrušit
@@ -1039,10 +1039,10 @@ const DeactivateModal = ({ token, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden" data-testid="deactivate-modal">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
           <h2 className="text-lg font-bold text-red-600">Zrušení účtu</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center" data-testid="close-deactivate-btn">
-            <X className="w-4 h-4 text-gray-600" />
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center" data-testid="close-deactivate-btn">
+            <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
           </button>
         </div>
 
@@ -1052,12 +1052,12 @@ const DeactivateModal = ({ token, onClose, onSuccess }) => {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Warning className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-center font-semibold text-gray-900 mb-2">Opravdu chcete zrušit účet?</h3>
-              <p className="text-center text-sm text-gray-500 mb-6">
+              <h3 className="text-center font-semibold text-zinc-900 dark:text-white mb-2">Opravdu chcete zrušit účet?</h3>
+              <p className="text-center text-sm text-zinc-500 mb-6">
                 Váš účet bude deaktivován. Nebudete se moci přihlásit, dokud administrátor účet neobnoví. Vaše data zůstanou zachována.
               </p>
               <div className="flex gap-3">
-                <button onClick={onClose} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-testid="cancel-deactivate-btn">
+                <button onClick={onClose} className="flex-1 py-3 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="cancel-deactivate-btn">
                   Zpět
                 </button>
                 <button onClick={() => setStep(2)} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors" data-testid="confirm-deactivate-step1-btn">
@@ -1067,19 +1067,19 @@ const DeactivateModal = ({ token, onClose, onSuccess }) => {
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-600 mb-4">Pro potvrzení deaktivace zadejte své heslo:</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">Pro potvrzení deaktivace zadejte své heslo:</p>
               {error && <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm mb-4">{error}</div>}
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Vaše heslo"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-4"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-4"
                 data-testid="deactivate-password-input"
                 autoFocus
               />
               <div className="flex gap-3">
-                <button onClick={() => { setStep(1); setError(''); }} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <button onClick={() => { setStep(1); setError(''); }} className="flex-1 py-3 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                   Zpět
                 </button>
                 <button onClick={handleDeactivate} disabled={loading} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50" data-testid="confirm-deactivate-final-btn">

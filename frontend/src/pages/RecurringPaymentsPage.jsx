@@ -4,15 +4,15 @@ import { ArrowLeft, CreditCard, CalendarCheck, XCircle, Info } from '@phosphor-i
 
 const RecurringPaymentsPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold">
-            <span className="text-gray-900">Craft</span>
+            <span className="text-zinc-900 dark:text-white">Craft</span>
             <span className="text-orange-500">Bolt</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+          <Link to="/" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-white">
             <ArrowLeft weight="bold" />
             Zpět na hlavní stránku
           </Link>
@@ -21,19 +21,19 @@ const RecurringPaymentsPage = () => {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Podmínky opakovaných plateb</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">Podmínky opakovaných plateb</h1>
+        <p className="text-zinc-600 mb-8">
           Informace o automatickém strhávání plateb za předplatné služby CraftBolt.cz
         </p>
         
-        <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8 text-gray-700 leading-relaxed">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 space-y-8 text-zinc-700 leading-relaxed">
           
           {/* Info box */}
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 flex gap-4">
             <Info weight="fill" className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Co jsou opakované platby?</h3>
-              <p className="text-gray-600">
+              <h3 className="font-semibold text-zinc-900 dark:text-white mb-2">Co jsou opakované platby?</h3>
+              <p className="text-zinc-600">
                 Opakované platby umožňují automatické měsíční strhávání předplatného z vaší platební karty. 
                 Nemusíte každý měsíc ručně platit – platba proběhne automaticky a vy můžete službu využívat bez přerušení.
               </p>
@@ -41,7 +41,7 @@ const RecurringPaymentsPage = () => {
           </div>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-3">
               <CreditCard weight="fill" className="text-orange-500" />
               1. Jak opakované platby fungují
             </h2>
@@ -65,21 +65,21 @@ const RecurringPaymentsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-3">
               <CalendarCheck weight="fill" className="text-orange-500" />
               2. Výše a frekvence plateb
             </h2>
             <div className="bg-gray-50 rounded-xl p-6">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-zinc-200">
                     <th className="text-left py-3 font-semibold">Tarif</th>
                     <th className="text-right py-3 font-semibold">Měsíční platba</th>
                     <th className="text-right py-3 font-semibold">Frekvence</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b border-zinc-200/80 dark:border-zinc-800">
                     <td className="py-3">Zákazník</td>
                     <td className="text-right py-3">99 Kč bez DPH</td>
                     <td className="text-right py-3">Měsíčně</td>
@@ -92,13 +92,13 @@ const RecurringPaymentsPage = () => {
                 </tbody>
               </table>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-zinc-500">
               K uvedeným cenám bude připočtena DPH dle platných právních předpisů.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-3">
               <XCircle weight="fill" className="text-orange-500" />
               3. Zrušení opakovaných plateb
             </h2>
@@ -124,7 +124,7 @@ const RecurringPaymentsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Neúspěšná platba</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">4. Neúspěšná platba</h2>
             <p className="mb-4">
               Pokud se nepodaří platbu z karty strhnout (nedostatek prostředků, expirovaná karta apod.):
             </p>
@@ -137,7 +137,7 @@ const RecurringPaymentsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Bezpečnost plateb</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">5. Bezpečnost plateb</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>Všechny platby jsou zpracovávány prostřednictvím zabezpečené platební brány <strong>GoPay</strong>.</li>
               <li>Údaje o vaší platební kartě jsou šifrovány a nejsou uloženy na našich serverech.</li>
@@ -147,7 +147,7 @@ const RecurringPaymentsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Změna tarifu</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">6. Změna tarifu</h2>
             <p>
               Tarif můžete kdykoliv změnit v nastavení svého účtu. Při změně tarifu bude nová cena 
               účtována od následujícího platebního období.
@@ -155,7 +155,7 @@ const RecurringPaymentsPage = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Kontakt</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">7. Kontakt</h2>
             <p>
               V případě dotazů ohledně opakovaných plateb nás kontaktujte na e-mailu{' '}
               <a href="mailto:info@craftbolt.cz" className="text-orange-500 hover:text-orange-600">
@@ -164,16 +164,16 @@ const RecurringPaymentsPage = () => {
             </p>
           </section>
 
-          <section className="border-t border-gray-200 pt-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Provozovatel</h2>
-            <p className="text-gray-600">
+          <section className="border-t border-zinc-200 pt-6">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">8. Provozovatel</h2>
+            <p className="text-zinc-600">
               <strong>AC/DC MONT s.r.o.</strong><br />
               Sportovní 7, 789 63 Ruda nad Moravou<br />
               IČ: 097 44 550 | DIČ: CZ09744550
             </p>
           </section>
 
-          <p className="text-sm text-gray-500 mt-8 pt-4 border-t border-gray-200">
+          <p className="text-sm text-zinc-500 mt-8 pt-4 border-t border-zinc-200">
             Tyto podmínky opakovaných plateb jsou platné od 1. 4. 2026.
           </p>
 
@@ -196,7 +196,7 @@ const RecurringPaymentsPage = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 px-4 mt-12">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="text-zinc-400 text-sm">
             © 2026 CraftBolt. Všechna práva vyhrazena.
           </p>
         </div>

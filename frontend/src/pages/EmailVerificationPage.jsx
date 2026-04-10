@@ -57,11 +57,11 @@ const EmailVerificationPage = () => {
   }, [status, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-100 py-4 px-4">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex flex-col">
+      <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-gray-900">Craft</span>
+            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
             <span className="text-2xl font-bold text-orange-500">Bolt</span>
           </Link>
           <ThemeToggle />
@@ -73,18 +73,18 @@ const EmailVerificationPage = () => {
           {status === 'loading' && (
             <div>
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto mb-4"></div>
-              <p className="text-gray-500">Ověřuji váš email...</p>
+              <p className="text-zinc-500">Ověřuji váš email...</p>
             </div>
           )}
 
           {status === 'success' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" data-testid="verification-success">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 p-8" data-testid="verification-success">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check weight="bold" className="w-10 h-10 text-green-600" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">Email úspěšně ověřen!</h1>
-              <p className="text-gray-600 mb-3">{message}</p>
-              <p className="text-sm text-gray-400 mb-6">
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Email úspěšně ověřen!</h1>
+              <p className="text-zinc-600 mb-3">{message}</p>
+              <p className="text-sm text-zinc-400 mb-6">
                 Budete automaticky přesměrováni na přihlášení za <span className="font-bold text-orange-500">{countdown}</span> sekund...
               </p>
               <Link
@@ -99,12 +99,12 @@ const EmailVerificationPage = () => {
           )}
 
           {status === 'error' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" data-testid="verification-error">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 p-8" data-testid="verification-error">
               <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <X weight="bold" className="w-10 h-10 text-red-600" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">Ověření se nezdařilo</h1>
-              <p className="text-gray-600 mb-6">{message}</p>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Ověření se nezdařilo</h1>
+              <p className="text-zinc-600 mb-6">{message}</p>
               <div className="space-y-3">
                 <Link
                   to="/prihlaseni"
@@ -114,7 +114,7 @@ const EmailVerificationPage = () => {
                   Přihlásit se
                   <ArrowRight weight="bold" className="w-5 h-5" />
                 </Link>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-zinc-400">
                   Pokud je váš email již ověřen, můžete se rovnou přihlásit.
                 </p>
               </div>

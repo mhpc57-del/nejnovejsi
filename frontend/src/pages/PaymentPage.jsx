@@ -51,11 +51,11 @@ const PaymentSuccess = () => {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
           <Spinner className="w-16 h-16 text-orange-500 animate-spin mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Ověřujeme platbu...</h2>
-          <p className="text-gray-600">Prosím počkejte, zpracováváme vaši platbu.</p>
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white mb-2">Ověřujeme platbu...</h2>
+          <p className="text-zinc-600">Prosím počkejte, zpracováváme vaši platbu.</p>
         </div>
       </div>
     );
@@ -63,22 +63,22 @@ const PaymentSuccess = () => {
 
   if (status === 'success') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle weight="fill" className="w-12 h-12 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Platba úspěšná!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Platba úspěšná!</h2>
+          <p className="text-zinc-600 mb-6">
             Vaše předplatné <strong>{paymentInfo?.plan_name}</strong> bylo aktivováno.
           </p>
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600">Tarif:</span>
+              <span className="text-zinc-600">Tarif:</span>
               <span className="font-semibold">{paymentInfo?.plan_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Zaplaceno:</span>
+              <span className="text-zinc-600">Zaplaceno:</span>
               <span className="font-semibold">{paymentInfo?.amount} {paymentInfo?.currency}</span>
             </div>
           </div>
@@ -94,15 +94,15 @@ const PaymentSuccess = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle weight="fill" className="w-12 h-12 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
           {status === 'expired' ? 'Platba vypršela' : 'Chyba při platbě'}
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-zinc-600 mb-6">
           {status === 'expired' 
             ? 'Platební relace vypršela. Zkuste to prosím znovu.'
             : 'Nepodařilo se ověřit platbu. Zkontrolujte svůj email nebo kontaktujte podporu.'}
@@ -122,13 +122,13 @@ const PaymentCancelled = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
         <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle weight="fill" className="w-12 h-12 text-yellow-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Platba zrušena</h2>
-        <p className="text-gray-600 mb-6">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Platba zrušena</h2>
+        <p className="text-zinc-600 mb-6">
           Platba byla zrušena. Můžete to zkusit znovu kdykoliv.
         </p>
         <div className="space-y-3">
@@ -140,7 +140,7 @@ const PaymentCancelled = () => {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="w-full bg-zinc-100 dark:bg-zinc-800 hover:bg-gray-200 text-zinc-700 font-semibold py-3 px-6 rounded-lg transition-colors"
           >
             Na hlavní stránku
           </button>
@@ -239,17 +239,17 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <a href="/" className="text-2xl font-bold">
-            <span className="text-gray-900">Craft</span>
+            <span className="text-zinc-900 dark:text-white">Craft</span>
             <span className="text-orange-500">Bolt</span>
           </a>
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-white"
             data-testid="pricing-back-btn"
           >
             <ArrowLeft weight="bold" />
@@ -262,10 +262,10 @@ const PricingPage = () => {
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <span className="text-orange-500 font-bold text-sm tracking-wider uppercase">Ceník</span>
-          <h1 className="text-4xl font-bold text-gray-900 mt-2 mb-4">
+          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mt-2 mb-4">
             Jednoduchý a férový ceník.
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-zinc-600 text-lg">
             Vyberte si tarif podle toho, zda hledáte řemeslníka, nabízíte služby, nebo obojí.
           </p>
         </div>
@@ -285,10 +285,10 @@ const PricingPage = () => {
                 <div
                   key={planId}
                   data-testid={`plan-card-${planId}`}
-                  className={`bg-white rounded-2xl p-7 flex flex-col ${
+                  className={`bg-white dark:bg-zinc-900 rounded-xl p-7 flex flex-col ${
                     isHighlighted 
                       ? 'ring-2 ring-orange-500 shadow-xl relative' 
-                      : 'border border-gray-200 shadow-lg'
+                      : 'border border-zinc-200 shadow-lg'
                   }`}
                 >
                   {isHighlighted && (
@@ -299,18 +299,18 @@ const PricingPage = () => {
                     </div>
                   )}
 
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline mb-1">
-                    <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-500 ml-2 text-sm">Kč/měsíc bez DPH</span>
+                    <span className="text-4xl font-bold text-zinc-900 dark:text-white">{plan.price}</span>
+                    <span className="text-zinc-500 ml-2 text-sm">Kč/měsíc bez DPH</span>
                   </div>
                   <p className="text-orange-500 text-sm mb-5">{plan.trial_days} dní zdarma na vyzkoušení</p>
 
                   <ul className="space-y-2.5 mb-6 flex-1">
                     {(planFeatures[planId] || []).map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                      <li key={i} className="flex items-start gap-2 text-zinc-600 text-sm">
                         <CheckCircle weight="fill" className="text-green-500 flex-shrink-0 mt-0.5 w-4 h-4" />
                         {feature}
                       </li>
@@ -346,7 +346,7 @@ const PricingPage = () => {
         )}
 
         <div className="text-center mt-10">
-          <p className="text-gray-600 text-sm bg-gray-100 py-3 px-6 rounded-full inline-block">
+          <p className="text-zinc-600 text-sm bg-zinc-100 dark:bg-zinc-800 py-3 px-6 rounded-full inline-block">
             Platba kartou přes zabezpečenou bránu Stripe. <strong>Předplatné můžete kdykoliv zrušit.</strong>
           </p>
         </div>

@@ -115,12 +115,12 @@ const RegServiceAreaMap = ({ areas, onChange }) => {
   return (
     <div>
       <div className="flex items-center gap-3 mb-2">
-        <label className="text-sm text-gray-600">Poloměr:</label>
+        <label className="text-sm text-zinc-600 dark:text-zinc-400">Poloměr:</label>
         <input type="range" min="5" max="100" value={radius} onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
           className="flex-1 accent-orange-500" data-testid="reg-radius-slider" />
-        <span className="text-sm font-medium text-gray-700 w-14 text-right">{radius} km</span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 w-14 text-right">{radius} km</span>
       </div>
-      <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-xl border border-gray-200" data-testid="reg-service-area-map" />
+      <div ref={mapRef} style={{ height: '300px', width: '100%' }} className="rounded-xl border border-zinc-200 dark:border-zinc-700" data-testid="reg-service-area-map" />
       <div className="flex gap-2 mt-2">
         {selectedIdx !== null && (
           <button type="button" onClick={removeSelected}
@@ -129,11 +129,11 @@ const RegServiceAreaMap = ({ areas, onChange }) => {
           </button>
         )}
         <button type="button" onClick={clearAll}
-          className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50" data-testid="reg-clear-areas">
+          className="text-xs px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50" data-testid="reg-clear-areas">
           Smazat vše
         </button>
       </div>
-      <p className="text-xs text-gray-400 mt-1">Klikněte na mapu pro přidání oblasti. Klikněte na kruh pro úpravu poloměru.</p>
+      <p className="text-xs text-zinc-400 mt-1">Klikněte na mapu pro přidání oblasti. Klikněte na kruh pro úpravu poloměru.</p>
     </div>
   );
 };
@@ -522,21 +522,21 @@ const RegisterPage = () => {
         return (
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">E-mail <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">E-mail <span className="text-red-500">*</span></label>
               <input type="email" name="email" value={formData.email} onChange={handleInputChange}
                 placeholder="vas@email.cz"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="register-email-input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Heslo <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Heslo <span className="text-red-500">*</span></label>
               <div className="relative">
                 <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange}
                   placeholder="Minimálně 6 znaků"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 pr-12"
+                  className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 pr-12"
                   data-testid="register-password-input" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-400">
                   {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
@@ -547,7 +547,7 @@ const RegisterPage = () => {
       case 'role':
         return (
           <div className="space-y-4">
-            <p className="text-gray-600 mb-6">Jak chcete platformu používat?</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">Jak chcete platformu používat?</p>
             {[
               { value: 'customer', label: 'Zákazník', desc: 'Hledám řemeslníky a služby', price: '199 Kč/měsíc', Icon: User },
               { value: 'supplier', label: 'Dodavatel', desc: 'Nabízím své služby', price: '299 Kč/měsíc', Icon: Briefcase },
@@ -555,15 +555,15 @@ const RegisterPage = () => {
             ].map(({ value, label, desc, price, Icon }) => (
               <button key={value} type="button"
                 onClick={() => setFormData(prev => ({ ...prev, role: value, account_type: '', has_ico: null }))}
-                className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === value ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+                className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === value ? 'border-orange-500 bg-orange-50' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600'}`}
                 data-testid={`role-${value}-btn`}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === value ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                     <Icon weight="bold" className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{label}</h3>
-                    <p className="text-sm text-gray-500">{desc}</p>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">{label}</h3>
+                    <p className="text-sm text-zinc-500">{desc}</p>
                   </div>
                   <span className="text-sm font-medium text-orange-500">{price}</span>
                   {formData.role === value && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
@@ -576,33 +576,33 @@ const RegisterPage = () => {
       case 'ico_choice':
         return (
           <div className="space-y-4">
-            <p className="text-gray-600 mb-6">Podnikáte nebo máte IČ?</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">Podnikáte nebo máte IČ?</p>
             <button type="button"
               onClick={() => setFormData(prev => ({ ...prev, has_ico: false, account_type: 'nepodnikatel' }))}
-              className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.has_ico === false ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.has_ico === false ? 'border-orange-500 bg-orange-50' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600'}`}
               data-testid="ico-no-btn">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.has_ico === false ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.has_ico === false ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                   <User weight="bold" className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">Nemám IČ</h3>
-                  <p className="text-sm text-gray-500">Fyzická osoba nepodnikající</p>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Nemám IČ</h3>
+                  <p className="text-sm text-zinc-500">Fyzická osoba nepodnikající</p>
                 </div>
                 {formData.has_ico === false && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
               </div>
             </button>
             <button type="button"
               onClick={() => setFormData(prev => ({ ...prev, has_ico: true, account_type: '' }))}
-              className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.has_ico === true ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.has_ico === true ? 'border-orange-500 bg-orange-50' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600'}`}
               data-testid="ico-yes-btn">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.has_ico === true ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.has_ico === true ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                   <Briefcase weight="bold" className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">Mám IČ</h3>
-                  <p className="text-sm text-gray-500">OSVČ nebo firma</p>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Mám IČ</h3>
+                  <p className="text-sm text-zinc-500">OSVČ nebo firma</p>
                 </div>
                 {formData.has_ico === true && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
               </div>
@@ -613,22 +613,22 @@ const RegisterPage = () => {
       case 'ico_type':
         return (
           <div className="space-y-4">
-            <p className="text-gray-600 mb-6">Jaký je váš typ podnikání?</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">Jaký je váš typ podnikání?</p>
             {[
               { value: 'osvc', label: 'OSVČ', desc: 'Fyzická osoba podnikající', Icon: UserCircle },
               { value: 'company', label: 'Firma / Organizace', desc: 'Právnická osoba', Icon: Buildings },
             ].map(({ value, label, desc, Icon }) => (
               <button key={value} type="button"
                 onClick={() => setFormData(prev => ({ ...prev, account_type: value }))}
-                className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.account_type === value ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+                className={`w-full p-6 border-2 rounded-xl text-left transition-all ${formData.account_type === value ? 'border-orange-500 bg-orange-50' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600'}`}
                 data-testid={`type-${value}-btn`}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.account_type === value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.account_type === value ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                     <Icon weight="bold" className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{label}</h3>
-                    <p className="text-sm text-gray-500">{desc}</p>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">{label}</h3>
+                    <p className="text-sm text-zinc-500">{desc}</p>
                   </div>
                   {formData.account_type === value && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
                 </div>
@@ -648,8 +648,8 @@ const RegisterPage = () => {
                     <img src={(() => { const u = formData.profile_image; if (!u || u === 'None') return ''; if (u.startsWith('http')) return u; const p = u.startsWith('/api/') ? u : u.startsWith('/') ? `/api${u}` : `/api/${u}`; return `${API.replace('/api', '')}${p}`; })()} alt="Profil" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
-                    <UserCircle className="w-10 h-10 text-gray-400" />
+                  <div className="w-24 h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border-2 border-dashed border-zinc-300 dark:border-zinc-600">
+                    <UserCircle className="w-10 h-10 text-zinc-400" />
                   </div>
                 )}
                 <label
@@ -672,7 +672,7 @@ const RegisterPage = () => {
                 </label>
               </div>
             </div>
-            <p className="text-center text-xs text-gray-400 -mt-2 mb-2">
+            <p className="text-center text-xs text-zinc-400 -mt-2 mb-2">
               Klikněte na ikonu pro nahrání fotografie
             </p>
 
@@ -680,77 +680,77 @@ const RegisterPage = () => {
               /* ======= MÁM IČ ======= */
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">IČ <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">IČ <span className="text-red-500">*</span></label>
                   <div className="flex gap-2">
                     <input type="text" name="ico" value={formData.ico} onChange={handleInputChange}
                       placeholder="12345678"
-                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="flex-1 px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-ico-input" />
                     <button type="button" onClick={handleAresLookup} disabled={aresLoading || !formData.ico}
-                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap"
+                      className="px-4 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:bg-zinc-700 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap"
                       data-testid="ares-lookup-btn">
                       {aresLoading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-gray-600"></div> : <MagnifyingGlass className="w-4 h-4" />}
                       Načíst z ARES
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Klikněte pro automatické vyplnění údajů</p>
+                  <p className="text-xs text-zinc-400 mt-1">Klikněte pro automatické vyplnění údajů</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">DIČ</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">DIČ</label>
                   <input type="text" name="dic" value={formData.dic} onChange={handleInputChange}
                     placeholder="CZ12345678"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     data-testid="register-dic-input" />
                 </div>
 
                 {/* Name (optional for IČ) */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Jméno</label>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Jméno</label>
                     <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange}
                       placeholder="Jan"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-first-name-input" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Příjmení</label>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Příjmení</label>
                     <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange}
                       placeholder="Novák"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-last-name-input" />
                   </div>
                 </div>
 
                 {/* Company name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Název firmy</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Název firmy</label>
                   <input type="text" name="company_name" value={formData.company_name} onChange={handleInputChange}
                     placeholder="Firma s.r.o."
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     data-testid="register-company-input" />
                 </div>
 
                 {/* Sídlo (povinné) */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa sídla <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Adresa sídla <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                     <input type="text" name="address" value={formData.address}
                       onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('address')}
                       placeholder="Začněte psát adresu..."
                       autoComplete="off"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full pl-12 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-address-input" />
                   </div>
                   {activeAddressField === 'address' && addressSuggestions.address?.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                       {addressSuggestions.address.map((s, i) => (
                         <button key={i} type="button" onClick={() => selectAddress(s, 'address')}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{s.display_name}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{s.display_name}</span>
                         </button>
                       ))}
                     </div>
@@ -759,26 +759,26 @@ const RegisterPage = () => {
 
                 {/* Pobočky (nepovinné, více) */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa pobočky</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Adresa pobočky</label>
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                       <input type="text" name="branch_address_input" value={formData.branch_address_input || ''}
                         onChange={handleAddressInput}
                         onFocus={() => setActiveAddressField('branch_address_input')}
                         placeholder="Začněte psát adresu pobočky..."
                         autoComplete="off"
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                        className="w-full pl-12 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                         data-testid="register-branch-input" />
                     </div>
                     <button type="button" onClick={handleAddBranchAddress}
-                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
+                      className="px-4 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:bg-zinc-700 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors"
                       data-testid="add-branch-btn">
                       <Plus className="w-5 h-5" />
                     </button>
                   </div>
                   {activeAddressField === 'branch_address_input' && addressSuggestions.branch_address_input?.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                       {addressSuggestions.branch_address_input.map((s, i) => (
                         <button key={i} type="button" onClick={() => {
                           setFormData(prev => ({ ...prev, branch_address_input: s.display_name }));
@@ -787,7 +787,7 @@ const RegisterPage = () => {
                         }}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{s.display_name}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{s.display_name}</span>
                         </button>
                       ))}
                     </div>
@@ -795,9 +795,9 @@ const RegisterPage = () => {
                   {formData.branch_addresses.length > 0 && (
                     <div className="mt-2 space-y-1.5">
                       {formData.branch_addresses.map((addr, i) => (
-                        <div key={i} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-sm">
-                          <Buildings className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <span className="flex-1 text-gray-700 truncate">{addr}</span>
+                        <div key={i} className="flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-sm">
+                          <Buildings className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                          <span className="flex-1 text-zinc-700 dark:text-zinc-300 truncate">{addr}</span>
                           <button type="button" onClick={() => handleRemoveBranchAddress(i)} className="text-red-400 hover:text-red-600">
                             <X className="w-4 h-4" />
                           </button>
@@ -813,46 +813,46 @@ const RegisterPage = () => {
                 {/* Name (povinné) */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                       Jméno <span className="text-red-500">*</span>
                     </label>
                     <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange}
                       placeholder="Jan"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-first-name-input" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                       Příjmení <span className="text-red-500">*</span>
                     </label>
                     <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange}
                       placeholder="Novák"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-last-name-input" />
                   </div>
                 </div>
 
                 {/* Trvalý pobyt (nepovinné) */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa trvalého pobytu</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Adresa trvalého pobytu</label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                     <input type="text" name="permanent_address" value={formData.permanent_address}
                       onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('permanent_address')}
                       placeholder="Začněte psát adresu..."
                       autoComplete="off"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full pl-12 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-permanent-address-input" />
                   </div>
                   {activeAddressField === 'permanent_address' && addressSuggestions.permanent_address?.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                       {addressSuggestions.permanent_address.map((s, i) => (
                         <button key={i} type="button" onClick={() => selectAddress(s, 'permanent_address')}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2"
                           data-testid={`address-suggestion-${i}`}>
                           <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{s.display_name}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{s.display_name}</span>
                         </button>
                       ))}
                     </div>
@@ -861,24 +861,24 @@ const RegisterPage = () => {
 
                 {/* Skutečná adresa (nepovinné) */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresa skutečného bydliště</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Adresa skutečného bydliště</label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                     <input type="text" name="actual_address" value={formData.actual_address}
                       onChange={handleAddressInput}
                       onFocus={() => setActiveAddressField('actual_address')}
                       placeholder="Pokud se liší od trvalého pobytu"
                       autoComplete="off"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      className="w-full pl-12 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                       data-testid="register-actual-address-input" />
                   </div>
                   {activeAddressField === 'actual_address' && addressSuggestions.actual_address?.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                       {addressSuggestions.actual_address.map((s, i) => (
                         <button key={i} type="button" onClick={() => selectAddress(s, 'actual_address')}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 border-b border-gray-50 last:border-0 flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{s.display_name}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{s.display_name}</span>
                         </button>
                       ))}
                     </div>
@@ -889,34 +889,34 @@ const RegisterPage = () => {
 
             {/* Phone (povinné for all) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Telefonní číslo <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Telefonní číslo <span className="text-red-500">*</span></label>
               <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
                 placeholder="+420 xxx xxx xxx"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="register-phone-input" />
             </div>
 
             {/* Email readonly */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">E-mail <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">E-mail <span className="text-red-500">*</span></label>
               <input type="email" value={formData.email} readOnly
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
                 data-testid="register-email-readonly" />
-              <p className="text-xs text-gray-400 mt-1">Zadáno v prvním kroku</p>
+              <p className="text-xs text-zinc-400 mt-1">Zadáno v prvním kroku</p>
             </div>
 
             {/* Web (nepovinné for all) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Webová stránka</label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Webová stránka</label>
               <input type="url" name="website" value={formData.website} onChange={handleInputChange}
                 placeholder="https://www.vase-stranka.cz"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                 data-testid="register-website-input" />
             </div>
 
             {/* Preferred languages */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Preferovaný jazyk</label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Preferovaný jazyk</label>
               <div className="flex gap-3">
                 {[
                   { code: 'cs', label: 'Čeština', flag: '🇨🇿' },
@@ -927,7 +927,7 @@ const RegisterPage = () => {
                     className={`flex-1 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                       formData.preferred_languages.includes(lang.code)
                         ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                        : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400'
                     }`}
                     data-testid={`lang-${lang.code}`}>
                     <span>{lang.flag}</span>
@@ -936,12 +936,12 @@ const RegisterPage = () => {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1">Můžete vybrat více jazyků</p>
+              <p className="text-xs text-zinc-400 mt-1">Můžete vybrat více jazyků</p>
             </div>
 
             {/* Map preview */}
             {mapCenter && (
-              <div className="rounded-xl overflow-hidden border border-gray-200 h-48" data-testid="register-map-preview">
+              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48" data-testid="register-map-preview">
                 <MapContainer center={mapCenter} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
                   <Marker position={mapCenter} />
@@ -952,11 +952,11 @@ const RegisterPage = () => {
 
             {/* Bio — for all */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">O mně / O firmě</label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">O mně / O firmě</label>
               <textarea name="bio" value={formData.bio} onChange={handleInputChange}
                 placeholder="Napište pár slov o sobě nebo o vaší firmě..."
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
                 data-testid="register-bio-input" />
             </div>
           </div>
@@ -974,7 +974,7 @@ const RegisterPage = () => {
         const totalFiltered = groupEntries.reduce((sum, [, items]) => sum + items.length, 0);
         return (
           <div>
-            <p className="text-gray-600 mb-3">Vyberte kategorie služeb, které nabízíte:</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-3">Vyberte kategorie služeb, které nabízíte:</p>
 
             {/* Selected categories panel */}
             {formData.categories.length > 0 && (
@@ -995,33 +995,33 @@ const RegisterPage = () => {
 
             {/* Category search filter */}
             <div className="relative mb-3">
-              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
               <input type="text" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
                 placeholder="Filtrovat kategorie..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
                 data-testid="category-filter-input" />
               {categoryFilter && (
                 <button type="button" onClick={() => setCategoryFilter('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-400">
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
-            <div className="max-h-72 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-1" data-testid="category-list">
+            <div className="max-h-72 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 space-y-1" data-testid="category-list">
               {totalFiltered === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">Žádná kategorie nebyla nalezena</p>
+                <p className="text-sm text-zinc-400 text-center py-4">Žádná kategorie nebyla nalezena</p>
               ) : (
                 groupEntries.map(([group, items]) => (
                   <div key={group || 'all'}>
                     {group && (
-                      <div className="sticky top-0 bg-white z-10 px-2 py-2 border-b border-gray-100 mb-1" data-testid={`group-header-${group.toLowerCase()}`}>
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{group}</span>
+                      <div className="sticky top-0 bg-white z-10 px-2 py-2 border-b border-zinc-200/80 dark:border-zinc-800 mb-1" data-testid={`group-header-${group.toLowerCase()}`}>
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{group}</span>
                       </div>
                     )}
                     {items.map((category) => (
                       <button key={category} type="button" onClick={() => handleCategoryToggle(category)}
                         className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex items-center justify-between ${
-                          formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                          formData.categories.includes(category) ? 'bg-orange-500 text-white' : 'bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                         }`}
                         data-testid={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}>
                         {category}
@@ -1034,12 +1034,12 @@ const RegisterPage = () => {
             </div>
 
             {/* Custom category */}
-            <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Chybí vám kategorie? Navrhněte vlastní:</label>
+            <div className="mt-4 p-4 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Chybí vám kategorie? Navrhněte vlastní:</label>
               <div className="flex gap-2">
                 <input type="text" name="custom_category_input" value={formData.custom_category_input} onChange={handleInputChange}
                   placeholder="Název kategorie"
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+                  className="flex-1 px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
                   data-testid="custom-category-input"
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomCategory(); } }} />
                 <button type="button" onClick={handleAddCustomCategory}
@@ -1060,7 +1060,7 @@ const RegisterPage = () => {
                   ))}
                 </div>
               )}
-              <p className="text-xs text-gray-400 mt-2">Váš návrh bude odeslán ke schválení administrátorovi.</p>
+              <p className="text-xs text-zinc-400 mt-2">Váš návrh bude odeslán ke schválení administrátorovi.</p>
             </div>
           </div>
         );
@@ -1068,7 +1068,7 @@ const RegisterPage = () => {
       case 'service_areas':
         return (
           <div data-testid="reg-step-service-areas">
-            <p className="text-gray-600 mb-3">Označte na mapě oblasti, kde nabízíte své služby:</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-3">Označte na mapě oblasti, kde nabízíte své služby:</p>
             <RegServiceAreaMap
               areas={formData.service_areas}
               onChange={(areas) => setFormData(prev => ({ ...prev, service_areas: areas }))}
@@ -1080,17 +1080,17 @@ const RegisterPage = () => {
                 </p>
               </div>
             )}
-            <p className="text-xs text-gray-400 mt-2">Tento krok můžete přeskočit a nastavit oblast působení později v profilu.</p>
+            <p className="text-xs text-zinc-400 mt-2">Tento krok můžete přeskočit a nastavit oblast působení později v profilu.</p>
           </div>
         );
 
       case 'portfolio':
         return (
           <div data-testid="reg-step-portfolio">
-            <p className="text-gray-600 mb-4">Nahrajte referenční fotografie vaší práce (max 20):</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">Nahrajte referenční fotografie vaší práce (max 20):</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {formData.reference_photos.map((url, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group" data-testid={`reg-ref-photo-${i}`}>
+                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 group" data-testid={`reg-ref-photo-${i}`}>
                   <img src={getImageUrl(url)} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeRefPhoto(i)}
                     className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`reg-remove-ref-${i}`}>
@@ -1099,13 +1099,13 @@ const RegisterPage = () => {
                 </div>
               ))}
               {formData.reference_photos.length < 20 && (
-                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="reg-upload-ref-btn">
+                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-orange-400 flex flex-col items-center justify-center cursor-pointer transition-colors" data-testid="reg-upload-ref-btn">
                   {uploadingRef ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-orange-500"></div>
                   ) : (
                     <>
-                      <Plus className="w-5 h-5 text-gray-400" />
-                      <span className="text-[10px] text-gray-400 mt-1">Přidat</span>
+                      <Plus className="w-5 h-5 text-zinc-400" />
+                      <span className="text-[10px] text-zinc-400 mt-1">Přidat</span>
                     </>
                   )}
                   <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" multiple
@@ -1113,8 +1113,8 @@ const RegisterPage = () => {
                 </label>
               )}
             </div>
-            <p className="text-xs text-gray-500 mb-4">Nahráno: {formData.reference_photos.length}/20</p>
-            <p className="text-xs text-gray-400">Tento krok můžete přeskočit a přidat fotografie i certifikace později v profilu.</p>
+            <p className="text-xs text-zinc-500 mb-4">Nahráno: {formData.reference_photos.length}/20</p>
+            <p className="text-xs text-zinc-400">Tento krok můžete přeskočit a přidat fotografie i certifikace později v profilu.</p>
           </div>
         );
 
@@ -1167,11 +1167,11 @@ const RegisterPage = () => {
                   <path d="M22 4L12 13L2 4" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">Ověřte svůj email</h1>
-              <p className="text-gray-500 mb-2">
-                Na adresu <strong className="text-gray-900">{registeredEmail}</strong> jsme odeslali ověřovací email.
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Ověřte svůj email</h1>
+              <p className="text-zinc-500 mb-2">
+                Na adresu <strong className="text-zinc-900 dark:text-white">{registeredEmail}</strong> jsme odeslali ověřovací email.
               </p>
-              <p className="text-gray-500 mb-4">
+              <p className="text-zinc-500 mb-4">
                 Klikněte na odkaz v emailu pro dokončení registrace.
               </p>
               
@@ -1188,9 +1188,9 @@ const RegisterPage = () => {
                 </div>
               )}
               
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <p className="text-sm text-gray-500 mb-1">Nedostali jste email?</p>
-                <p className="text-xs text-gray-400 mb-3">Zkontrolujte složku SPAM nebo si nechte email poslat znovu.</p>
+              <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 mb-6">
+                <p className="text-sm text-zinc-500 mb-1">Nedostali jste email?</p>
+                <p className="text-xs text-zinc-400 mb-3">Zkontrolujte složku SPAM nebo si nechte email poslat znovu.</p>
                 <button
                   onClick={handleResendVerification}
                   disabled={resending}
@@ -1203,7 +1203,7 @@ const RegisterPage = () => {
 
               <Link
                 to="/prihlaseni"
-                className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm transition-colors"
+                className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 text-sm transition-colors"
                 data-testid="go-to-login-link"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -1271,7 +1271,7 @@ const RegisterPage = () => {
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-gray-500">
+              <p className="text-zinc-500">
                 Už máte účet?{' '}
                 <Link to="/prihlaseni" className="text-orange-500 hover:text-orange-600 font-medium" data-testid="login-link">
                   Přihlaste se

@@ -43,15 +43,15 @@ const InvoicesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors" data-testid="back-btn">
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-zinc-100 dark:bg-zinc-800 rounded-xl transition-colors" data-testid="back-btn">
+            <ArrowLeft className="w-5 h-5 text-zinc-600" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Moje faktury</h1>
-            <p className="text-sm text-gray-500">Přehled všech faktur za předplatné CraftBolt</p>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Moje faktury</h1>
+            <p className="text-sm text-zinc-500">Přehled všech faktur za předplatné CraftBolt</p>
           </div>
         </div>
 
@@ -60,30 +60,30 @@ const InvoicesPage = () => {
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
           </div>
         ) : invoices.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+          <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800">
             <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Zatím nemáte žádné faktury</p>
+            <p className="text-zinc-500">Zatím nemáte žádné faktury</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left p-4 text-xs font-medium text-gray-500 uppercase">Číslo</th>
-                  <th className="text-left p-4 text-xs font-medium text-gray-500 uppercase">Datum</th>
-                  <th className="text-left p-4 text-xs font-medium text-gray-500 uppercase">Popis</th>
-                  <th className="text-right p-4 text-xs font-medium text-gray-500 uppercase">Částka</th>
-                  <th className="text-left p-4 text-xs font-medium text-gray-500 uppercase">Stav</th>
-                  <th className="text-right p-4 text-xs font-medium text-gray-500 uppercase">Stáhnout</th>
+                <tr className="border-b border-zinc-200/80 dark:border-zinc-800">
+                  <th className="text-left p-4 text-xs font-medium text-zinc-500 uppercase">Číslo</th>
+                  <th className="text-left p-4 text-xs font-medium text-zinc-500 uppercase">Datum</th>
+                  <th className="text-left p-4 text-xs font-medium text-zinc-500 uppercase">Popis</th>
+                  <th className="text-right p-4 text-xs font-medium text-zinc-500 uppercase">Částka</th>
+                  <th className="text-left p-4 text-xs font-medium text-zinc-500 uppercase">Stav</th>
+                  <th className="text-right p-4 text-xs font-medium text-zinc-500 uppercase">Stáhnout</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
                   <tr key={inv.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50" data-testid={`invoice-row-${inv.id}`}>
-                    <td className="p-4 text-sm font-medium text-gray-900">{inv.invoice_number}</td>
-                    <td className="p-4 text-sm text-gray-500">{new Date(inv.issue_date).toLocaleDateString('cs-CZ')}</td>
-                    <td className="p-4 text-sm text-gray-600">{inv.items?.[0]?.description || inv.plan_name}</td>
-                    <td className="p-4 text-sm font-semibold text-gray-900 text-right">{inv.total?.toLocaleString('cs-CZ')} Kč</td>
+                    <td className="p-4 text-sm font-medium text-zinc-900 dark:text-white">{inv.invoice_number}</td>
+                    <td className="p-4 text-sm text-zinc-500">{new Date(inv.issue_date).toLocaleDateString('cs-CZ')}</td>
+                    <td className="p-4 text-sm text-zinc-600">{inv.items?.[0]?.description || inv.plan_name}</td>
+                    <td className="p-4 text-sm font-semibold text-zinc-900 dark:text-white text-right">{inv.total?.toLocaleString('cs-CZ')} Kč</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${inv.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                         {inv.payment_status === 'paid' ? 'Uhrazeno' : 'Čeká'}
