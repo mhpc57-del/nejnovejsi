@@ -223,6 +223,17 @@ const CustomerDashboard = () => {
               const unreadCount = stat.filter === 'all' 
                 ? unreadDemands.length
                 : unreadDemands.filter(u => u.demand_status === stat.filter).length;
+              // Green badge for new activity (last 24h)
+              const now = new Date();
+              const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
+              let newCount = 0;
+              if (stat.filter === 'open') {
+                newCount = demands.filter(d => d.status === 'open' && new Date(d.created_at) > dayAgo).length;
+              } else if (stat.filter === 'completed') {
+                newCount = demands.filter(d => d.status === 'completed' && d.completed_at && new Date(d.completed_at) > dayAgo).length;
+              } else if (stat.filter === 'in_progress') {
+                newCount = demands.filter(d => d.status === 'in_progress' && d.accepted_at && new Date(d.accepted_at) > dayAgo).length;
+              }
               return (
               <button key={i} 
                 onClick={() => setActiveFilter(activeFilter === stat.filter ? null : stat.filter)}
@@ -234,6 +245,11 @@ const CustomerDashboard = () => {
                 {unreadCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`unread-badge-${stat.filter}`}>
                     {unreadCount}
+                  </span>
+                )}
+                {unreadCount === 0 && newCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`new-badge-${stat.filter}`}>
+                    {newCount}
                   </span>
                 )}
                 <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>

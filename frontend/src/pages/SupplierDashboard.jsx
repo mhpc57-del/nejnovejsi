@@ -184,7 +184,12 @@ const SupplierDashboard = () => {
             <span className="flex items-center gap-1"><User className="w-4 h-4" />{demand.customer_name}</span>
             <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</span>
             {demand.deadline && (
-              <span className="flex items-center gap-1 text-orange-600 font-medium"><Clock className="w-4 h-4" />Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}</span>
+              <span className={`flex items-center gap-1 font-medium ${demand.deadline === 'URGENT' ? 'text-red-600' : 'text-orange-600'}`}>
+                <Clock className="w-4 h-4" />
+                {demand.deadline === 'ASAP' ? 'Co nejdříve' :
+                 demand.deadline === 'URGENT' ? 'IHNED!' :
+                 `Termín: ${new Date(demand.deadline).toLocaleDateString('cs-CZ')}`}
+              </span>
             )}
             {demand.invoiced_amount && (
               <span className="flex items-center gap-1 text-green-600 font-semibold">
@@ -505,6 +510,20 @@ const SupplierDashboard = () => {
                   if (tab.id === 'available') return u.demand_status === 'open';
                   return u.demand_status === tab.id;
                 }).length;
+                // Count new items (created in last 24h) for green badge
+                const now = new Date();
+                const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
+                let newCount = 0;
+                if (tab.id === 'available') {
+                  newCount = availableDemands.filter(d => new Date(d.created_at) > dayAgo).length;
+                } else if (tab.id === 'completed') {
+                  newCount = completed.filter(d => {
+                    const hasRecentPhoto = d.completion_photos_customer?.length > 0 || d.completion_photos_supplier?.length > 0;
+                    const recentComplete = d.completed_at && new Date(d.completed_at) > dayAgo;
+                    return (recentComplete || hasRecentPhoto) && !d.price_confirmed_by_supplier;
+                  }).length;
+                }
+                const totalBadge = tabUnread + newCount;
                 return (
                 <div key={tab.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden" data-testid={`tab-section-${tab.id}`}>
                   {/* Tab header - clickable */}
@@ -520,6 +539,11 @@ const SupplierDashboard = () => {
                         {tabUnread > 0 && (
                           <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse" data-testid={`tab-unread-${tab.id}`}>
                             {tabUnread}
+                          </span>
+                        )}
+                        {tabUnread === 0 && newCount > 0 && (
+                          <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse" data-testid={`tab-new-${tab.id}`}>
+                            {newCount}
                           </span>
                         )}
                       </div>
