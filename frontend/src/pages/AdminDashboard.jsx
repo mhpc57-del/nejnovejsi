@@ -7,7 +7,8 @@ import {
   User, Check, X, Eye, Star, ShieldWarning,
   PencilSimple, Envelope, Trash, Tag, Warning, 
   ChatCircle, ArrowClockwise, Lock, LockOpen,
-  CaretDown, MagnifyingGlass, Receipt, Download
+  CaretDown, MagnifyingGlass, Receipt, Download,
+  Megaphone, Clock, CurrencyDollar, Power, ArrowRight, CalendarPlus
 } from '@phosphor-icons/react';
 
 import HeaderWidget from '../components/HeaderWidget';
@@ -38,6 +39,8 @@ const AdminDashboard = () => {
   });
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [zipDownloading, setZipDownloading] = useState(false);
+  const [promoStats, setPromoStats] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -198,12 +201,41 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchPromoStats = async () => {
+    setPromoLoading(true);
+    try {
+      const res = await axios.get(`${API}/admin/promoted-stats`, { headers });
+      setPromoStats(res.data);
+    } catch (error) {
+      console.error('Error fetching promo stats:', error);
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handlePromoAction = async (action, supplierId) => {
+    try {
+      if (action === 'delete') {
+        if (!window.confirm('Opravdu smazat tento reklamní banner?')) return;
+        await axios.delete(`${API}/admin/promoted/${supplierId}`, { headers });
+      } else if (action === 'deactivate') {
+        await axios.put(`${API}/admin/promoted/${supplierId}/deactivate`, {}, { headers });
+      } else if (action === 'extend') {
+        await axios.put(`${API}/admin/promoted/${supplierId}/extend`, {}, { headers });
+      }
+      fetchPromoStats();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Chyba při akci');
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: 'Přehled', icon: House },
     { id: 'users', label: 'Uživatelé', icon: Users },
     { id: 'demands', label: 'Zakázky', icon: Briefcase },
     { id: 'categories', label: 'Kategorie', icon: Tag, badge: pendingSuggestions.length },
     { id: 'invoices', label: 'Faktury', icon: Receipt },
+    { id: 'promo', label: 'Reklama', icon: Megaphone },
   ];
 
   const getStatusBadge = (status) => {
@@ -617,6 +649,136 @@ const AdminDashboard = () => {
     </div>
   );
 
+  const getPromoStatus = (supplier) => {
+    const now = new Date().toISOString();
+    if (supplier.active && supplier.paid_until && supplier.paid_until >= now) {
+      return { label: 'Aktivní', style: 'bg-green-100 text-green-700' };
+    } else if (supplier.activated_at) {
+      return { label: 'Expirovaný', style: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600' };
+    }
+    return { label: 'Čeká na platbu', style: 'bg-yellow-100 text-yellow-700' };
+  };
+
+  const formatPromoDate = (iso) => {
+    if (!iso) return '-';
+    return new Date(iso).toLocaleString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const renderPromo = () => {
+    if (!promoStats) {
+      return (
+        <div className="p-6 text-center">
+          <button onClick={fetchPromoStats} disabled={promoLoading}
+            className="px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors disabled:opacity-50" data-testid="load-promo-stats">
+            {promoLoading ? 'Načítám...' : 'Načíst statistiky reklam'}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-6" data-testid="promo-tab-content">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Reklamní bannery</h2>
+            <p className="text-sm text-zinc-500">Přehled placených bannerů na hlavní stránce (300 Kč + DPH / den)</p>
+          </div>
+          <button onClick={fetchPromoStats} disabled={promoLoading}
+            className="px-4 py-2 text-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-xl text-sm font-medium transition-colors" data-testid="refresh-promo-stats">
+            <ArrowClockwise className={`w-5 h-5 ${promoLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+
+        {/* Stats cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Aktivní bannery', value: promoStats.active, icon: Megaphone, color: 'bg-green-500' },
+            { label: 'Expirované', value: promoStats.expired, icon: Clock, color: 'bg-zinc-500' },
+            { label: 'Příjmy tento měsíc', value: `${promoStats.revenue_month.toLocaleString('cs-CZ')} Kč`, icon: CurrencyDollar, color: 'bg-orange-500' },
+            { label: 'Příjmy celkem', value: `${promoStats.revenue_total.toLocaleString('cs-CZ')} Kč`, icon: CurrencyDollar, color: 'bg-blue-500' },
+          ].map((stat, i) => (
+            <div key={i} className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-5" data-testid={`promo-stat-${i}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <stat.icon weight="bold" className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm text-zinc-500">{stat.label}</span>
+              </div>
+              <p className="text-2xl font-bold text-zinc-900 dark:text-white">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Table */}
+        {promoStats.suppliers.length === 0 ? (
+          <div className="text-center py-12">
+            <Megaphone className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+            <p className="text-zinc-500 text-sm">Zatím žádné reklamní bannery</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full" data-testid="promo-table">
+              <thead>
+                <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Firma</th>
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Telefon</th>
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Stav</th>
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Aktivováno</th>
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Platí do</th>
+                  <th className="text-left p-3 text-xs font-medium text-zinc-500 uppercase">Vytvořeno</th>
+                  <th className="text-right p-3 text-xs font-medium text-zinc-500 uppercase">Akce</th>
+                </tr>
+              </thead>
+              <tbody>
+                {promoStats.suppliers.map((s) => {
+                  const status = getPromoStatus(s);
+                  return (
+                    <tr key={s.id} className="border-b border-zinc-200/80 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50" data-testid={`promo-row-${s.id}`}>
+                      <td className="p-3">
+                        <div>
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white">{s.company_name}</p>
+                          <p className="text-xs text-zinc-500 mt-0.5 max-w-[200px] truncate">{s.bio}</p>
+                        </div>
+                      </td>
+                      <td className="p-3 text-sm text-zinc-500">{s.phone}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.style}`}>{status.label}</span>
+                      </td>
+                      <td className="p-3 text-xs text-zinc-500">{formatPromoDate(s.activated_at)}</td>
+                      <td className="p-3 text-xs text-zinc-500">{formatPromoDate(s.paid_until)}</td>
+                      <td className="p-3 text-xs text-zinc-500">{formatPromoDate(s.created_at)}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1 justify-end">
+                          <button onClick={() => handlePromoAction('extend', s.id)}
+                            className="p-1.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Prodloužit o 1 den" data-testid={`extend-promo-${s.id}`}>
+                            <CalendarPlus className="w-4 h-4" />
+                          </button>
+                          {status.label === 'Aktivní' && (
+                            <button onClick={() => handlePromoAction('deactivate', s.id)}
+                              className="p-1.5 text-zinc-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Deaktivovat" data-testid={`deactivate-promo-${s.id}`}>
+                              <Power className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button onClick={() => handlePromoAction('delete', s.id)}
+                            className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Smazat" data-testid={`delete-promo-${s.id}`}>
+                            <Trash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div className="p-4 border-t border-zinc-200/80 dark:border-zinc-800 text-sm text-zinc-500">
+              Celkem {promoStats.total_count} bannerů | Aktivních: {promoStats.active} | Příjmy: {promoStats.revenue_total.toLocaleString('cs-CZ')} Kč
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (loading) return <div className="p-10 text-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div></div>;
     switch (activeTab) {
@@ -625,6 +787,7 @@ const AdminDashboard = () => {
       case 'demands': return renderDemands();
       case 'categories': return renderCategories();
       case 'invoices': return renderInvoices();
+      case 'promo': return renderPromo();
       default: return null;
     }
   };

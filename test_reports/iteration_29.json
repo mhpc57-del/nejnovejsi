@@ -1,0 +1,73 @@
+{
+  "summary": "Iteration 29 - Admin Dashboard 'Reklama' Tab Testing. All backend APIs (12/12 tests passed) and frontend features verified. Admin promo stats, extend, deactivate, and delete actions all working correctly. Non-admin users properly denied access (403).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration29_admin_promo.py",
+    "/app/test_reports/pytest/pytest_results_iteration29.xml",
+    ".screenshots/admin_reklama_tab.png",
+    ".screenshots/admin_promo_actions_test.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration29_admin_promo.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!"
+  },
+  "seed_data_creation": "Created test promoted suppliers during API testing (TEST_AdminPromo_*)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Admin Reklama tab fully functional. Backend endpoints: GET /api/admin/promoted-stats, DELETE /api/admin/promoted/{id}, PUT /api/admin/promoted/{id}/deactivate, PUT /api/admin/promoted/{id}/extend - all working with proper admin auth. Frontend shows 4 stat cards (active, expired, monthly revenue, total revenue) and table with action buttons (extend, deactivate for active, delete). Non-admin users get 403 for all admin promo endpoints.",
+  "features_tested": {
+    "ADMIN_PROMO_STATS_API": {
+      "status": "PASSED",
+      "details": "GET /api/admin/promoted-stats returns active, expired, pending counts, revenue_total, revenue_month, and suppliers array"
+    },
+    "ADMIN_PROMO_DELETE": {
+      "status": "PASSED",
+      "details": "DELETE /api/admin/promoted/{id} successfully deletes promoted supplier entry"
+    },
+    "ADMIN_PROMO_DEACTIVATE": {
+      "status": "PASSED",
+      "details": "PUT /api/admin/promoted/{id}/deactivate sets active=false"
+    },
+    "ADMIN_PROMO_EXTEND": {
+      "status": "PASSED",
+      "details": "PUT /api/admin/promoted/{id}/extend adds 1 day to paid_until"
+    },
+    "ADMIN_PROMO_AUTH_403": {
+      "status": "PASSED",
+      "details": "Non-admin users (customer) get 403 for all admin/promoted endpoints"
+    },
+    "FRONTEND_PROMO_TAB": {
+      "status": "PASSED",
+      "details": "Admin dashboard shows 'Reklama' tab in sidebar with Megaphone icon"
+    },
+    "FRONTEND_PROMO_STATS": {
+      "status": "PASSED",
+      "details": "Clicking 'Načíst statistiky reklam' loads 4 stat cards and table with promo data"
+    },
+    "FRONTEND_PROMO_ACTIONS": {
+      "status": "PASSED",
+      "details": "Extend (CalendarPlus), deactivate (Power, only for active), and delete (Trash) buttons work correctly"
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
