@@ -132,11 +132,11 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
     await db.demands.insert_one(demand)
     
     try:
-        # Find suppliers matching category with active subscription
+        # Find suppliers matching category (notify all, not just subscribed)
         all_suppliers = await db.users.find({
             "role": {"$in": ["supplier", "customer_supplier"]},
             "categories": demand_data.category,
-            "subscription_active": True
+            "is_blocked": {"$ne": True}
         }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
         
         # Filter by distance if radius is set and demand has coordinates
@@ -174,6 +174,14 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
                 demand_category=demand_data.category,
                 demand_address=demand_data.address or "",
                 customer_name=demand.get("customer_name", "")
+            )
+        
+        # Send confirmation SMS to customer
+        customer_phone = current_user.get("phone")
+        if customer_phone:
+            notification_service.sms_service.send_sms(
+                customer_phone,
+                f"CraftBolt: Vase zakazka '{demand_data.title}' byla uspesne vytvorena. Oslovili jsme {len(suppliers)} dodavatelu ve vasi oblasti."
             )
     except Exception as e:
         logger.error(f"Failed to send new demand notifications: {str(e)}")
