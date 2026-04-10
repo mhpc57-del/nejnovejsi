@@ -27,6 +27,16 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
   - AdminDashboard: dark mode toggle pridany do sidebaru
   - Dalsi stranky: InvoicesPage, ContactPage, TermsPage, PaymentPage, atd.
   - Testovano: iterace 25 (18/18), 26 (19/19), 27 (95% - vsechny hlavni funkce OK)
+- **Homepage updaty (2026-04-10)**:
+  - Hero heading: "spolehlive" v oranzove
+  - Rocni cenovy prepinac (10% sleva)
+  - Promoted Suppliers sekce (6 karet, 300 Kc/den + DPH)
+- **Bug fixy (2026-04-11)**:
+  - SMS: Opraveno pouzitim Twilio Messaging Service SID s Alpha Sender 'CraftBolt'
+  - Chat dark mode: Opravena viditelnost textu v tmavem rezimu
+  - Promoted suppliers: Opraveny 3 bugy (STRIPE_API_KEY, FRONTEND_URL, Plus import)
+  - notifications.py: Opraveno self.sms_service.send_sms() na 2 mistech
+  - Testovano: iterace 28 (100% backend, 100% frontend)
 
 ## Architektura
 - Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
@@ -34,7 +44,8 @@ Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
 - Mobile: React Native Expo (/app/mobile) - PAUSOVANO
 
 ## Backlog
-- P1: Overeni Twilio SMS doruceni (ceka na potvrzeni uzivatele)
+- P0: Stripe reklamni karty - nastavit spravny Stripe klic (ceka na uzivatele)
 - P1: Stripe Live finalizace (ceka na uzivatele + ucetni)
+- P1: Overeni Twilio SMS doruceni na produkci (po deployi)
 - P2: Sledovani rychlosti dorucovani e-mailu pres Wedos SMTP
 - P2: Mobilni aplikace - PAUSOVANO
