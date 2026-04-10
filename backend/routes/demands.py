@@ -132,12 +132,13 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
     await db.demands.insert_one(demand)
     
     try:
-        # Find suppliers matching category (notify all, not just subscribed)
+        # Find suppliers matching category — exclude the demand creator
         all_suppliers = await db.users.find({
             "role": {"$in": ["supplier", "customer_supplier"]},
             "categories": demand_data.category,
-            "is_blocked": {"$ne": True}
-        }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
+            "is_blocked": {"$ne": True},
+            "id": {"$ne": current_user["id"]}
+        }, {"_id": 0, "id": 1, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
         
         logger.info(f"New demand '{demand_data.title}' category='{demand_data.category}': found {len(all_suppliers)} matching suppliers")
         

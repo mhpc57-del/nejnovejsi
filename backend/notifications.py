@@ -111,12 +111,18 @@ class SMSService:
     def send_sms(self, to_phone: str, message: str) -> bool:
         """Send an SMS using Twilio"""
         if not self.client:
-            logger.warning("Twilio client not initialized")
+            logger.warning("Twilio client not initialized - SMS skipped")
             return False
             
         if not self.phone_number:
-            logger.warning("Twilio phone number not configured - SMS disabled")
+            logger.warning("Twilio phone number not configured - SMS skipped")
             return False
+        
+        if not to_phone:
+            logger.warning("No phone number provided - SMS skipped")
+            return False
+        
+        original_phone = to_phone
         
         # Normalize phone number - remove spaces, dashes, parentheses
         to_phone = ''.join(c for c in to_phone if c.isdigit() or c == '+')
@@ -128,17 +134,19 @@ class SMSService:
             else:
                 to_phone = '+420' + to_phone.lstrip('0')
         
+        logger.info(f"SMS: sending to {to_phone} (original: {original_phone})")
+        
         try:
             msg = self.client.messages.create(
                 body=message,
                 from_=self.phone_number,
                 to=to_phone
             )
-            logger.info(f"SMS sent to {to_phone}: {msg.sid}")
+            logger.info(f"SMS sent to {to_phone}: SID={msg.sid} Status={msg.status}")
             return True
             
         except TwilioRestException as e:
-            logger.error(f"Failed to send SMS to {to_phone}: {str(e)}")
+            logger.error(f"SMS FAILED to {to_phone}: {str(e)}")
             return False
 
 # ============ NOTIFICATION TEMPLATES ============
@@ -487,9 +495,12 @@ class NotificationService:
         
         push_tokens = []
         for supplier in limited_suppliers:
+            logger.info(f"Notifying supplier: email={supplier.get('email')}, phone={supplier.get('phone', 'NONE')}")
             await self.email_service.send_email(supplier["email"], subject, html)
             if supplier.get("phone"):
                 self.sms_service.send_sms(supplier["phone"], sms_text)
+            else:
+                logger.warning(f"Supplier {supplier.get('email')} has no phone number")
             if supplier.get("push_token"):
                 push_tokens.append(supplier["push_token"])
         
