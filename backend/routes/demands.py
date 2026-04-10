@@ -139,6 +139,8 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
             "is_blocked": {"$ne": True}
         }, {"_id": 0, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
         
+        logger.info(f"New demand '{demand_data.title}' category='{demand_data.category}': found {len(all_suppliers)} matching suppliers")
+        
         # Filter by distance if radius is set and demand has coordinates
         if demand_data.supplier_radius and demand_data.latitude and demand_data.longitude:
             from math import radians, sin, cos, sqrt, atan2
@@ -154,7 +156,6 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
             for s in all_suppliers:
                 areas = s.get("service_areas", [])
                 if not areas:
-                    # Supplier without service area — include if within radius
                     filtered.append(s)
                     continue
                 for area in areas:
@@ -163,9 +164,12 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
                     if dist <= demand_data.supplier_radius + area_radius:
                         filtered.append(s)
                         break
+            logger.info(f"Radius filter ({demand_data.supplier_radius}km): {len(all_suppliers)} -> {len(filtered)} suppliers")
             suppliers = filtered
         else:
             suppliers = all_suppliers
+        
+        logger.info(f"Notifying {len(suppliers)} suppliers: {[s.get('email','?') for s in suppliers[:5]]}")
         
         if suppliers:
             await notification_service.notify_new_demand(
