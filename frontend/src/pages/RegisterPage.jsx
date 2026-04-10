@@ -943,9 +943,14 @@ const RegisterPage = () => {
               <p className="text-gray-500 mb-2">
                 Na adresu <strong className="text-gray-900">{registeredEmail}</strong> jsme odeslali ověřovací email.
               </p>
-              <p className="text-gray-500 mb-8">
+              <p className="text-gray-500 mb-4">
                 Klikněte na odkaz v emailu pro dokončení registrace.
               </p>
+              
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6" data-testid="spam-warning">
+                <p className="text-sm font-semibold text-amber-800 mb-1">Zkontrolujte také složku SPAM / Hromadné</p>
+                <p className="text-xs text-amber-700">Ověřovací email může být v některých schránkách automaticky přesunut do spamu. Pokud email nenajdete ve složce Doručené, podívejte se prosím do složky Spam nebo Hromadné a označte odesílatele jako důvěryhodného.</p>
+              </div>
               
               {claimDemandId && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6" data-testid="claim-demand-info">
