@@ -1,15 +1,14 @@
 """
 CraftBolt Notification Service
-Handles SMS (Twilio), Email (SMTP), and Push notifications
+Handles SMS (BulkGate), Email (SMTP), and Push notifications
 """
 
 import os
 import logging
 import aiosmtplib
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from twilio.rest import Client as TwilioClient
-from twilio.base.exceptions import TwilioRestException
 from typing import Optional, List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -93,30 +92,26 @@ class EmailService:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
             return False
 
-# ============ SMS SERVICE ============
+# ============ SMS SERVICE (BulkGate) ============
 
 class SMSService:
+    BULKGATE_URL = "https://portal.bulkgate.com/api/1.0/simple/transactional"
+    
     def __init__(self):
-        self.account_sid = os.environ.get('TWILIO_ACCOUNT_SID', '')
-        self.auth_token = os.environ.get('TWILIO_AUTH_TOKEN', '')
-        self.phone_number = os.environ.get('TWILIO_PHONE_NUMBER', '')
-        self.messaging_service_sid = os.environ.get('TWILIO_MESSAGING_SERVICE_SID', '')
-        self.client = None
+        self.app_id = os.environ.get('BULKGATE_APP_ID', '')
+        self.app_token = os.environ.get('BULKGATE_APP_TOKEN', '')
+        self.sender_id = os.environ.get('BULKGATE_SENDER_ID', 'CraftBolt')
+        self.sender_id_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', 'gText')
         
-        if self.account_sid and self.auth_token:
-            try:
-                self.client = TwilioClient(self.account_sid, self.auth_token)
-            except Exception as e:
-                logger.error(f"Failed to initialize Twilio client: {str(e)}")
+        if self.app_id and self.app_token:
+            logger.info(f"BulkGate SMS initialized (App ID: {self.app_id[:8]}...)")
+        else:
+            logger.warning("BulkGate credentials not configured - SMS will be skipped")
     
     def send_sms(self, to_phone: str, message: str) -> bool:
-        """Send an SMS using Twilio Messaging Service"""
-        if not self.client:
-            logger.warning("Twilio client not initialized - SMS skipped")
-            return False
-            
-        if not self.messaging_service_sid and not self.phone_number:
-            logger.warning("Twilio messaging service SID and phone number not configured - SMS skipped")
+        """Send an SMS using BulkGate API"""
+        if not self.app_id or not self.app_token:
+            logger.warning("BulkGate not configured - SMS skipped")
             return False
         
         if not to_phone:
@@ -125,36 +120,44 @@ class SMSService:
         
         original_phone = to_phone
         
-        # Normalize phone number - remove spaces, dashes, parentheses
-        to_phone = ''.join(c for c in to_phone if c.isdigit() or c == '+')
+        # Normalize phone number - remove spaces, dashes, parentheses, +
+        to_phone = ''.join(c for c in to_phone if c.isdigit())
         
-        # Format phone number for Czech Republic
-        if to_phone and not to_phone.startswith('+'):
-            if to_phone.startswith('00'):
-                to_phone = '+' + to_phone[2:]
-            else:
-                to_phone = '+420' + to_phone.lstrip('0')
+        # Format for BulkGate: international format without + or 00
+        # Czech numbers: ensure they start with 420
+        if to_phone.startswith('00'):
+            to_phone = to_phone[2:]
+        elif len(to_phone) == 9:
+            # Czech local number (9 digits) -> prepend 420
+            to_phone = '420' + to_phone
+        elif to_phone.startswith('420'):
+            pass  # already correct
         
         logger.info(f"SMS: sending to {to_phone} (original: {original_phone})")
         
         try:
-            # Prefer Messaging Service SID (supports Alpha Sender ID)
-            if self.messaging_service_sid:
-                msg = self.client.messages.create(
-                    body=message,
-                    messaging_service_sid=self.messaging_service_sid,
-                    to=to_phone
-                )
-            else:
-                msg = self.client.messages.create(
-                    body=message,
-                    from_=self.phone_number,
-                    to=to_phone
-                )
-            logger.info(f"SMS sent to {to_phone}: SID={msg.sid} Status={msg.status}")
-            return True
+            payload = {
+                "application_id": self.app_id,
+                "application_token": self.app_token,
+                "number": to_phone,
+                "text": message,
+                "sender_id": self.sender_id_value,
+                "sender_id_value": self.sender_id,
+            }
             
-        except TwilioRestException as e:
+            response = requests.post(self.BULKGATE_URL, json=payload, timeout=15)
+            data = response.json()
+            
+            if data.get("data", {}).get("status") == "accepted" or response.status_code == 200:
+                msg_id = data.get("data", {}).get("sms_id", "unknown")
+                logger.info(f"SMS sent to {to_phone}: ID={msg_id} Status=accepted")
+                return True
+            else:
+                error = data.get("error", data)
+                logger.error(f"SMS FAILED to {to_phone}: {error}")
+                return False
+                
+        except Exception as e:
             logger.error(f"SMS FAILED to {to_phone}: {str(e)}")
             return False
 
