@@ -210,7 +210,7 @@ const HomePage = () => {
               <motion.h1 variants={fadeUp} custom={2} className="text-5xl sm:text-6xl font-semibold tracking-tighter leading-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
                 <span className="text-orange-500">Jednoduše,</span> rychle,{' '}
                 efektivně,{' '}
-                spolehlivě.
+                <span className="text-orange-500">spolehlivě.</span>
               </motion.h1>
               <motion.p variants={fadeUp} custom={3} className="text-lg text-zinc-500 dark:text-zinc-400 mt-6 leading-relaxed max-w-md">
                 Zadejte poptávku, nebo se registrujte jako dodavatel. Začněte teď hned.
@@ -616,8 +616,8 @@ const HomePage = () => {
             </motion.h2>
           </motion.div>
 
-          <motion.div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            {Array.from({ length: 6 }).map((_, i) => {
+          <motion.div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+            {Array.from({ length: 8 }).map((_, i) => {
               const supplier = promotedSuppliers[i];
               if (supplier) {
                 const logoUrl = supplier.logo_url
@@ -663,7 +663,7 @@ const HomePage = () => {
             })}
           </motion.div>
 
-          {promotedSuppliers.length >= 6 && (
+          {promotedSuppliers.length >= 8 && (
             <div className="text-center mt-8">
               <button onClick={() => setShowPromoForm(true)}
                 className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25"
