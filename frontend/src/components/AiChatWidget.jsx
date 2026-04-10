@@ -14,6 +14,13 @@ const AiChatWidget = () => {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Listen for custom event from mobile nav
+    const handler = () => setIsOpen(true);
+    window.addEventListener('open-ai-chat', handler);
+    return () => window.removeEventListener('open-ai-chat', handler);
+  }, []);
+
+  useEffect(() => {
     // Load or create session ID
     const stored = localStorage.getItem('craftbolt_chat_session');
     if (stored) {
@@ -124,7 +131,7 @@ const AiChatWidget = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
+          className="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all items-center justify-center group hidden lg:flex"
           data-testid="ai-chat-toggle"
         >
           <ChatCircleDots weight="fill" className="w-7 h-7" />
@@ -137,10 +144,11 @@ const AiChatWidget = () => {
       {/* Chat window */}
       {isOpen && (
         <div
-          className="fixed bottom-6 right-6 z-[9999] w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
-          style={{ height: '520px' }}
+          className="fixed bottom-0 right-0 lg:bottom-6 lg:right-6 z-[9999] w-full lg:w-[380px] lg:max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 lg:rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-700 flex flex-col overflow-hidden"
+          style={{ height: '100dvh', maxHeight: 'calc(var(--vh, 1vh) * 100)' }}
           data-testid="ai-chat-window"
         >
+          <style>{`:root { --vh: ${typeof window !== 'undefined' ? window.innerHeight * 0.01 : 1}px; } @media (min-width: 1024px) { [data-testid="ai-chat-window"] { height: 520px !important; max-height: 520px !important; } }`}</style>
           {/* Header */}
           <div className="bg-gray-900 px-4 py-3 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2.5">

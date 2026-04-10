@@ -5,7 +5,8 @@ import axios from 'axios';
 import { 
   House, Briefcase, User, SignOut, MapPin, Calendar, ArrowRight, 
   Check, Clock, Star, Camera, X, CurrencyDollar, Warning,
-  CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle, Receipt
+  CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle, Receipt,
+  DotsThreeCircle, Moon, Sun, ChatCircleDots
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -54,6 +55,7 @@ const SupplierDashboard = () => {
   const [myLocation, setMyLocation] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadDemands, setUnreadDemands] = useState([]);
   const [cancelDialog, setCancelDialog] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -637,12 +639,74 @@ const SupplierDashboard = () => {
             <User className="w-6 h-6" />
             <span className="text-[10px] font-medium">Profil</span>
           </Link>
-          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-red-500 transition-colors" data-testid="mobile-nav-logout">
-            <SignOut className="w-6 h-6" />
-            <span className="text-[10px] font-medium">Odhlásit</span>
+          <button onClick={() => setShowMobileMenu(true)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-more">
+            <DotsThreeCircle className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Více</span>
           </button>
         </div>
       </nav>
+
+      {/* Mobile "Více" Drawer */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 lg:hidden" data-testid="mobile-menu-drawer">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-200">
+            <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-5" />
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <Link to="/faktury" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-invoices">
+                <div className="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Faktury</span>
+              </Link>
+              <Link to="/dodavatel/prijmy" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-income">
+                <div className="w-11 h-11 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center">
+                  <CurrencyDollar className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Příjmy</span>
+              </Link>
+              <button onClick={() => { setShowMobileMenu(false); window.dispatchEvent(new CustomEvent('open-ai-chat')); }} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-ai-chat">
+                <div className="w-11 h-11 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center">
+                  <ChatCircleDots className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">AI Chat</span>
+              </button>
+              <button onClick={() => { setShowMobileMenu(false); document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-theme">
+                <div className="w-11 h-11 bg-zinc-100 dark:bg-zinc-700 rounded-full flex items-center justify-center">
+                  <Moon className="w-5 h-5 text-zinc-600 dark:text-zinc-300 dark:hidden" />
+                  <Sun className="w-5 h-5 text-yellow-500 hidden dark:block" />
+                </div>
+                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Režim</span>
+              </button>
+              {user?.role === 'customer_supplier' && (
+                <Link to="/zakaznik" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-switch-role">
+                  <div className="w-11 h-11 bg-purple-100 dark:bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium text-center">Zákazník</span>
+                </Link>
+              )}
+            </div>
+            {user?.trial_ends_at && (
+              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-3 mb-4" data-testid="mobile-trial-info">
+                <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">
+                  Zkušební doba: {new Date(user.trial_ends_at) > new Date()
+                    ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}`
+                    : 'Vypršela'}
+                </p>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button onClick={() => { setShowMobileMenu(false); setShowDeactivate(true); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-red-500 bg-red-50 dark:bg-red-500/10 rounded-xl text-sm font-medium" data-testid="mobile-menu-deactivate">
+                <Trash className="w-4 h-4" /> Zrušit účet
+              </button>
+              <button onClick={() => { setShowMobileMenu(false); handleLogout(); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-sm font-medium" data-testid="mobile-menu-logout">
+                <SignOut className="w-4 h-4" /> Odhlásit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Deactivate Account Modal */}
       {/* Cannot Complete Dialog */}
