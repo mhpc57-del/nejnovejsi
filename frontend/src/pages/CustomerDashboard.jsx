@@ -223,13 +223,11 @@ const CustomerDashboard = () => {
               const unreadCount = stat.filter === 'all' 
                 ? unreadDemands.length
                 : unreadDemands.filter(u => u.demand_status === stat.filter).length;
-              // Green badge for new activity (last 24h)
+              // Green badge only for incoming activity (not own actions)
               const now = new Date();
               const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
               let newCount = 0;
-              if (stat.filter === 'open') {
-                newCount = demands.filter(d => d.status === 'open' && new Date(d.created_at) > dayAgo).length;
-              } else if (stat.filter === 'completed') {
+              if (stat.filter === 'completed') {
                 newCount = demands.filter(d => d.status === 'completed' && d.completed_at && new Date(d.completed_at) > dayAgo).length;
               } else if (stat.filter === 'in_progress') {
                 newCount = demands.filter(d => d.status === 'in_progress' && d.accepted_at && new Date(d.accepted_at) > dayAgo).length;
