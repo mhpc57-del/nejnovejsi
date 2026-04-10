@@ -811,6 +811,24 @@ const RegisterPage = () => {
         return (
           <div>
             <p className="text-gray-600 mb-3">Vyberte kategorie služeb, které nabízíte:</p>
+
+            {/* Selected categories panel */}
+            {formData.categories.length > 0 && (
+              <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-xl" data-testid="selected-categories-panel">
+                <p className="text-xs font-medium text-orange-600 mb-2">Vybráno ({formData.categories.length}):</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {formData.categories.map((cat) => (
+                    <span key={cat} className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-500 text-white rounded-lg text-xs font-medium" data-testid={`selected-tag-${cat.replace(/\s+/g, '-').toLowerCase()}`}>
+                      {cat}
+                      <button type="button" onClick={() => handleCategoryToggle(cat)} className="hover:text-orange-200 ml-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Category search filter */}
             <div className="relative mb-3">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -841,7 +859,6 @@ const RegisterPage = () => {
                 ))
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-2">Vybráno: {formData.categories.length} kategorií</p>
 
             {/* Custom category */}
             <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
