@@ -40,6 +40,7 @@ def user_to_response(user: dict) -> UserResponse:
         certifications=user.get("certifications", []),
         trust_score=user.get("trust_score", 0),
         sms_notifications=user.get("sms_notifications", False),
+        welcome_seen=user.get("welcome_seen", False),
         punctuality_score=user.get("punctuality_score"),
         avg_arrival_minutes=user.get("avg_arrival_minutes"),
         preferred_languages=user.get("preferred_languages", []),

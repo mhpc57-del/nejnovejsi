@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
+import WelcomeModal from '../components/WelcomeModal';
 import { 
   House, Plus, List, User, SignOut, Bell, MapPin, 
   Calendar, Clock, ArrowRight, X, Check, Image as ImageIcon, Trash, Warning,
@@ -109,7 +110,7 @@ const CustomerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      {/* Sidebar */}
+      <WelcomeModal user={user} token={token} API={API} />
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-200/60 dark:border-zinc-800/60 p-6 hidden lg:block">
         <Link to="/" className="flex items-center mb-10">
           <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>

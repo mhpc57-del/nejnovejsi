@@ -45,6 +45,17 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
     return updated
 
 
+
+@router.post("/users/welcome-seen")
+async def mark_welcome_seen(current_user: dict = Depends(get_current_user)):
+    """Mark welcome modal as seen for this user"""
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"welcome_seen": True}}
+    )
+    return {"message": "Welcome seen"}
+
+
 @router.post("/users/location")
 async def update_location(location: LocationUpdate, current_user: dict = Depends(get_current_user)):
     await db.users.update_one(

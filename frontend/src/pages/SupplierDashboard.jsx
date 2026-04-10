@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
+import WelcomeModal from '../components/WelcomeModal';
 import { 
   House, Briefcase, User, SignOut, MapPin, Calendar, ArrowRight, 
   Check, Clock, Star, Camera, X, CurrencyDollar, Warning,
@@ -388,6 +389,7 @@ const SupplierDashboard = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+      <WelcomeModal user={user} token={token} API={API} />
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-200/60 dark:border-zinc-800/60 p-6 hidden lg:block">
         <Link to="/" className="flex items-center mb-10">

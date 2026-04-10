@@ -88,6 +88,7 @@ class UserResponse(BaseModel):
     certifications: List[dict] = []
     trust_score: int = 0
     sms_notifications: bool = False
+    welcome_seen: bool = False
     punctuality_score: Optional[float] = None
     avg_arrival_minutes: Optional[float] = None
     preferred_languages: List[str] = []
