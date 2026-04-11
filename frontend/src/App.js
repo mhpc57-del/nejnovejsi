@@ -21,6 +21,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordResetPage';
 import InvoicesPage from './pages/InvoicesPage';
 import FaqPage from './pages/FaqPage';
+import LogoShowcase from './pages/LogoShowcase';
 import AiChatWidget from './components/AiChatWidget';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -174,6 +175,7 @@ function App() {
           <Route path="/obchodni-podminky" element={<TermsPage />} />
           <Route path="/kontakt" element={<ContactPage />} />
           <Route path="/caste-dotazy" element={<FaqPage />} />
+          <Route path="/logo-navrhy" element={<LogoShowcase />} />
           <Route path="/podminky-opakovanych-plateb" element={<RecurringPaymentsPage />} />
           
           {/* Dashboard router */}
