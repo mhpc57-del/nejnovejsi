@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
 import ThemeToggle from '../components/ThemeToggle';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const DemandDetail = () => {
   const { id } = useParams();
@@ -573,8 +574,7 @@ const DemandDetail = () => {
           </button>
           <div className="flex-1">
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-bold text-zinc-900 dark:text-white">Craft</span>
-              <span className="text-xl font-bold text-orange-500">Bolt</span>
+              <CraftBoltLogo size="xs" />
             </Link>
           </div>
           {showMapButton && (

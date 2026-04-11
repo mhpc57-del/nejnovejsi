@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CaretDown, Question, ArrowLeft, Envelope } from '@phosphor-icons/react';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const faqs = [
   {
@@ -85,9 +86,7 @@ const FaqPage = () => {
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <ArrowLeft className="w-5 h-5 text-zinc-400" />
-            <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-              Craft<span className="text-orange-500">Bolt</span>
-            </span>
+            <CraftBoltLogo size="xs" />
           </Link>
           <Link
             to="/kontakt"

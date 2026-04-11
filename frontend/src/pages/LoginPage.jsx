@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Eye, EyeSlash, ArrowLeft } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -60,9 +61,7 @@ const LoginPage = () => {
       <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <svg width="24" height="24" viewBox="0 0 64 64" fill="none"><path d="M20 24C20 17.4 25.4 12 32 12C38.6 12 44 17.4 44 24H20Z" fill="#f97316"/><rect x="17" y="23" width="30" height="5" rx="2.5" fill="#f97316"/><circle cx="32" cy="34" r="6" className="fill-zinc-900 dark:fill-white"/><path d="M24 42C24 42 26 39 32 39C38 39 40 42 40 42V50C40 51.1 39.1 52 38 52H26C24.9 52 24 51.1 24 50V42Z" className="fill-zinc-900 dark:fill-white"/><rect x="41" y="38" width="4" height="16" rx="2" fill="#f97316" transform="rotate(15 43 38)"/><circle cx="44" cy="37" r="3" stroke="#f97316" strokeWidth="2" fill="none"/><rect x="18" y="42" width="8" height="3.5" rx="1.75" className="fill-zinc-900 dark:fill-white"/><rect x="38" y="42" width="8" height="3.5" rx="1.75" className="fill-zinc-900 dark:fill-white"/><path d="M31 43L33 46H30L32 49" stroke="#f97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
-            <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-sm">

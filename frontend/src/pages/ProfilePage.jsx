@@ -10,6 +10,7 @@ import {
   MagnifyingGlass, Globe, X, Plus, Image as ImageIcon, Trash, Clock
 } from '@phosphor-icons/react';
 import ThemeToggle from '../components/ThemeToggle';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 // Fix default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -425,8 +426,7 @@ const ProfilePage = () => {
               <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
             </button>
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
-              <span className="text-xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
+              <CraftBoltLogo size="xs" />
             </Link>
           </div>
           <ThemeToggle />

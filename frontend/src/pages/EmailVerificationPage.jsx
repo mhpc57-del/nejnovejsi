@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API } from '../App';
 import { Check, X, ArrowRight } from '@phosphor-icons/react';
 import ThemeToggle from '../components/ThemeToggle';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const EmailVerificationPage = () => {
   const { token } = useParams();
@@ -61,8 +62,7 @@ const EmailVerificationPage = () => {
       <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
-            <span className="text-2xl font-bold text-orange-500">Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <ThemeToggle />
         </div>

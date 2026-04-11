@@ -11,6 +11,7 @@ import {
   Buildings, UserCircle, Check, MapPin, Camera, MagnifyingGlass, X, Image as ImageIcon, Plus, Trash, MapTrifold
 } from '@phosphor-icons/react';
 import ThemeToggle from '../components/ThemeToggle';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 // Leaflet marker fix
 delete L.Icon.Default.prototype._getIconUrl;
@@ -1151,8 +1152,7 @@ const RegisterPage = () => {
       <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
-            <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-sm">

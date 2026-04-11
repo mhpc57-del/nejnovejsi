@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
 import { CheckCircle, XCircle, CreditCard, Spinner, ArrowLeft } from '@phosphor-icons/react';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -244,8 +245,7 @@ const PricingPage = () => {
       <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <a href="/" className="text-2xl font-bold">
-            <span className="text-zinc-900 dark:text-white">Craft</span>
-            <span className="text-orange-500">Bolt</span>
+            <CraftBoltLogo size="sm" />
           </a>
           <button
             onClick={() => navigate(-1)}

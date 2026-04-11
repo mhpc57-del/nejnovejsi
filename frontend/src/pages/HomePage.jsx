@@ -156,19 +156,7 @@ const HomePage = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-5">
               <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
-                <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 24C20 17.4 25.4 12 32 12C38.6 12 44 17.4 44 24H20Z" fill="#f97316" />
-                  <rect x="17" y="23" width="30" height="5" rx="2.5" fill="#f97316" />
-                  <circle cx="32" cy="34" r="6" fill="currentColor" className="text-zinc-900 dark:text-white" />
-                  <path d="M24 42C24 42 26 39 32 39C38 39 40 42 40 42V50C40 51.1 39.1 52 38 52H26C24.9 52 24 51.1 24 50V42Z" fill="currentColor" className="text-zinc-900 dark:text-white" />
-                  <rect x="41" y="38" width="4" height="16" rx="2" fill="#f97316" transform="rotate(15 43 38)" />
-                  <circle cx="44" cy="37" r="3" stroke="#f97316" strokeWidth="2" fill="none" />
-                  <rect x="18" y="42" width="8" height="3.5" rx="1.75" fill="currentColor" className="text-zinc-900 dark:text-white" />
-                  <rect x="38" y="42" width="8" height="3.5" rx="1.75" fill="currentColor" className="text-zinc-900 dark:text-white" />
-                  <path d="M31 43L33 46H30L32 49" stroke="#f97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Craft</span>
-                <span className="text-2xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
+                <CraftBoltLogo size="sm" />
               </Link>
               <div className="hidden sm:block">
                 <HeaderWidget />
@@ -716,8 +704,7 @@ const HomePage = () => {
           <div className="grid md:grid-cols-3 gap-8 mb-10">
             <div>
               <div className="flex items-center mb-4">
-                <span className="text-xl font-bold tracking-tight" style={{ fontFamily: 'Outfit' }}>Craft</span>
-                <span className="text-xl font-bold tracking-tight text-orange-500" style={{ fontFamily: 'Outfit' }}>Bolt</span>
+                <CraftBoltLogo size="xs" />
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed">Platforma pro propojení zákazníků s ověřenými řemeslníky v okolí.</p>
             </div>

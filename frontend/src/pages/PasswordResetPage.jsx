@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { EnvelopeSimple, LockKey, ArrowLeft, CheckCircle, Warning } from '@phosphor-icons/react';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
@@ -49,8 +50,7 @@ const ForgotPasswordPage = () => {
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-6">
           <Link to="/" className="inline-block mb-4">
-            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
-            <span className="text-2xl font-bold text-orange-500">Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Zapomenuté heslo</h2>
           <p className="text-zinc-500 mt-1">Zadejte váš email a pošleme vám odkaz pro obnovení hesla</p>
@@ -164,8 +164,7 @@ const ResetPasswordPage = () => {
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-6">
           <Link to="/" className="inline-block mb-4">
-            <span className="text-2xl font-bold text-zinc-900 dark:text-white">Craft</span>
-            <span className="text-2xl font-bold text-orange-500">Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Nastavení nového hesla</h2>
         </div>

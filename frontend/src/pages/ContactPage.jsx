@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Envelope, MapPin, Clock } from '@phosphor-icons/react';
+import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const ContactPage = () => {
   return (
@@ -9,8 +10,7 @@ const ContactPage = () => {
       <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold">
-            <span className="text-zinc-900 dark:text-white">Craft</span>
-            <span className="text-orange-500">Bolt</span>
+            <CraftBoltLogo size="sm" />
           </Link>
           <Link to="/" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-white">
             <ArrowLeft weight="bold" />
