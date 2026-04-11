@@ -9,12 +9,12 @@ import {
   ShieldCheck, 
   CurrencyDollar, 
   DeviceMobile, 
-  MapPin,
+
   Lightning,
   ChatCircle,
   Tag,
   Star,
-  Users,
+
   ArrowRight,
   Check,
   X,
@@ -122,17 +122,20 @@ const HomePage = () => {
     }
   };
 
-  const advantages = [
-    { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost přivýdělku jako zaměstnanec. Nepotřebujete živnostenský list." },
+  const customerAdvantages = [
     { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
-    { icon: DeviceMobile, title: "Mobilní aplikace", desc: "Nativní aplikace pro Android i iOS je ve vývoji.", badge: "Již brzy" },
-    { icon: ShieldCheck, title: "Neřešíme registry", desc: "Každý se může dostat do problémů. Dáváme druhou šanci." },
-    { icon: MapPin, title: "Geolokace", desc: "Zjištění online polohy mezi zákazníkem a dodavatelem." },
-    { icon: Lightning, title: "Rychlé zakázky", desc: "Bez zbytečného papírování. Zakázka do 5 minut." },
+    { icon: Tag, title: "Rychlé zjištění ceny", desc: "Dodavatel nabídne odhadovanou cenu před zahájením." },
+    { icon: ShieldCheck, title: "Ověřené profily dodavatelů", desc: "Žádné FAKE účty. Pouze ověření uživatelé." },
+    { icon: Star, title: "Hodnocení dodavatelů", desc: "Hodnocení udělují skuteční zákazníci." },
     { icon: ChatCircle, title: "Online CHAT", desc: "Diskrétní chat přímo v aplikaci." },
-    { icon: Tag, title: "Zjištění ceny", desc: "Dodavatel nabídne odhadovanou cenu před zahájením." },
-    { icon: Star, title: "Hodnocení", desc: "Hodnocení udělují skuteční zákazníci." },
-    { icon: Users, title: "Skutečné profily", desc: "Žádné FAKE účty. Pouze ověření uživatelé." },
+  ];
+
+  const supplierAdvantages = [
+    { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
+    { icon: Lightning, title: "Rychlé získání zakázky", desc: "Bez zbytečného papírování. Zakázka do 5 minut." },
+    { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost jednorázového přivýdělku bez ŽL." },
+    { icon: ShieldCheck, title: "Neřešíme registry", desc: "Každý se může dostat do problémů. Dáváme druhou šanci." },
+    { icon: ChatCircle, title: "Online CHAT", desc: "Diskrétní chat přímo v aplikaci." },
   ];
 
   const steps = [
@@ -222,33 +225,61 @@ const HomePage = () => {
       )}
 
       {/* ───── Advantages ───── */}
-      <section className="py-24 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.div className="mb-16" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
-            <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Proč si vybrat nás</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
-              Výhody oproti konkurenci
-            </motion.h2>
-          </motion.div>
-          
-          <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
-            {advantages.map((adv, index) => (
-              <motion.div key={index} variants={fadeUp} custom={index}
-                className="group bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-black/20 transition-all duration-200"
-              >
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-9 h-9 bg-orange-500/10 rounded-md flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                    <adv.icon weight="duotone" className="w-4.5 h-4.5 text-orange-500" />
+      <section className="py-24 px-6 md:px-12" data-testid="advantages-section">
+        <div className="max-w-7xl mx-auto space-y-20">
+
+          {/* Customer Advantages */}
+          <div data-testid="customer-advantages">
+            <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
+              <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Pro zadavatele</motion.span>
+              <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
+                Výhody pro zákazníky
+              </motion.h2>
+            </motion.div>
+            <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
+              {customerAdvantages.map((adv, index) => (
+                <motion.div key={index} variants={fadeUp} custom={index}
+                  className="group bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-black/20 transition-all duration-200"
+                  data-testid={`customer-adv-${index}`}
+                >
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-9 h-9 bg-orange-500/10 rounded-md flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                      <adv.icon weight="duotone" className="w-4.5 h-4.5 text-orange-500" />
+                    </div>
                   </div>
-                  {adv.badge && (
-                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-[10px] font-bold rounded uppercase tracking-wide">{adv.badge}</span>
-                  )}
-                </div>
-                <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Supplier Advantages */}
+          <div data-testid="supplier-advantages">
+            <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
+              <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Pro dodavatele</motion.span>
+              <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
+                Výhody pro dodavatele
+              </motion.h2>
+            </motion.div>
+            <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
+              {supplierAdvantages.map((adv, index) => (
+                <motion.div key={index} variants={fadeUp} custom={index}
+                  className="group bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-black/20 transition-all duration-200"
+                  data-testid={`supplier-adv-${index}`}
+                >
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-9 h-9 bg-orange-500/10 rounded-md flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                      <adv.icon weight="duotone" className="w-4.5 h-4.5 text-orange-500" />
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+
         </div>
       </section>
 
