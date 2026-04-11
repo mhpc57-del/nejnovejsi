@@ -255,7 +255,7 @@ const HeroSection = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4 }}
-                  className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 min-h-[300px] lg:min-h-[440px] flex flex-col justify-center"
+                  className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 flex flex-col justify-center"
                   data-testid="extra-categories-grid"
                 >
                   <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-5 text-center" style={{ fontFamily: 'Outfit' }}>
@@ -286,12 +286,12 @@ const HeroSection = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className="relative rounded-2xl overflow-hidden h-full"
+                  className="relative rounded-2xl overflow-hidden"
                 >
                   <img
                     src={active.image}
                     alt={active.label}
-                    className="w-full h-full object-cover"
+                    className="w-full object-cover"
                     data-testid="hero-active-image"
                   />
                   {/* Gradient overlay */}
