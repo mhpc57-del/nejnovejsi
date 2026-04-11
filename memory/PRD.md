@@ -6,8 +6,15 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 ## Tech Stack
 - **Frontend**: React, Tailwind CSS, Vite
 - **Backend**: FastAPI, MongoDB
-- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS, Stripe (LIVE subscriptions), Wedos SMTP
+- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS, Stripe (LIVE one-time payments), Wedos SMTP
 - **Mapy**: Photon/Nominatim geocoding, Leaflet
+
+## Cenovy model (AKTUALNI - duben 2026)
+- **Zakaznik**: ZDARMA (vkladani poptavek), volitelne overeni poptavky za 49 Kc
+- **Dodavatel**: Jednorazova platba 190 Kc/mesic NEBO 1.890 Kc/rok (uspora 390 Kc)
+- **Reklamni banner**: 39 Kc/den NEBO 990 Kc/mesic
+- Vsechny ceny vcetne 21% DPH
+- 14denni zkusebni doba ZRUSENA
 
 ## Implementovane funkce
 - JWT autentizace (admin/customer/supplier/customer_supplier)
@@ -16,33 +23,25 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 - CRUD poptavek (demands) s fotkami, mapou, kategorii
 - Chat/zpravy v poptavkach s prilohami
 - Cenove navrhy a potvrzeni
-- Workflow rozpoctu -- dodavatel nahraje rozpocet (PDF/DOC/XLS/JPG/PNG), zakaznik prijme nebo odmitne s povinnym duvodem
-- Fakturace (PDF s ceskymi diakritikami pomoci FreeSans, XML/ISDOC, ZIP export)
-- Stripe recurring subscriptions (99/199/299 CZK/mesic, rocni sleva 10%)
-- Stripe webhooks (invoice.payment_failed, customer.subscription.deleted)
-- Promoted Suppliers (reklamni karty, 363 CZK/rok vcetne DPH) s admin dashboardem
+- Workflow rozpoctu -- dodavatel nahraje rozpocet, zakaznik prijme/odmitne
+- Fakturace (PDF s ceskymi diakritikami FreeSans, XML/ISDOC, ZIP export)
+- Stripe jednorazove platby pro dodavatele (190/1890 CZK)
+- Overeni poptavky za 49 Kc (Stripe checkout)
+- Promoted Suppliers (reklamni karty, 39 Kc/den nebo 990 Kc/mesic)
 - AI Chat asistent (GPT-4o)
 - Dark Mode
 - Mobile navigace (bottom bar + drawer menu)
-- Welcome Modal pro nove uzivatele
-- FAQ stranka
-- Cookie consent
+- Welcome Modal, FAQ, Cookie consent
 - SMS notifikace (BulkGate)
-- Weather + Name day widget
-- Custom SVG logo
+- Weather + Name day widget, Custom SVG logo
 - Hero section s vlastnimi fotkami a 3x3 grid kategorii
 - "Jak to cele funguje" 6-krokovy hexagon diagram
-- "Vyhody pro zakazniky" a "Vyhody pro dodavatele" -- dve oddelene sekce po 5 kartach (dle wireframu)
+- "Vyhody pro zakazniky" a "Vyhody pro dodavatele" -- 2x5 karet
 - Mobilni aplikace CraftBolt banner (ve vyvoji)
-- PDF faktura prilozena k potvrzovacim emailum
-- Paywall/expired trial banner v SupplierDashboard
+- PDF faktura prilozena k emailum
 
 ## Stav testovani
-- Iterace 33: Kompletni audit (Backend 97%, Frontend 95%)
-- Iterace 34: Quote workflow (Backend 100%, Frontend 100%)
-
-## Blokovano
-- P1: Platby pro zakazniky (ceka na pokyny od ucetni)
+- Iterace 35: Pricing restructure (Backend 100%, Frontend 100%)
 
 ## Backlog
 - P2: Komponentizace HomePage.jsx (~870 radku)

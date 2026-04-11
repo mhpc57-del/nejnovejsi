@@ -157,16 +157,6 @@ const CustomerDashboard = () => {
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
-          {user?.trial_ends_at && (
-            <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-3 mb-3" data-testid="trial-info-sidebar">
-              <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
-              <p className="text-xs text-orange-600 dark:text-orange-400">
-                {new Date(user.trial_ends_at) > new Date()
-                  ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}`
-                  : 'Zkušební doba vypršela'}
-              </p>
-            </div>
-          )}
           <button 
             onClick={() => setShowDeactivate(true)}
             className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors mb-1"
