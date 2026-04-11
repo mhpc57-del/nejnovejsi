@@ -25,13 +25,13 @@ const categories = [
   {
     icon: Drill,
     label: 'Hodinový manžel',
-    image: '/hero/instalater.jpg',
+    image: '/hero/hodinovy-manzel.png',
     isLucide: true,
   },
   {
     icon: PaintRoller,
     label: 'Malířské práce',
-    image: '/hero/malir.jpg',
+    image: '/hero/malirske-prace.png',
     isLucide: true,
   },
   {
@@ -43,13 +43,13 @@ const categories = [
   {
     icon: Wall,
     label: 'Zednické práce',
-    image: '/hero/zednik.jpg',
+    image: '/hero/zednicke-prace.png',
     isLucide: false,
   },
   {
     icon: Lightning,
     label: 'Elektrikářské práce',
-    image: '/hero/elektrikar.jpg',
+    image: '/hero/elektrikar-new.jpg',
     isLucide: false,
   },
   {
@@ -181,7 +181,7 @@ const HeroSection = () => {
             </p>
           </div>
 
-          {/* Right — Category label + Photo */}
+          {/* Right — Photo with overlay label */}
           <div className="lg:col-span-7">
             <AnimatePresence mode="wait">
               <motion.div
@@ -190,21 +190,33 @@ const HeroSection = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="relative rounded-2xl overflow-hidden"
               >
-                <h3
-                  className="text-2xl md:text-3xl font-medium text-zinc-900 dark:text-white mb-4"
-                  style={{ fontFamily: 'Outfit' }}
-                  data-testid="hero-active-label"
-                >
-                  {active.label}
-                </h3>
-                <div className="rounded-2xl overflow-hidden">
-                  <img
-                    src={active.image}
-                    alt={active.label}
-                    className="w-full h-[300px] lg:h-[380px] object-cover"
-                    data-testid="hero-active-image"
-                  />
+                <img
+                  src={active.image}
+                  alt={active.label}
+                  className="w-full h-[300px] lg:h-[440px] object-cover"
+                  data-testid="hero-active-image"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                {/* Category label + icon inside image */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
+                      {active.isLucide
+                        ? <active.icon className="w-5 h-5 text-white" strokeWidth={2} />
+                        : <active.icon weight="fill" className="w-5 h-5 text-white" />
+                      }
+                    </div>
+                    <span
+                      className="text-white font-bold text-lg md:text-xl"
+                      style={{ fontFamily: 'Outfit' }}
+                      data-testid="hero-active-label"
+                    >
+                      {active.label}
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
