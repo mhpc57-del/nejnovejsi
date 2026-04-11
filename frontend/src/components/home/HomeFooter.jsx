@@ -8,7 +8,7 @@ export const HomeFooter = () => (
       <div className="grid md:grid-cols-3 gap-8 mb-10">
         <div>
           <div className="flex items-center mb-4">
-            <CraftBoltLogo size="xs" />
+            <CraftBoltLogo size="xs" onDark />
           </div>
           <p className="text-zinc-500 text-sm leading-relaxed">Platforma pro propojení zákazníků s ověřenými řemeslníky v okolí.</p>
         </div>

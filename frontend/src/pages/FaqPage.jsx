@@ -5,14 +5,6 @@ import CraftBoltLogo from '../components/CraftBoltLogo';
 
 const faqs = [
   {
-    question: 'Proč není Vaše platforma pro vkládání poptávek zdarma a je zpoplatněná měsíčním paušálem?',
-    answers: [
-      'Nebudou zde vznikat žádné FAKE poptávky',
-      'Kdo si platí službu, vkládání poptávky myslí opravdu vážně',
-      'Vyšší důvěryhodnost poptávky (nikoliv pouze zjišťování cen konkurence)',
-    ],
-  },
-  {
     question: 'Na mobilu mám špatné responzivní rozložení.',
     answers: [
       'Pošlete nám Váš typ telefonu na email info@craftbolt.cz a problém vyřešíme do 1 hod.',

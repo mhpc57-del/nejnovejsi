@@ -1,4 +1,4 @@
-const CraftBoltLogo = ({ size = 'md', showText = true, className = '', layout = 'horizontal' }) => {
+const CraftBoltLogo = ({ size = 'md', showText = true, className = '', layout = 'horizontal', onDark = false }) => {
   const sizes = {
     xs: { icon: 24, text: 'text-sm', gap: 'gap-1' },
     sm: { icon: 32, text: 'text-lg', gap: 'gap-1.5' },
@@ -9,6 +9,9 @@ const CraftBoltLogo = ({ size = 'md', showText = true, className = '', layout = 
 
   const s = sizes[size] || sizes.md;
   const isHorizontal = layout === 'horizontal';
+  const outerFill = onDark ? 'fill-white' : 'fill-zinc-900 dark:fill-white';
+  const innerFill = onDark ? 'fill-zinc-800' : 'fill-white dark:fill-zinc-800';
+  const textColor = onDark ? 'text-white' : 'text-zinc-900 dark:text-white';
 
   return (
     <div
@@ -16,10 +19,8 @@ const CraftBoltLogo = ({ size = 'md', showText = true, className = '', layout = 
       data-testid="craftbolt-logo"
     >
       <svg width={s.icon} height={s.icon} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Outer hexagon */}
-        <polygon points="60,6 107.3,33 107.3,87 60,114 12.7,87 12.7,33" className="fill-zinc-900 dark:fill-white" />
-        {/* Inner hexagon */}
-        <polygon points="60,18 98,40 98,80 60,102 22,80 22,40" className="fill-white dark:fill-zinc-800" />
+        <polygon points="60,6 107.3,33 107.3,87 60,114 12.7,87 12.7,33" className={outerFill} />
+        <polygon points="60,18 98,40 98,80 60,102 22,80 22,40" className={innerFill} />
         {/* Hard hat */}
         <g transform="translate(12, 18) scale(0.78)">
           <path d="M30,62 C28,50 35,36 60,32 C85,36 92,50 90,62 Z" fill="#f97316"/>
@@ -34,7 +35,7 @@ const CraftBoltLogo = ({ size = 'md', showText = true, className = '', layout = 
       </svg>
       {showText && (
         <div className={`${s.text} font-bold tracking-tight leading-none`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-          <span className="text-zinc-900 dark:text-white">Craft</span>
+          <span className={textColor}>Craft</span>
           <span className="text-orange-500">Bolt</span>
         </div>
       )}

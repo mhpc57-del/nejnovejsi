@@ -4,7 +4,7 @@ import { CurrencyDollar, Tag, ShieldCheck, Star, ChatCircle, Lightning, UserCirc
 import { fadeUp, staggerContainer } from './animations';
 
 const customerAdvantages = [
-  { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
+  { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Nepotřebujeme zbohatnout. Pomáháme lidem." },
   { icon: Tag, title: "Rychlé zjištění ceny", desc: "Dodavatel nabídne odhadovanou cenu před zahájením." },
   { icon: ShieldCheck, title: "Ověřené profily dodavatelů", desc: "Žádné FAKE účty. Pouze ověření uživatelé." },
   { icon: Star, title: "Hodnocení dodavatelů", desc: "Hodnocení udělují skuteční zákazníci." },
@@ -12,7 +12,7 @@ const customerAdvantages = [
 ];
 
 const supplierAdvantages = [
-  { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
+  { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Nepotřebujeme zbohatnout. Pomáháme lidem." },
   { icon: Lightning, title: "Rychlé získání zakázky", desc: "Bez zbytečného papírování. Zakázka do 5 minut." },
   { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost jednorázového přivýdělku bez ŽL." },
   { icon: ShieldCheck, title: "Neřešíme registry", desc: "Každý se může dostat do problémů. Dáváme druhou šanci." },
