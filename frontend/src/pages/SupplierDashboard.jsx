@@ -504,6 +504,21 @@ const SupplierDashboard = () => {
         </header>
 
         <div className="p-6">
+          {/* Paywall banner - no active subscription */}
+          {!user?.subscription_active && user?.trial_ends_at && new Date(user.trial_ends_at) < new Date() && (
+            <div className="mb-6 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-800 rounded-xl p-5" data-testid="paywall-banner">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <p className="font-bold text-red-700 dark:text-red-400 text-lg">Nemáte zaplacené měsíční předplatné</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">Pro plný přístup k zakázkám a funkcím platformy je nutné předplatné uhradit.</p>
+                </div>
+                <a href="/cenik" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm" data-testid="paywall-pay-btn">
+                  Zaplatit předplatné
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Unread messages notification */}
           {unreadDemands.length > 0 && (
             <div className="mb-6 bg-orange-50 border border-orange-200 rounded-xl p-4" data-testid="supplier-unread-messages-banner">
