@@ -105,17 +105,22 @@ const WMO_ICONS = {
   99: { icon: CloudLightning, label: 'Silné bouřky' },
 };
 
+const CZECH_DAYS = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+const CZECH_MONTHS_GEN = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
+
 const HeaderWidget = () => {
   const [weather, setWeather] = useState(null);
   const [nameday, setNameday] = useState('');
   const [holiday, setHoliday] = useState(null);
+  const [dateStr, setDateStr] = useState('');
 
   useEffect(() => {
-    // Get today's nameday and holiday
+    // Get today's date, nameday and holiday
     const now = new Date();
     const key = `${now.getMonth() + 1}-${now.getDate()}`;
     setNameday(NAMEDAYS[key] || '');
     setHoliday(STATE_HOLIDAYS[key] || null);
+    setDateStr(`${CZECH_DAYS[now.getDay()]} ${now.getDate()}. ${CZECH_MONTHS_GEN[now.getMonth()]} ${now.getFullYear()}`);
 
     // Get weather via geolocation + Open-Meteo
     if (navigator.geolocation) {
@@ -163,6 +168,16 @@ const HeaderWidget = () => {
 
   return (
     <div className="flex items-center gap-3 text-xs flex-wrap" data-testid="header-widget">
+      {/* Date */}
+      {dateStr && (
+        <span className="text-orange-500 font-medium" data-testid="widget-date">{dateStr}</span>
+      )}
+
+      {/* Separator */}
+      {dateStr && nameday && (
+        <div className="w-px h-4 bg-gray-200 dark:bg-gray-600"></div>
+      )}
+
       {/* Nameday / Holiday */}
       <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400" data-testid="widget-nameday">
         <Star weight="fill" className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />

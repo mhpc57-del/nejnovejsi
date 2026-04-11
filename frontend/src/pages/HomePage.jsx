@@ -175,11 +175,12 @@ const HomePage = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/prihlaseni" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors" data-testid="login-link">
+                  <Link to="/prihlaseni" className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors" data-testid="login-link">
                     Přihlášení
                   </Link>
-                  <Link to="/registrace" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/20" data-testid="register-btn">
-                    Přidat poptávku
+                  <span className="text-zinc-300 dark:text-zinc-600">|</span>
+                  <Link to="/registrace" className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors" data-testid="register-btn">
+                    Registrace
                   </Link>
                 </>
               )}
@@ -189,7 +190,7 @@ const HomePage = () => {
       </header>
 
       {/* ───── Hero ───── */}
-      <HeroSection onQuickDemand={() => setShowQuickDemand(true)} />
+      <HeroSection />
 
       {/* ───── Platform Stats ───── */}
       {platformStats && (
