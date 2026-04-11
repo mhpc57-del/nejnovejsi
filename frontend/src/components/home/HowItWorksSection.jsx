@@ -14,17 +14,16 @@ const steps = [
 ];
 
 export const HowItWorksSection = () => (
-  <section className="py-24 px-6 md:px-12 bg-zinc-900" data-testid="how-it-works">
+  <section className="py-24 px-6 md:px-12 bg-stone-100 dark:bg-zinc-900" data-testid="how-it-works">
     <div className="max-w-7xl mx-auto">
       <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-        {/* Left — Title + Process Diagram */}
         <div className="lg:col-span-5">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Proces</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
               Jak to celé funguje
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-zinc-400 leading-relaxed mb-10">
+            <motion.p variants={fadeUp} custom={2} className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-10">
               Od zadání poptávky po dokončení zakázky. Pět jednoduchých kroků.
             </motion.p>
           </motion.div>
@@ -63,18 +62,17 @@ export const HowItWorksSection = () => (
           </motion.div>
         </div>
 
-        {/* Right — Step cards */}
         <motion.div className="lg:col-span-7 space-y-3" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
           {steps.map((step, index) => (
             <motion.div key={index} variants={fadeUp} custom={index}
-              className="bg-zinc-800/80 rounded-xl p-5 border border-zinc-700/50 hover:border-orange-500/40 transition-all duration-200"
+              className="bg-white dark:bg-zinc-800/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-700/50 hover:border-orange-500/40 transition-all duration-200"
               data-testid={`step-card-${index}`}
             >
               <div className="flex gap-4">
                 <span className="text-3xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>{step.num}</span>
                 <div>
-                  <h3 className="font-semibold text-white mb-1">{step.title}</h3>
-                  <p className="text-sm text-zinc-400">{step.desc}</p>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">{step.title}</h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">{step.desc}</p>
                 </div>
               </div>
             </motion.div>
@@ -84,7 +82,7 @@ export const HowItWorksSection = () => (
               Přidat poptávku
               <ArrowRight weight="bold" className="w-4 h-4" />
             </Link>
-            <p className="text-orange-400 text-sm mt-3 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+            <p className="text-orange-500 dark:text-orange-400 text-sm mt-3 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
               Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
             </p>
           </div>
@@ -92,12 +90,12 @@ export const HowItWorksSection = () => (
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-        className="mt-20 bg-orange-500/5 rounded-xl p-8 border border-orange-900/30">
-        <h3 className="font-semibold text-white mb-4" style={{ fontFamily: 'Outfit' }}>Důležité upozornění</h3>
-        <div className="space-y-3 text-sm text-zinc-400 leading-relaxed">
+        className="mt-20 bg-orange-500/5 dark:bg-orange-500/5 rounded-xl p-8 border border-orange-200 dark:border-orange-900/30">
+        <h3 className="font-semibold text-zinc-900 dark:text-white mb-4" style={{ fontFamily: 'Outfit' }}>Důležité upozornění</h3>
+        <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
           <p>V případě, že si obě smluvní strany předají osobní kontakty z důvodu dalších realizací služeb nebo z důvodu poskytnutí záruk, je jim toto samozřejmě umožněno. Pamatujte však na to, že sjednávání dalších služeb mimo tuto platformu je mnohdy rizikovější.</p>
           <p>Sjednávání zakázek přes naši platformu je pohodlné, rychlé, efektivní a máte vždy jasný přehled o svých zakázkách. Veškerá historie (zakázky, chat, fotografie, hodnocení či případné spory) se Vám nikdy neztratí.</p>
-          <p className="font-semibold text-orange-400">Doporučení: Nikdy neřešte spor osobně či po telefonu. Vždy pamatujte na to, že co je psáno, to je dáno!</p>
+          <p className="font-semibold text-orange-500 dark:text-orange-400">Doporučení: Nikdy neřešte spor osobně či po telefonu. Vždy pamatujte na to, že co je psáno, to je dáno!</p>
         </div>
       </motion.div>
     </div>
