@@ -432,12 +432,41 @@ const SupplierDashboard = () => {
               )}
             </div>
           )}
-          <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-4 mb-4">
-            <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
-            <p className="text-xs text-orange-600 dark:text-orange-400">
-              {user?.trial_ends_at ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}` : 'Aktivní předplatné'}
-            </p>
-          </div>
+          {(() => {
+            const trialExpired = user?.trial_ends_at && new Date(user.trial_ends_at) < new Date();
+            const subActive = user?.subscription_active;
+            if (subActive) {
+              return (
+                <div className="bg-green-50 dark:bg-green-500/10 border border-green-200/60 dark:border-green-800/40 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-green-700 dark:text-green-400 font-medium mb-1">Aktivní předplatné</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {user?.subscription_plan ? SUBSCRIPTION_PLANS_NAMES[user.subscription_plan] || user.subscription_plan : 'Předplatné'}
+                  </p>
+                </div>
+              );
+            }
+            if (trialExpired) {
+              return (
+                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-800/40 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-red-700 dark:text-red-400 font-bold mb-1">Zkušební doba vypršela</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                    Vypršela {new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}
+                  </p>
+                  <a href="/cenik" className="inline-block text-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                    Zaplatit předplatné
+                  </a>
+                </div>
+              );
+            }
+            return (
+              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-4 mb-4">
+                <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
+                <p className="text-xs text-orange-600 dark:text-orange-400">
+                  {user?.trial_ends_at ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}` : 'Aktivní'}
+                </p>
+              </div>
+            );
+          })()}
           <button onClick={() => setShowDeactivate(true)}
             className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg mb-1 transition-colors" data-testid="deactivate-btn-sidebar">
             <Trash className="w-5 h-5" /> Zrušit účet
