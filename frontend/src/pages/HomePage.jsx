@@ -297,7 +297,7 @@ const HomePage = () => {
                 transition={{ duration: 0.8, delay: 0.3 }}
                 className="relative"
               >
-                <svg viewBox="0 0 300 340" className="w-full max-w-[400px] mx-auto" fill="none">
+                <svg viewBox="0 0 300 340" className="w-full max-w-[500px] mx-auto" fill="none">
                   {/* Hexagon connecting lines */}
                   <path d="M150 30 L260 80" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
                   <path d="M260 80 L260 200" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
