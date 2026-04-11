@@ -91,25 +91,25 @@ const categories = [
   {
     icon: Drill,
     label: 'Hodinový manžel',
-    image: '/hero/hodinovy-manzel.png',
+    image: '/hero/hodinovy-manzel.jpg',
     isLucide: true,
   },
   {
     icon: PaintRoller,
     label: 'Malířské práce',
-    image: '/hero/malirske-prace.png',
+    image: '/hero/malirske-prace.jpg',
     isLucide: true,
   },
   {
     icon: BucketBroomIcon,
     label: 'Úklidové práce',
-    image: '/hero/uklidove-prace.png',
+    image: '/hero/uklidove-prace.jpg',
     isLucide: true,
   },
   {
     icon: Wall,
     label: 'Zednické práce',
-    image: '/hero/zednicke-prace.png',
+    image: '/hero/zednicke-prace.jpg',
     isLucide: false,
   },
   {
@@ -121,13 +121,13 @@ const categories = [
   {
     icon: Drop,
     label: 'Vodařské práce',
-    image: '/hero/vodarske-prace.png',
+    image: '/hero/vodarske-prace.jpg',
     isLucide: false,
   },
   {
     icon: Fire,
     label: 'Topenářské práce',
-    image: '/hero/topenarske-prace.png',
+    image: '/hero/topenarske-prace.jpg',
     isLucide: false,
   },
   {
@@ -259,7 +259,7 @@ const HeroSection = () => {
                   data-testid="extra-categories-grid"
                 >
                   <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-5 text-center" style={{ fontFamily: 'Outfit' }}>
-                    Další kategorie
+                    Další náhodné kategorie
                   </h3>
                   <div className="grid grid-cols-3 gap-3">
                     {extraCategories.map((cat, i) => {
