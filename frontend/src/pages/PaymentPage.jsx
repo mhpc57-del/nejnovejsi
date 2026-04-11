@@ -337,7 +337,7 @@ const PricingPage = () => {
                     ))}
                   </ul>
 
-                  {/* Two payment buttons */}
+                  {/* Payment button */}
                   <div className="space-y-2">
                     <button
                       onClick={() => handleSubscribe(planId, 'subscription')}
@@ -352,20 +352,6 @@ const PricingPage = () => {
                       )}
                     </button>
                     <p className="text-[10px] text-zinc-400 text-center">Automaticky se strhává z účtu každý měsíc</p>
-                    
-                    <button
-                      onClick={() => handleSubscribe(planId, 'one_time')}
-                      disabled={processingPlan !== null}
-                      data-testid={`subscribe-onetime-${planId}-btn`}
-                      className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 border-2 border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:border-orange-400 hover:text-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {processingPlan === `${planId}_one_time` ? (
-                        <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
-                      ) : (
-                        <><CreditCard weight="bold" /> Jednorázová platba na měsíc</>
-                      )}
-                    </button>
-                    <p className="text-[10px] text-zinc-400 text-center">Jednorázová platba, bez automatického obnovení</p>
                   </div>
                 </div>
               );

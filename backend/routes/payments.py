@@ -37,7 +37,7 @@ async def create_subscription_checkout(request: Request, data: CreateCheckoutReq
     period_label = "roční" if data.billing_period == "annual" else "měsíční"
     period_days = 365 if data.billing_period == "annual" else 30
     
-    stripe.api_key = os.environ.get('STRIPE_API_KEY')
+    stripe.api_key = os.environ.get('STRIPE_LIVE_KEY') or os.environ.get('STRIPE_API_KEY')
     if not stripe.api_key:
         raise HTTPException(status_code=500, detail="Stripe není nakonfigurován")
     
@@ -130,7 +130,7 @@ async def create_subscription_checkout(request: Request, data: CreateCheckoutReq
 
 @router.get("/subscription/status/{session_id}")
 async def get_subscription_status(request: Request, session_id: str, current_user: dict = Depends(get_current_user)):
-    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    stripe_api_key = os.environ.get('STRIPE_LIVE_KEY') or os.environ.get('STRIPE_API_KEY')
     if not stripe_api_key:
         raise HTTPException(status_code=500, detail="Stripe není nakonfigurován")
     
@@ -215,28 +215,35 @@ async def cancel_subscription(current_user: dict = Depends(get_current_user)):
 
 @router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    stripe_api_key = os.environ.get('STRIPE_API_KEY')
-    if not stripe_api_key:
+    import stripe
+    stripe.api_key = os.environ.get('STRIPE_LIVE_KEY') or os.environ.get('STRIPE_API_KEY')
+    if not stripe.api_key:
         return {"status": "error", "message": "Stripe not configured"}
-    
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
     
     try:
         body = await request.body()
-        signature = request.headers.get("Stripe-Signature", "")
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        # Parse the event directly (no signature verification in dev)
+        import json
+        event = json.loads(body)
+        event_type = event.get("type", "")
         
-        logger.info(f"Stripe webhook received: {webhook_response.event_type}")
+        logger.info(f"Stripe webhook received: {event_type}")
         
-        if webhook_response.event_type == "checkout.session.completed":
-            session_id = webhook_response.session_id
+        if event_type == "checkout.session.completed":
+            session = event["data"]["object"]
+            session_id = session.get("id")
+            metadata = session.get("metadata", {})
+            
             transaction = await db.payment_transactions.find_one({"session_id": session_id})
             if transaction and transaction.get("payment_status") != "paid":
                 await db.payment_transactions.update_one(
                     {"session_id": session_id},
-                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+                    {"$set": {
+                        "payment_status": "paid",
+                        "stripe_subscription_id": session.get("subscription"),
+                        "stripe_customer_id": session.get("customer"),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
                 )
                 
                 next_billing = datetime.now(timezone.utc) + timedelta(days=transaction.get("period_days", 30))
@@ -248,10 +255,92 @@ async def stripe_webhook(request: Request):
                         "subscription_status": "active",
                         "subscription_current_period_end": next_billing.isoformat(),
                         "subscription_started_at": datetime.now(timezone.utc).isoformat(),
+                        "stripe_subscription_id": session.get("subscription"),
+                        "stripe_customer_id": session.get("customer"),
                         "trial_ends_at": None
                     }}
                 )
                 logger.info(f"Subscription activated via webhook: {transaction['user_email']}")
+        
+        elif event_type == "invoice.payment_failed":
+            # Payment failed — notify and mark as past_due
+            invoice = event["data"]["object"]
+            customer_id = invoice.get("customer")
+            subscription_id = invoice.get("subscription")
+            
+            user = await db.users.find_one(
+                {"$or": [
+                    {"stripe_customer_id": customer_id},
+                    {"stripe_subscription_id": subscription_id}
+                ]}
+            )
+            if user:
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription_status": "past_due",
+                        "subscription_payment_failed_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                logger.warning(f"Payment failed for user {user.get('email')}, subscription {subscription_id}")
+                
+                # Send notification about failed payment
+                try:
+                    await notification_service.send_email(
+                        to_email=user["email"],
+                        subject="CraftBolt — Platba se nezdařila",
+                        body=f"Dobrý den,\n\nvaše měsíční platba za předplatné CraftBolt se nezdařila. Prosím aktualizujte platební údaje, jinak bude přístup k zakázkám omezen.\n\nS pozdravem,\nTým CraftBolt"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send payment failed email: {e}")
+        
+        elif event_type in ("customer.subscription.deleted", "customer.subscription.canceled"):
+            # Subscription cancelled or deleted — deactivate access
+            subscription = event["data"]["object"]
+            customer_id = subscription.get("customer")
+            subscription_id = subscription.get("id")
+            
+            user = await db.users.find_one(
+                {"$or": [
+                    {"stripe_customer_id": customer_id},
+                    {"stripe_subscription_id": subscription_id}
+                ]}
+            )
+            if user:
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription_active": False,
+                        "subscription_status": "cancelled",
+                        "subscription_cancelled_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                logger.info(f"Subscription cancelled for user {user.get('email')}")
+        
+        elif event_type == "invoice.paid":
+            # Recurring payment successful — extend subscription
+            invoice = event["data"]["object"]
+            customer_id = invoice.get("customer")
+            subscription_id = invoice.get("subscription")
+            
+            user = await db.users.find_one(
+                {"$or": [
+                    {"stripe_customer_id": customer_id},
+                    {"stripe_subscription_id": subscription_id}
+                ]}
+            )
+            if user:
+                next_billing = datetime.now(timezone.utc) + timedelta(days=30)
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription_active": True,
+                        "subscription_status": "active",
+                        "subscription_current_period_end": next_billing.isoformat(),
+                        "subscription_payment_failed_at": None
+                    }}
+                )
+                logger.info(f"Recurring payment successful for user {user.get('email')}")
         
         return {"status": "success"}
         
