@@ -273,59 +273,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ───── Comparison Section ───── */}
-      <section className="py-24 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto">
-          <motion.div className="text-center mb-14" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Konec otravování</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
-              Žádné telefonáty. Žádný spam.
-            </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto leading-relaxed">
-              Na jiných platformách vás po zadání poptávky ihned volá telefonista, 10 minut s vámi poptávku "ověřuje" a pak vám přijde 30 emailů. U nás ne.
-            </motion.p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-5">
-            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-              className="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-red-200/60 dark:border-red-900/30">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-8 h-8 bg-red-500/10 rounded-md flex items-center justify-center">
-                  <X weight="bold" className="w-4 h-4 text-red-500" />
-                </div>
-                <h3 className="font-semibold text-zinc-900 dark:text-white text-sm">Konkurenční platformy</h3>
-              </div>
-              <ul className="space-y-3">
-                {['Telefonista vás volá ihned po zadání poptávky','5–10 minut "ověřování" po telefonu','Desítky emailů od dodavatelů z celé ČR','Neustále zvonící telefon s nabídkami','Po půl hodině nevíte, s kým jste mluvili','Časově náročné a otravné'].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-zinc-500 dark:text-zinc-400 text-sm">
-                    <X weight="bold" className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-              className="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-emerald-200/60 dark:border-emerald-900/30">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-8 h-8 bg-emerald-500/10 rounded-md flex items-center justify-center">
-                  <Check weight="bold" className="w-4 h-4 text-emerald-500" />
-                </div>
-                <h3 className="font-semibold text-zinc-900 dark:text-white text-sm">CraftBolt</h3>
-              </div>
-              <ul className="space-y-3">
-                {['Poptávku zadáte sami za 2 minuty — bez telefonátů','Žádné ověřování, žádný telefonista','Reagují jen dodavatelé z vašeho okolí','Komunikace přes chat — v klidu, kdy se vám hodí','Přehled všech nabídek na jednom místě','Administrátoři pracují 24/7 NON-STOP','Jednoduše, rychle, efektivně'].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-zinc-500 dark:text-zinc-400 text-sm">
-                    <Check weight="bold" className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* ───── How It Works ───── */}
       <section className="py-24 px-6 md:px-12 bg-white dark:bg-zinc-900/50">
         <div className="max-w-7xl mx-auto">
