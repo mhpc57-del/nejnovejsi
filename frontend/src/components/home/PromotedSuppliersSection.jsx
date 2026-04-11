@@ -1,8 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Briefcase, Plus } from '@phosphor-icons/react';
+import { Briefcase, Plus, Clock } from '@phosphor-icons/react';
 import { API } from '../../App';
 import { fadeUp, staggerContainer } from './animations';
+
+const CountdownTimer = ({ paidUntil }) => {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const calc = () => {
+      const now = new Date();
+      const end = new Date(paidUntil);
+      const diff = end - now;
+      if (diff <= 0) { setTimeLeft('Vypršelo'); return; }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      if (days > 0) setTimeLeft(`${days}d ${hours}h`);
+      else setTimeLeft(`${hours}h ${mins}m`);
+    };
+    calc();
+    const interval = setInterval(calc, 60000);
+    return () => clearInterval(interval);
+  }, [paidUntil]);
+
+  return (
+    <span className="flex items-center gap-1 text-[10px] text-orange-500 font-semibold">
+      <Clock weight="bold" className="w-3 h-3" /> {timeLeft}
+    </span>
+  );
+};
 
 export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm }) => (
   <section className="py-24 px-6 md:px-12" data-testid="promoted-suppliers-section">
@@ -39,8 +66,9 @@ export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm })
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2 mb-2">{supplier.bio}</p>
                 {supplier.phone && <p className="text-xs text-zinc-400">{supplier.phone}</p>}
-                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">Sponzorovaný banner</span>
+                  {supplier.paid_until && <CountdownTimer paidUntil={supplier.paid_until} />}
                 </div>
               </motion.div>
             );

@@ -79,7 +79,7 @@ async def create_promo_checkout(supplier_id: str):
     import os
     import stripe
     
-    stripe.api_key = os.environ.get("STRIPE_API_KEY")
+    stripe.api_key = os.environ.get("STRIPE_LIVE_KEY") or os.environ.get("STRIPE_API_KEY")
     if not stripe.api_key:
         raise HTTPException(status_code=500, detail="Stripe not configured")
     

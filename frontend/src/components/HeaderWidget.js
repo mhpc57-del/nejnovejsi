@@ -113,14 +113,19 @@ const HeaderWidget = () => {
   const [nameday, setNameday] = useState('');
   const [holiday, setHoliday] = useState(null);
   const [dateStr, setDateStr] = useState('');
+  const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
-    // Get today's date, nameday and holiday
-    const now = new Date();
-    const key = `${now.getMonth() + 1}-${now.getDate()}`;
-    setNameday(NAMEDAYS[key] || '');
-    setHoliday(STATE_HOLIDAYS[key] || null);
-    setDateStr(`${CZECH_DAYS[now.getDay()]} ${now.getDate()}. ${CZECH_MONTHS_GEN[now.getMonth()]} ${now.getFullYear()}`);
+    const updateDateTime = () => {
+      const now = new Date();
+      const key = `${now.getMonth() + 1}-${now.getDate()}`;
+      setNameday(NAMEDAYS[key] || '');
+      setHoliday(STATE_HOLIDAYS[key] || null);
+      setDateStr(`${CZECH_DAYS[now.getDay()]} ${now.getDate()}. ${CZECH_MONTHS_GEN[now.getMonth()]} ${now.getFullYear()}`);
+      setTimeStr(now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }));
+    };
+    updateDateTime();
+    const clockInterval = setInterval(updateDateTime, 30000);
 
     // Get weather via geolocation + Open-Meteo
     if (navigator.geolocation) {
@@ -161,6 +166,7 @@ const HeaderWidget = () => {
         { timeout: 5000 }
       );
     }
+    return () => clearInterval(clockInterval);
   }, []);
 
   const weatherInfo = weather ? (WMO_ICONS[weather.code] || WMO_ICONS[0]) : null;
@@ -170,7 +176,7 @@ const HeaderWidget = () => {
     <div className="flex items-center gap-3 text-xs flex-wrap" data-testid="header-widget">
       {/* Date */}
       {dateStr && (
-        <span className="text-orange-500 font-medium" data-testid="widget-date">{dateStr}</span>
+        <span className="text-orange-500 font-medium" data-testid="widget-date">{dateStr}{timeStr ? ` | ${timeStr}` : ''}</span>
       )}
 
       {/* Separator */}
