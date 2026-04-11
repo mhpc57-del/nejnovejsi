@@ -180,6 +180,14 @@ export default function DemandDetailScreen({ route, navigation }) {
           </View>
           <Text style={styles.desc}>{demand.description}</Text>
 
+          {/* Verified badge */}
+          {demand.verified && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.green50, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12, alignSelf: 'flex-start' }}>
+              <Ionicons name="shield-checkmark" size={16} color={COLORS.green500} />
+              <Text style={{ fontSize: 13, color: COLORS.green700, fontWeight: '600' }}>Overena poptavka</Text>
+            </View>
+          )}
+
           {/* Demand Images */}
           {demand.images?.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll}>

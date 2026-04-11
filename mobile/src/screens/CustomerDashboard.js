@@ -9,7 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { demandService, miscService, uploadService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS, STATUS_COLORS } from '../utils/theme';
+import { COLORS, STATUS_COLORS, SHADOWS, RADIUS } from '../utils/theme';
 
 const StatusBadge = ({ status }) => {
   const s = STATUS_COLORS[status] || STATUS_COLORS.open;
@@ -43,7 +43,13 @@ const DemandCard = ({ demand, onPress }) => (
     {demand.soft_accepts?.length > 0 && (
       <View style={styles.softAcceptBadge}>
         <Ionicons name="hand-right-outline" size={14} color={COLORS.primary} />
-        <Text style={styles.softAcceptText}>{demand.soft_accepts.length} nezávazných nabídek</Text>
+        <Text style={styles.softAcceptText}>{demand.soft_accepts.length} nezavaznych nabidek</Text>
+      </View>
+    )}
+    {demand.verified && (
+      <View style={[styles.softAcceptBadge, { backgroundColor: COLORS.green50 }]}>
+        <Ionicons name="shield-checkmark" size={14} color={COLORS.green500} />
+        <Text style={[styles.softAcceptText, { color: COLORS.green700 }]}>Overena poptavka</Text>
       </View>
     )}
     <View style={styles.cardArrow}>

@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS } from '../utils/theme';
+import { COLORS, SHADOWS, RADIUS } from '../utils/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -132,7 +132,7 @@ export default function AppNavigator() {
           </>
         ) : (
           <>
-            {user.role === 'supplier' ? (
+            {(user.role === 'supplier' || user.role === 'customer_supplier') ? (
               <Stack.Screen name="SupplierHome" component={SupplierTabs} />
             ) : (
               <Stack.Screen name="CustomerHome" component={CustomerTabs} />

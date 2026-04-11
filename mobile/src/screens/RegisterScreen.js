@@ -127,8 +127,8 @@ export default function RegisterScreen({ navigation }) {
     <>
       <Text style={styles.stepTitle}>Typ účtu</Text>
       {[
-        { value: 'customer', label: 'Zákazník', desc: 'Hledám řemeslníky a dodavatele', icon: 'person-outline' },
-        { value: 'supplier', label: 'Dodavatel / Řemeslník', desc: 'Nabízím své služby', icon: 'construct-outline' },
+        { value: 'customer', label: 'Zakaznik', desc: 'Hledam remeslniky a dodavatele', icon: 'person-outline', price: 'ZDARMA' },
+        { value: 'supplier', label: 'Dodavatel / Remeslnik', desc: 'Nabizim sve sluzby', icon: 'construct-outline', price: 'od 190 Kc/mesic' },
       ].map(role => (
         <TouchableOpacity key={role.value}
           style={[styles.roleCard, form.role === role.value && styles.roleCardActive]}
@@ -139,6 +139,7 @@ export default function RegisterScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={[styles.roleLabel, form.role === role.value && styles.roleLabelActive]}>{role.label}</Text>
             <Text style={styles.roleDesc}>{role.desc}</Text>
+            <Text style={[styles.rolePrice, role.value === 'customer' && { color: COLORS.green500 }]}>{role.price}</Text>
           </View>
           {form.role === role.value && <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />}
         </TouchableOpacity>
@@ -386,6 +387,7 @@ const styles = StyleSheet.create({
   roleLabel: { fontSize: 16, fontWeight: '600', color: COLORS.gray900, marginBottom: 2 },
   roleLabelActive: { color: COLORS.primary },
   roleDesc: { fontSize: 13, color: COLORS.gray500 },
+  rolePrice: { fontSize: 12, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
   stepButtons: { flexDirection: 'row', gap: 12, marginTop: 16 },
   backButton: {
     width: 52, borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 14,

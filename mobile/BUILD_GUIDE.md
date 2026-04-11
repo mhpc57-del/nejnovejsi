@@ -1,64 +1,81 @@
-# Sestavení APK pro Google Play Store
+# CraftBolt Mobile App - Build Guide
 
-## Předpoklady
-1. Nainstalujte EAS CLI:
+## Prerequisites
+- Node.js 18+
+- Expo CLI: `npm install -g @expo/cli`
+- Expo Go app on your phone (for development testing)
+
+## Setup
 ```bash
-npm install -g eas-cli
+cd /app/mobile
+yarn install
 ```
 
-2. Přihlaste se do Expo:
+## Development
 ```bash
-eas login
+npx expo start
 ```
-(Pokud nemáte účet, vytvořte si na https://expo.dev)
+Scan the QR code with Expo Go app on your phone.
 
-## Sestavení Preview APK (pro testování)
+## Push Notifications
+Push notifications are automatically set up:
+1. When user logs in, the app requests notification permissions
+2. Expo Push Token is registered with the backend
+3. Backend sends push notifications for:
+   - New demands matching supplier categories
+   - New offers from suppliers
+   - New chat messages
+   - Demand status changes
 
+**Note:** Push notifications require a physical device (not emulator).
+For production, you need to configure `projectId` in `notifications.js` with your actual Expo project ID.
+
+## Production Build
 ```bash
-cd mobile
-eas build -p android --profile preview
+# For Android
+npx expo build:android
+
+# For iOS
+npx expo build:ios
 ```
 
-Toto vytvoří `.apk` soubor, který si můžete stáhnout a nainstalovat přímo na telefon.
-
-## Sestavení Production AAB (pro Google Play)
-
+Or using EAS Build (recommended):
 ```bash
-cd mobile
-eas build -p android --profile production
+npx eas-cli build --platform all
 ```
 
-Toto vytvoří `.aab` (Android App Bundle) soubor pro nahrání do Google Play Console.
+## API Configuration
+The app connects to `https://craftbolt.cz/api`. 
+To change the API URL, edit `src/services/api.js`.
 
-## Google Play Console
+## Project Structure
+```
+mobile/
+  App.js                  # Entry point + push notification setup
+  src/
+    components/           # Reusable components
+    navigation/           # Bottom tabs + stack navigator
+    screens/
+      LoginScreen.js      # Login with pricing info
+      RegisterScreen.js   # 4-step registration wizard
+      CustomerDashboard.js # Customer demands + creation
+      SupplierDashboard.js # Available/in-progress/completed demands
+      DemandDetailScreen.js # Demand detail + chat + actions
+      ProfileScreen.js    # Profile editing + reviews
+      NotificationsScreen.js # Notification list
+      MapScreen.js        # Demand map view
+    services/
+      api.js              # Axios API client
+    utils/
+      AuthContext.js       # Auth state management
+      theme.js             # Colors, shadows, fonts, radius
+      notifications.js     # Expo push notification helpers
+```
 
-1. Jděte na https://play.google.com/console
-2. Vytvořte novou aplikaci "CraftBolt"
-3. Nastavte:
-   - Název: CraftBolt
-   - Package: cz.craftbolt.app
-   - Kategorie: Služby / Řemeslníci
-4. Nahrajte `.aab` soubor do sekce "Production" > "Create new release"
-5. Vyplňte popis, screenshoty, ikonu
-6. Odešlete ke kontrole
-
-## Důležité poznámky
-
-### Google Maps API klíč
-Pro mapu v aplikaci potřebujete Google Maps API klíč:
-1. Jděte na https://console.cloud.google.com
-2. Vytvořte projekt
-3. Zapněte "Maps SDK for Android"
-4. Vytvořte API klíč
-5. Vložte do `app.json` → `android.config.googleMaps.apiKey`
-
-### Push notifikace
-Push notifikace fungují automaticky přes Expo Push Service.
-Pro produkci doporučujeme nastavit Firebase Cloud Messaging:
-1. Vytvořte projekt na https://console.firebase.google.com
-2. Stáhněte `google-services.json`
-3. Vložte do složky `mobile/`
-
-### EAS Project ID
-Po prvním `eas build` se automaticky vygeneruje Project ID.
-Bude přidán do `app.json` → `extra.eas.projectId`.
+## Pricing Model (Current)
+- **Customer**: FREE (demand creation)
+  - Optional demand verification: 49 CZK
+- **Supplier**: One-time payment
+  - Monthly: 190 CZK
+  - Annual: 1,890 CZK (save 390 CZK)
+- All prices include 21% VAT

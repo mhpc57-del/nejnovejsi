@@ -6,7 +6,8 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 ## Tech Stack
 - **Frontend**: React, Tailwind CSS, Vite
 - **Backend**: FastAPI, MongoDB
-- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS, Stripe (LIVE one-time payments), Wedos SMTP
+- **Mobile**: React Native (Expo)
+- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS, Stripe (LIVE one-time payments), Wedos SMTP, Expo Push Notifications
 - **Mapy**: Photon/Nominatim geocoding, Leaflet
 
 ## Cenovy model (AKTUALNI - duben 2026)
@@ -16,48 +17,42 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 - Vsechny ceny vcetne 21% DPH
 - 14denni zkusebni doba ZRUSENA
 
-## Implementovane funkce
+## Implementovane funkce (Web)
 - JWT autentizace (admin/customer/supplier/customer_supplier)
-- 4-krokovy registracni wizard s emailovou verifikaci (Wedos SMTP)
-- Reset hesla
-- CRUD poptavek (demands) s fotkami, mapou, kategorii
-- Chat/zpravy v poptavkach s prilohami
-- Cenove navrhy a potvrzeni
-- Workflow rozpoctu -- dodavatel nahraje rozpocet, zakaznik prijme/odmitne
-- Fakturace (PDF s ceskymi diakritikami FreeSans, XML/ISDOC, ZIP export)
-- Stripe jednorazove platby pro dodavatele (190/1890 CZK)
-- Overeni poptavky za 49 Kc (Stripe checkout)
-- Promoted Suppliers (reklamni karty, 39 Kc/den nebo 990 Kc/mesic)
-- AI Chat asistent (GPT-4o)
-- Dark Mode
-- Mobile navigace (bottom bar + drawer menu)
-- Welcome Modal, FAQ, Cookie consent
-- SMS notifikace (BulkGate)
-- Weather + Name day widget, Custom SVG logo
-- Hero section s vlastnimi fotkami a 3x3 grid kategorii
-- "Jak to cele funguje" 6-krokovy hexagon diagram
-- "Vyhody pro zakazniky" a "Vyhody pro dodavatele" -- 2x5 karet
-- Mobilni aplikace CraftBolt banner (ve vyvoji)
-- PDF faktura prilozena k emailum
+- 4-krokovy registracni wizard s emailovou verifikaci
+- CRUD poptavek s fotkami, mapou, kategorii
+- Chat/zpravy s prilohami
+- Cenove navrhy, workflow rozpoctu
+- Fakturace (PDF s ceskymi diakritikami, XML/ISDOC)
+- Stripe jednorazove platby + overeni poptavky (49 Kc)
+- Promoted Suppliers (39 Kc/den, 990 Kc/mesic)
+- AI Chat asistent, Dark Mode, Mobile navigace
+- Push notifikace (Expo), SMS (BulkGate), Email (Wedos SMTP)
+- Hero section, Hexagon diagram, Vyhody 2x5 karet
+- Komponentizovana HomePage (~200 radku + 11 komponent)
+- YouTube video sekce ODSTRANENA
 
-## Architektura frontendu (po komponentizaci)
-HomePage.jsx: 208 radku (orchestrator)
-Komponenty v src/components/home/:
-- AdvantagesSection.jsx (60)
-- HowItWorksSection.jsx (105)
-- PromoFormModal.jsx (80)
-- PromotedSuppliersSection.jsx (75)
-- QuickDemandModal.jsx (78)
-- PricingSection.jsx (71)
-- HomeFooter.jsx (37)
-- CTASection.jsx (26)
-- MobileAppBanner.jsx (24)
-- VideoSection.jsx (22)
-- CookieBanner.jsx (22)
-- animations.js (11) - sdilene animacni varianty
+## Implementovane funkce (Mobile)
+- Login s cenovym prehledem
+- 4-krokova registrace s ARES vyhledavanim
+- Customer Dashboard (seznam poptavek, vytvareni, fotky, geolokace)
+- Supplier Dashboard (dostupne/probihajici/dokoncene zakazky + paywall)
+- Detail poptavky s chatem, soft/hard accept, hodnocenim
+- Profil (editace, fotka, recenze)
+- Oznameni, Mapa zakazek
+- Push notifikace (Expo)
+- Verified badge na poptavkach
+
+## Opravene bugy (Mobile - duben 2026)
+- SupplierDashboard: opraveno API volani (getAll -> getAvailable pro dostupne zakazky)
+- Pridan paywall banner pro dodavatele bez zaplaceni
+- Opravena URL pro push token registraci
+- Pridana cenova informace do registrace
+- Pridan verified badge do karet poptavek a detailu
+- customer_supplier role spravne smerovana na SupplierTabs
 
 ## Stav testovani
-- Iterace 35: Pricing restructure (Backend 100%, Frontend 100%)
+- Iterace 35: Web pricing restructure (Backend 100%, Frontend 100%)
 
 ## Backlog
-- P3: React Native mobilni app (PAUSED)
+- Dalsi vylepseni mobile app dle pozadavku uzivatele

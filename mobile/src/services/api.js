@@ -25,6 +25,8 @@ export const authService = {
 
 export const demandService = {
   getAll: () => api.get('/demands'),
+  getAvailable: () => api.get('/demands/available'),
+  getMy: () => api.get('/demands/my'),
   getById: (id) => api.get(`/demands/${id}`),
   create: (data) => api.post('/demands', data),
   accept: (id) => api.post(`/demands/${id}/accept`),
@@ -32,16 +34,25 @@ export const demandService = {
   arrive: (id) => api.post(`/demands/${id}/arrive`),
   complete: (id) => api.post(`/demands/${id}/complete`),
   cancel: (id, reason) => api.post(`/demands/${id}/cancel-reason`, null, { params: { reason } }),
+  verifyCheckout: (id) => api.post(`/demands/${id}/verify-checkout`),
 };
 
 export const messageService = {
   getByDemand: (demandId) => api.get(`/messages/${demandId}`),
   send: (demandId, content) => api.post('/messages', { demand_id: demandId, content }),
+  getUnreadSummary: () => api.get('/messages/unread-summary'),
 };
 
 export const userService = {
   getById: (id) => api.get(`/users/${id}`),
   updateProfile: (data) => api.put('/users/profile', data),
+};
+
+export const subscriptionService = {
+  getPlans: () => api.get('/subscription/plans'),
+  getMy: () => api.get('/subscription/my'),
+  createCheckout: (data) => api.post('/subscription/checkout', data),
+  getStatus: (sessionId) => api.get(`/subscription/status/${sessionId}`),
 };
 
 export const reviewService = {
@@ -69,6 +80,11 @@ export const miscService = {
   geocodeSearch: (q) => api.get('/geocode/search', { params: { q } }),
   suggestCategory: (name) => api.post('/categories/suggest', { name }),
   aresLookup: (ico) => api.get(`/ares/${ico}`),
+  getPlatformStats: () => api.get('/platform/stats'),
+};
+
+export const notificationService = {
+  registerPushToken: (token) => api.post('/users/push-token', { push_token: token }),
 };
 
 export default api;
