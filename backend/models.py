@@ -250,6 +250,7 @@ class TrustScoreUpdate(BaseModel):
 class CreateCheckoutRequest(BaseModel):
     plan_id: str
     billing_period: str = "monthly"  # "monthly" or "annual"
+    payment_mode: str = "one_time"  # "one_time" or "subscription"
     origin_url: str
 
 
