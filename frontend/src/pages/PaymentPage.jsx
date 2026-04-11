@@ -235,10 +235,22 @@ const PricingPage = () => {
     ],
   };
 
+  // Map user role to the corresponding plan
+  const roleToPlans = {
+    customer: ['zakaznik'],
+    supplier: ['dodavatel'],
+    customer_supplier: ['zakaznik_dodavatel'],
+  };
+
+  // If user is logged in, show only their plan; otherwise show all
+  const visiblePlans = isAuthenticated && user?.role && roleToPlans[user.role]
+    ? roleToPlans[user.role]
+    : planOrder;
+
   const planLabels = {
-    zakaznik: 'Začít jako zákazník',
-    dodavatel: 'Začít jako dodavatel',
-    zakaznik_dodavatel: 'Začít s plným přístupem',
+    zakaznik: isAuthenticated ? 'Zaplatit předplatné' : 'Začít jako zákazník',
+    dodavatel: isAuthenticated ? 'Zaplatit předplatné' : 'Začít jako dodavatel',
+    zakaznik_dodavatel: isAuthenticated ? 'Zaplatit předplatné' : 'Začít s plným přístupem',
   };
 
   return (
@@ -290,8 +302,8 @@ const PricingPage = () => {
             <Spinner className="w-12 h-12 text-orange-500 animate-spin" />
           </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {planOrder.map((planId) => {
+          <div className={`grid gap-6 max-w-5xl mx-auto ${visiblePlans.length === 1 ? 'max-w-md mx-auto' : visiblePlans.length === 2 ? 'md:grid-cols-2 max-w-3xl' : 'md:grid-cols-3'}`}>
+            {visiblePlans.map((planId) => {
               const plan = plans[planId];
               if (!plan) return null;
               const isHighlighted = planId === 'zakaznik_dodavatel';
