@@ -11,7 +11,7 @@ const slides = [
     image: "/hero/instalater.jpg",
   },
   {
-    // Montér klimatizace
+    // Klimatizace
     image: "/hero/klimatizace.jpg",
   },
   {
@@ -23,32 +23,32 @@ const slides = [
     image: "/hero/hlidani-deti.png",
   },
   {
-    // Zedník / rekonstrukce
-    image: "https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Masáže
+    image: "/hero/masaze.png",
+  },
+  {
+    // Obkladač
+    image: "/hero/obkladac.jpg",
+  },
+  {
+    // Sádrokartonář
+    image: "/hero/sadrokartonar.png",
   },
   {
     // Topenář u kotle
-    image: "https://images.pexels.com/photos/6419137/pexels-photo-6419137.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    image: "/hero/topenar.jpg",
+  },
+  {
+    // Účetní
+    image: "/hero/ucetni.png",
   },
   {
     // Úklidové práce
     image: "https://images.pexels.com/photos/4107112/pexels-photo-4107112.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    // Sádrokartonář
-    image: "https://images.pexels.com/photos/5089178/pexels-photo-5089178.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-  {
     // Rekonstrukce RD
     image: "https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-  {
-    // Práce na střeše
-    image: "https://images.pexels.com/photos/8853502/pexels-photo-8853502.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-  {
-    // Hodinový manžel
-    image: "https://images.pexels.com/photos/5691589/pexels-photo-5691589.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
     // Strojní výkopové práce
