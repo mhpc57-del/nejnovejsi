@@ -26,7 +26,7 @@ import {
   Plus
 } from '@phosphor-icons/react';
 import HeroSection from '../components/HeroSection';
-import StepsSlider from '../components/StepsSlider';
+// StepsSlider removed - process diagram inline
 import CraftBoltLogo from '../components/CraftBoltLogo';
 import ThemeToggle from '../components/ThemeToggle';
 import HeaderWidget from '../components/HeaderWidget';
@@ -45,7 +45,6 @@ const HomePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [showCookies, setShowCookies] = useState(true);
-  const [activeStep, setActiveStep] = useState(null);
   const [showQuickDemand, setShowQuickDemand] = useState(false);
   const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
   const [quickLoading, setQuickLoading] = useState(false);
@@ -137,10 +136,10 @@ const HomePage = () => {
   ];
 
   const steps = [
-    { num: "01", title: "Zákazník zadá zakázku", desc: "Vybere kategorii, popíše požadavek, přidá fotografie, zadá adresu a termín." },
-    { num: "02", title: "Dodavatel přijme zakázku", desc: "Dodavatel z okolí dostane upozornění, prohlédne poptávku a zahájí chat." },
-    { num: "03", title: "Realizace díla", desc: "Dodavatel provede práci transparentně a bez prostředníka." },
-    { num: "04", title: "Předání díla", desc: "Dodavatel řádně předá provedené dílo či službu." },
+    { num: "01", title: "Zákazník zadá poptávku", desc: "Vybere kategorii, popíše požadavek, přidá fotografie, zadá adresu a termín." },
+    { num: "02", title: "Dodavatel vytvoří nabídku", desc: "Dodavatel dostane upozornění o poptávce, vytvoří a odešle nabídku" },
+    { num: "03", title: "Zákazník přijme nabídku", desc: "Zákazník přijme nabídku, informuje dodavatele a dohodnou se na dalším postupu" },
+    { num: "04", title: "Dodavatel zrealizuje zakázku", desc: "Dodavatel provede práci a předá ji zákazníkovi" },
     { num: "05", title: "Vzájemné hodnocení", desc: "Obě strany ohodnotí spolupráci. Recenze budují důvěru." },
   ];
 
@@ -274,54 +273,118 @@ const HomePage = () => {
       </section>
 
       {/* ───── How It Works ───── */}
-      <section className="py-24 px-6 md:px-12 bg-white dark:bg-zinc-900/50">
+      <section className="py-24 px-6 md:px-12 bg-zinc-900" data-testid="how-it-works">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+            {/* Left — Title + Process Diagram */}
             <div className="lg:col-span-5">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
                 <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Proces</motion.span>
-                <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
+                <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
                   Jak to celé funguje
                 </motion.h2>
-                <motion.p variants={fadeUp} custom={2} className="text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">
+                <motion.p variants={fadeUp} custom={2} className="text-zinc-400 leading-relaxed mb-10">
                   Od zadání poptávky po dokončení zakázky. Pět jednoduchých kroků.
                 </motion.p>
               </motion.div>
-              <StepsSlider activeStep={activeStep} />
+
+              {/* Process Diagram */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="relative"
+              >
+                <svg viewBox="0 0 320 360" className="w-full max-w-[320px] mx-auto" fill="none">
+                  {/* Connecting arrows */}
+                  <path d="M160 55 L250 110" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M250 150 L250 210" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M250 250 L160 305" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M160 305 L70 250" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M70 210 L70 150" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+
+                  {/* Arrow heads */}
+                  <polygon points="247,108 255,115 243,115" fill="#f97316" opacity="0.7" />
+                  <polygon points="247,210 255,210 251,220" fill="#f97316" opacity="0.7" />
+                  <polygon points="163,302 155,310 155,298" fill="#f97316" opacity="0.7" />
+                  <polygon points="73,248 65,255 65,243" fill="#f97316" opacity="0.7" />
+                  <polygon points="67,152 75,152 71,142" fill="#f97316" opacity="0.7" />
+
+                  {/* Step 1 - Zákazník - top center */}
+                  <circle cx="160" cy="35" r="30" fill="#f97316" opacity="0.15" />
+                  <circle cx="160" cy="35" r="22" fill="#f97316" opacity="0.25" />
+                  <text x="160" y="31" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">01</text>
+                  <text x="160" y="43" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">ZÁKAZNÍK</text>
+
+                  {/* Step 2 - Nabídka - top right */}
+                  <circle cx="250" cy="130" r="30" fill="#f97316" opacity="0.15" />
+                  <circle cx="250" cy="130" r="22" fill="#f97316" opacity="0.25" />
+                  <text x="250" y="126" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">02</text>
+                  <text x="250" y="138" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">NABÍDKA</text>
+
+                  {/* Step 3 - Přijmutí - bottom right */}
+                  <circle cx="250" cy="230" r="30" fill="#f97316" opacity="0.15" />
+                  <circle cx="250" cy="230" r="22" fill="#f97316" opacity="0.25" />
+                  <text x="250" y="226" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">03</text>
+                  <text x="250" y="238" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">PŘIJMUTÍ</text>
+
+                  {/* Step 4 - Realizace - bottom center */}
+                  <circle cx="160" cy="325" r="30" fill="#f97316" opacity="0.15" />
+                  <circle cx="160" cy="325" r="22" fill="#f97316" opacity="0.25" />
+                  <text x="160" y="321" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">04</text>
+                  <text x="160" y="333" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">REALIZACE</text>
+
+                  {/* Step 5 - Hodnocení - bottom left */}
+                  <circle cx="70" cy="230" r="30" fill="#f97316" opacity="0.15" />
+                  <circle cx="70" cy="230" r="22" fill="#f97316" opacity="0.25" />
+                  <text x="70" y="226" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">05</text>
+                  <text x="70" y="238" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">HODNOCENÍ</text>
+
+                  {/* Center logo / text */}
+                  <text x="160" y="180" textAnchor="middle" fill="#f97316" fontSize="11" fontWeight="bold" opacity="0.6">CraftBolt</text>
+                </svg>
+              </motion.div>
             </div>
 
-            <motion.div className="lg:col-span-7 space-y-4" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+            {/* Right — Step cards */}
+            <motion.div className="lg:col-span-7 space-y-3" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
               {steps.map((step, index) => (
                 <motion.div key={index} variants={fadeUp} custom={index}
-                  className={`bg-stone-50 dark:bg-zinc-900 rounded-lg p-5 border cursor-pointer transition-all duration-200 ${
-                    activeStep === index 
-                      ? 'border-orange-400 shadow-md ring-1 ring-orange-200/50 dark:ring-orange-800/40' 
-                      : 'border-zinc-200/80 dark:border-zinc-800 hover:border-orange-300 dark:hover:border-orange-800'
-                  }`}
-                  onMouseEnter={() => setActiveStep(index)}
-                  onMouseLeave={() => setActiveStep(null)}
+                  className="bg-zinc-800/80 rounded-xl p-5 border border-zinc-700/50 hover:border-orange-500/40 transition-all duration-200"
                   data-testid={`step-card-${index}`}
                 >
                   <div className="flex gap-4">
                     <span className="text-3xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>{step.num}</span>
                     <div>
-                      <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">{step.title}</h3>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">{step.desc}</p>
+                      <h3 className="font-semibold text-white mb-1">{step.title}</h3>
+                      <p className="text-sm text-zinc-400">{step.desc}</p>
                     </div>
                   </div>
                 </motion.div>
               ))}
+
+              {/* CTA */}
+              <div className="pt-4">
+                <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="how-it-works-cta">
+                  Přidat poptávku
+                  <ArrowRight weight="bold" className="w-4 h-4" />
+                </Link>
+                <p className="text-orange-400 text-sm mt-3 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+                  Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
+                </p>
+              </div>
             </motion.div>
           </div>
 
           {/* Important Notice */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-            className="mt-20 bg-orange-500/5 dark:bg-orange-500/5 rounded-xl p-8 border border-orange-200/50 dark:border-orange-900/30">
-            <h3 className="font-semibold text-zinc-900 dark:text-white mb-4" style={{ fontFamily: 'Outfit' }}>Důležité upozornění</h3>
-            <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            className="mt-20 bg-orange-500/5 rounded-xl p-8 border border-orange-900/30">
+            <h3 className="font-semibold text-white mb-4" style={{ fontFamily: 'Outfit' }}>Důležité upozornění</h3>
+            <div className="space-y-3 text-sm text-zinc-400 leading-relaxed">
               <p>V případě, že si obě smluvní strany předají osobní kontakty z důvodu dalších realizací služeb nebo z důvodu poskytnutí záruk, je jim toto samozřejmě umožněno. Pamatujte však na to, že sjednávání dalších služeb mimo tuto platformu je mnohdy rizikovější.</p>
               <p>Sjednávání zakázek přes naši platformu je pohodlné, rychlé, efektivní a máte vždy jasný přehled o svých zakázkách. Veškerá historie (zakázky, chat, fotografie, hodnocení či případné spory) se Vám nikdy neztratí.</p>
-              <p className="font-semibold text-orange-600 dark:text-orange-400">Doporučení: Nikdy neřešte spor osobně či po telefonu. Vždy pamatujte na to, že co je psáno, to je dáno!</p>
+              <p className="font-semibold text-orange-400">Doporučení: Nikdy neřešte spor osobně či po telefonu. Vždy pamatujte na to, že co je psáno, to je dáno!</p>
             </div>
           </motion.div>
         </div>
