@@ -22,18 +22,19 @@ const Tab = createBottomTabNavigator();
 const tabScreenOptions = {
   headerShown: false,
   tabBarActiveTintColor: COLORS.primary,
-  tabBarInactiveTintColor: COLORS.gray500,
-  tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: -2 },
+  tabBarInactiveTintColor: COLORS.gray400,
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2, letterSpacing: 0.2 },
   tabBarStyle: {
     backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.gray100,
-    paddingTop: 6,
-    elevation: 12,
+    borderTopWidth: 0,
+    paddingTop: 8,
+    paddingBottom: 4,
+    height: 60,
+    elevation: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
   },
 };
 

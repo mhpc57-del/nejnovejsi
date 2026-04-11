@@ -1,48 +1,63 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  RefreshControl, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet,
+  RefreshControl, ActivityIndicator, Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import MapView, { Marker, Callout } from 'react-native-maps';
 import { demandService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS, STATUS_COLORS } from '../utils/theme';
+import { COLORS, STATUS_COLORS, RADIUS } from '../utils/theme';
 
-const DEFAULT_CENTER = { latitude: 49.8175, longitude: 15.4730 };
+const DEFAULT_REGION = {
+  latitude: 49.8175,
+  longitude: 15.4730,
+  latitudeDelta: 5,
+  longitudeDelta: 5,
+};
+
+const FILTERS = [
+  { key: 'all', label: 'Vse', icon: 'layers-outline' },
+  { key: 'open', label: 'Otevrene', icon: 'radio-button-on', color: COLORS.green500 },
+  { key: 'in_progress', label: 'Probihajici', icon: 'time-outline', color: COLORS.blue500 },
+  { key: 'completed', label: 'Hotove', icon: 'checkmark-circle-outline', color: COLORS.gray500 },
+];
+
+const getMarkerColor = (status) => {
+  switch (status) {
+    case 'open': return COLORS.green500;
+    case 'in_progress': return COLORS.blue500;
+    case 'completed': return COLORS.gray500;
+    case 'cancelled': return COLORS.red500;
+    default: return COLORS.primary;
+  }
+};
 
 export default function MapScreen({ navigation }) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const mapRef = useRef(null);
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [selectedDemand, setSelectedDemand] = useState(null);
 
   const fetchDemands = async () => {
     try {
-      const res = await demandService.getAll();
-      setDemands(res.data);
+      const res = user?.role === 'supplier' || user?.role === 'customer_supplier'
+        ? await demandService.getAvailable().catch(() => demandService.getAll())
+        : await demandService.getAll();
+      setDemands(res.data || []);
     } catch (e) {
       console.error('Map fetch error:', e);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
   useFocusEffect(useCallback(() => { fetchDemands(); }, []));
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'open': return { icon: 'radio-button-on', color: COLORS.green500 };
-      case 'in_progress': return { icon: 'time-outline', color: COLORS.blue500 };
-      case 'completed': return { icon: 'checkmark-circle', color: COLORS.gray500 };
-      case 'cancelled': return { icon: 'close-circle', color: COLORS.red500 };
-      default: return { icon: 'ellipse', color: COLORS.primary };
-    }
-  };
 
   const filteredDemands = demands.filter(d => {
     if (!d.latitude || !d.longitude) return false;
@@ -50,119 +65,165 @@ export default function MapScreen({ navigation }) {
     return d.status === filter;
   });
 
-  const FILTERS = [
-    { key: 'all', label: 'Vše', icon: 'layers-outline' },
-    { key: 'open', label: 'Otevřené', icon: 'radio-button-on' },
-    { key: 'in_progress', label: 'Probíhající', icon: 'time-outline' },
-    { key: 'completed', label: 'Hotové', icon: 'checkmark-circle-outline' },
-  ];
+  const handleMarkerPress = (demand) => {
+    setSelectedDemand(demand);
+  };
+
+  const fitToMarkers = () => {
+    if (filteredDemands.length > 0 && mapRef.current) {
+      const coords = filteredDemands.map(d => ({ latitude: d.latitude, longitude: d.longitude }));
+      mapRef.current.fitToCoordinates(coords, {
+        edgePadding: { top: 80, right: 40, bottom: 200, left: 40 },
+        animated: true,
+      });
+    }
+  };
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Ionicons name="map" size={22} color={COLORS.primary} />
-        <Text style={styles.headerTitle}>Mapa zakázek</Text>
-        <Text style={styles.headerCount}>{filteredDemands.length}</Text>
+        <Ionicons name="map" size={20} color={COLORS.primary} />
+        <Text style={styles.headerTitle}>Mapa zakazek</Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{filteredDemands.length}</Text>
+        </View>
       </View>
 
+      {/* Filters */}
       <View style={styles.filtersRow}>
         {FILTERS.map(f => (
           <TouchableOpacity key={f.key}
             style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
             onPress={() => setFilter(f.key)} activeOpacity={0.7}>
-            <Ionicons name={f.icon} size={14}
-              color={filter === f.key ? COLORS.white : COLORS.gray700} />
-            <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>
-              {f.label}
-            </Text>
+            <Ionicons name={f.icon} size={14} color={filter === f.key ? COLORS.white : COLORS.gray600} />
+            <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>{f.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView style={styles.list} refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDemands(); }} colors={[COLORS.primary]} />
-      }>
-        {loading ? (
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Načítám zakázky...</Text>
-          </View>
-        ) : filteredDemands.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <Ionicons name="map-outline" size={56} color={COLORS.gray300} />
-            <Text style={styles.emptyTitle}>Žádné zakázky na mapě</Text>
-            <Text style={styles.emptyText}>Zakázky s adresou se zobrazí zde</Text>
-          </View>
-        ) : (
-          filteredDemands.map(demand => {
-            const si = getStatusIcon(demand.status);
-            return (
-              <TouchableOpacity key={demand.id} style={styles.card}
-                onPress={() => navigation.navigate('DemandDetail', { id: demand.id })} activeOpacity={0.7}>
-                <View style={styles.cardRow}>
-                  <View style={[styles.statusDot, { backgroundColor: si.color + '20' }]}>
-                    <Ionicons name={si.icon} size={20} color={si.color} />
+      {/* Map */}
+      {loading ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Nacitam zakazky...</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={DEFAULT_REGION}
+            onMapReady={fitToMarkers}
+            showsUserLocation
+            showsMyLocationButton={false}
+          >
+            {filteredDemands.map(demand => (
+              <Marker
+                key={demand.id}
+                coordinate={{ latitude: demand.latitude, longitude: demand.longitude }}
+                pinColor={getMarkerColor(demand.status)}
+                onPress={() => handleMarkerPress(demand)}
+              >
+                <Callout onPress={() => navigation.navigate('DemandDetail', { id: demand.id })}>
+                  <View style={styles.callout}>
+                    <Text style={styles.calloutTitle} numberOfLines={1}>{demand.title}</Text>
+                    <Text style={styles.calloutCat}>{demand.category}</Text>
+                    <Text style={styles.calloutAddr} numberOfLines={1}>{demand.address}</Text>
+                    <Text style={styles.calloutTap}>Klepnete pro detail</Text>
                   </View>
-                  <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>{demand.title}</Text>
-                    <View style={styles.cardMetaRow}>
-                      <Ionicons name="pricetag-outline" size={12} color={COLORS.primary} />
-                      <Text style={styles.cardCat}>{demand.category}</Text>
-                    </View>
-                    <View style={styles.cardMetaRow}>
-                      <Ionicons name="location-outline" size={12} color={COLORS.gray500} />
-                      <Text style={styles.cardAddr} numberOfLines={1}>{demand.address}</Text>
-                    </View>
+                </Callout>
+              </Marker>
+            ))}
+          </MapView>
+
+          {/* My location button */}
+          <TouchableOpacity style={[styles.locBtn, { bottom: selectedDemand ? 180 : 24 }]}
+            onPress={fitToMarkers} activeOpacity={0.8}>
+            <Ionicons name="locate" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
+
+          {/* Selected demand card */}
+          {selectedDemand && (
+            <TouchableOpacity style={styles.selectedCard} activeOpacity={0.9}
+              onPress={() => navigation.navigate('DemandDetail', { id: selectedDemand.id })}>
+              <View style={styles.selectedCardInner}>
+                <View style={[styles.selectedStatusDot, { backgroundColor: getMarkerColor(selectedDemand.status) }]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.selectedTitle} numberOfLines={1}>{selectedDemand.title}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                    <Ionicons name="pricetag-outline" size={12} color={COLORS.primary} />
+                    <Text style={styles.selectedCat}>{selectedDemand.category}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.gray300} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                    <Ionicons name="location-outline" size={12} color={COLORS.gray500} />
+                    <Text style={styles.selectedAddr} numberOfLines={1}>{selectedDemand.address}</Text>
+                  </View>
                 </View>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.gray400} />
+              </View>
+              <TouchableOpacity style={styles.dismissBtn} onPress={() => setSelectedDemand(null)}>
+                <Ionicons name="close" size={16} color={COLORS.gray500} />
               </TouchableOpacity>
-            );
-          })
-        )}
-        <View style={{ height: 20 }} />
-      </ScrollView>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.gray50 },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 20, paddingBottom: 12,
     backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100,
   },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.gray900 },
-  headerCount: { fontSize: 14, fontWeight: '700', color: COLORS.primary, backgroundColor: COLORS.primaryLight, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, overflow: 'hidden' },
+  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.gray900, letterSpacing: -0.3 },
+  countBadge: { backgroundColor: COLORS.primaryLight, paddingHorizontal: 10, paddingVertical: 4, borderRadius: RADIUS.sm },
+  countText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
   filtersRow: {
     flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 8,
     backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100,
   },
   filterChip: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
-    borderWidth: 1, borderColor: COLORS.gray200,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: RADIUS.full,
+    borderWidth: 1.5, borderColor: COLORS.gray200,
   },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filterText: { fontSize: 12, fontWeight: '600', color: COLORS.gray700 },
+  filterText: { fontSize: 12, fontWeight: '600', color: COLORS.gray600 },
   filterTextActive: { color: COLORS.white },
-  list: { flex: 1, padding: 16 },
-  card: {
-    backgroundColor: COLORS.white, borderRadius: 16, padding: 14, marginBottom: 10,
-    borderWidth: 1, borderColor: COLORS.gray100,
-    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4,
-  },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  statusDot: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  cardContent: { flex: 1 },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: COLORS.gray900, marginBottom: 4 },
-  cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  cardCat: { fontSize: 12, color: COLORS.primary, fontWeight: '500' },
-  cardAddr: { fontSize: 12, color: COLORS.gray500, flex: 1 },
-  loadingWrap: { alignItems: 'center', paddingVertical: 60 },
+  map: { flex: 1 },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { fontSize: 14, color: COLORS.gray500, marginTop: 12 },
-  emptyWrap: { alignItems: 'center', paddingVertical: 60 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: COLORS.gray900, marginTop: 16 },
-  emptyText: { fontSize: 14, color: COLORS.gray500, marginTop: 4 },
+  callout: { width: 180, padding: 4 },
+  calloutTitle: { fontSize: 14, fontWeight: '600', color: COLORS.gray900, marginBottom: 2 },
+  calloutCat: { fontSize: 12, color: COLORS.primary, fontWeight: '500', marginBottom: 2 },
+  calloutAddr: { fontSize: 11, color: COLORS.gray500, marginBottom: 4 },
+  calloutTap: { fontSize: 10, color: COLORS.primary, fontWeight: '600' },
+  locBtn: {
+    position: 'absolute', right: 16,
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: COLORS.white, justifyContent: 'center', alignItems: 'center',
+    elevation: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 8,
+    borderWidth: 1, borderColor: COLORS.gray100,
+  },
+  selectedCard: {
+    position: 'absolute', bottom: 16, left: 16, right: 16,
+    backgroundColor: COLORS.white, borderRadius: RADIUS.lg, padding: 16,
+    elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12,
+    borderWidth: 1, borderColor: COLORS.gray100,
+  },
+  selectedCardInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  selectedStatusDot: { width: 10, height: 10, borderRadius: 5 },
+  selectedTitle: { fontSize: 15, fontWeight: '600', color: COLORS.gray900 },
+  selectedCat: { fontSize: 12, color: COLORS.primary, fontWeight: '500' },
+  selectedAddr: { fontSize: 12, color: COLORS.gray500, flex: 1 },
+  dismissBtn: {
+    position: 'absolute', top: 8, right: 8,
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: COLORS.gray100, justifyContent: 'center', alignItems: 'center',
+  },
 });

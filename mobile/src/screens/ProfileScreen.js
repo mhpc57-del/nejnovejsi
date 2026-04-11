@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { userService, uploadService, reviewService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS } from '../utils/theme';
+import { COLORS, SHADOWS, RADIUS } from '../utils/theme';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -161,10 +161,32 @@ export default function ProfileScreen() {
         </Text>
         <Text style={styles.profileEmail}>{profile?.email}</Text>
         <View style={styles.roleBadgeWrap}>
-          <Ionicons name={profile?.role === 'supplier' ? 'construct-outline' : 'person-outline'} size={14} color={COLORS.primary} />
-          <Text style={styles.roleBadgeText}>{profile?.role === 'supplier' ? 'Dodavatel' : 'Zákazník'}</Text>
+          <Ionicons name={profile?.role === 'supplier' || profile?.role === 'customer_supplier' ? 'construct-outline' : 'person-outline'} size={14} color={COLORS.primary} />
+          <Text style={styles.roleBadgeText}>
+            {profile?.role === 'supplier' ? 'Dodavatel' : profile?.role === 'customer_supplier' ? 'Zakaznik i Dodavatel' : 'Zakaznik'}
+          </Text>
         </View>
       </View>
+
+      {/* Subscription info for suppliers */}
+      {(profile?.role === 'supplier' || profile?.role === 'customer_supplier') && (
+        <View style={styles.subscriptionCard}>
+          <View style={styles.subRow}>
+            <View style={[styles.subIcon, { backgroundColor: profile?.subscription_active ? COLORS.green50 : COLORS.red50 }]}>
+              <Ionicons name={profile?.subscription_active ? 'shield-checkmark' : 'lock-closed'} size={20} color={profile?.subscription_active ? COLORS.green500 : COLORS.red500} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.subTitle}>{profile?.subscription_active ? 'Aktivni pristup' : 'Neaktivni pristup'}</Text>
+              {profile?.subscription_current_period_end && profile?.subscription_active && (
+                <Text style={styles.subDate}>Plati do {new Date(profile.subscription_current_period_end).toLocaleDateString('cs-CZ')}</Text>
+              )}
+              {!profile?.subscription_active && (
+                <Text style={styles.subDate}>Uhradte platbu pro plny pristup</Text>
+              )}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Stats */}
       {(profile?.rating || profile?.punctuality_score != null) && (
@@ -304,6 +326,11 @@ const styles = StyleSheet.create({
   profileEmail: { fontSize: 14, color: COLORS.gray500, marginTop: 4 },
   roleBadgeWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12, marginTop: 10 },
   roleBadgeText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
+  subscriptionCard: { marginHorizontal: 16, marginTop: 12, backgroundColor: COLORS.white, borderRadius: RADIUS.lg, padding: 16, borderWidth: 1, borderColor: COLORS.gray100, ...SHADOWS.sm },
+  subRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  subIcon: { width: 44, height: 44, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center' },
+  subTitle: { fontSize: 15, fontWeight: '600', color: COLORS.gray900 },
+  subDate: { fontSize: 13, color: COLORS.gray500, marginTop: 2 },
   statsRow: { flexDirection: 'row', justifyContent: 'center', gap: 32, paddingVertical: 20, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   statItem: { alignItems: 'center', gap: 4 },
   statValue: { fontSize: 20, fontWeight: '700', color: COLORS.primary },

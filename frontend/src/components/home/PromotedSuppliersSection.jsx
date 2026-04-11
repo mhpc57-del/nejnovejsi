@@ -53,7 +53,7 @@ export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm })
               <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/15 rounded-lg flex items-center justify-center mx-auto mb-3 transition-colors">
                 <Plus weight="bold" className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
               </div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
               <p className="text-xs font-bold text-orange-500">39 Kč/den</p>
             </motion.button>
           );
