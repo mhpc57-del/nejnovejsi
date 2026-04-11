@@ -43,16 +43,16 @@ const slides = [
     image: "/hero/ucetni.png",
   },
   {
-    // Úklidové práce
-    image: "https://images.pexels.com/photos/4107112/pexels-photo-4107112.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Uklízečka
+    image: "/hero/uklizecka.png",
   },
   {
-    // Rekonstrukce RD
-    image: "https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Zedník
+    image: "/hero/zednik.jpg",
   },
   {
-    // Strojní výkopové práce
-    image: "https://images.pexels.com/photos/2058911/pexels-photo-2058911.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    // Bagrista
+    image: "/hero/bagrista.png",
   },
 ];
 
