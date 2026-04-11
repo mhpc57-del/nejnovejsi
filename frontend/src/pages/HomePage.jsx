@@ -721,6 +721,7 @@ const HomePage = () => {
               <h4 className="font-semibold text-sm mb-4">Právní informace</h4>
               <ul className="space-y-2.5 text-zinc-500 text-sm">
                 <li><Link to="/obchodni-podminky" className="hover:text-orange-400 transition-colors">Obchodní podmínky</Link></li>
+                <li><Link to="/caste-dotazy" className="hover:text-orange-400 transition-colors">Časté dotazy</Link></li>
                 <li><Link to="/kontakt" className="hover:text-orange-400 transition-colors">Kontakt</Link></li>
               </ul>
             </div>
