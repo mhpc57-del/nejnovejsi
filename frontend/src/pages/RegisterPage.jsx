@@ -550,27 +550,63 @@ const RegisterPage = () => {
         return (
           <div className="space-y-4">
             <p className="text-zinc-600 dark:text-zinc-400 mb-6">Jak chcete platformu používat?</p>
-            {[
-              { value: 'customer', label: 'Zákazník', desc: 'Hledám řemeslníky a služby', price: 'ZDARMA', Icon: User },
-              { value: 'supplier', label: 'Dodavatel', desc: 'Nabízím své služby', price: 'od 190 Kč/měsíc', Icon: Briefcase },
-            ].map(({ value, label, desc, price, Icon }) => (
-              <button key={value} type="button"
-                onClick={() => setFormData(prev => ({ ...prev, role: value, account_type: '', has_ico: null }))}
-                className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === value ? 'border-orange-500 bg-orange-50' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600'}`}
-                data-testid={`role-${value}-btn`}>
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === value ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
-                    <Icon weight="bold" className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">{label}</h3>
-                    <p className="text-sm text-zinc-500">{desc}</p>
-                  </div>
-                  <span className="text-sm font-medium text-orange-500">{price}</span>
-                  {formData.role === value && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
+            {/* Zákazník */}
+            <button type="button"
+              onClick={() => setFormData(prev => ({ ...prev, role: 'customer', account_type: '', has_ico: null }))}
+              className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === 'customer' ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300'}`}
+              data-testid="role-customer-btn">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === 'customer' ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  <User weight="bold" className="w-6 h-6" />
                 </div>
-              </button>
-            ))}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Zákazník</h3>
+                  <p className="text-sm text-zinc-500">Hledám řemeslníky a služby</p>
+                </div>
+                <span className="text-sm font-bold text-green-600">ZDARMA</span>
+                {formData.role === 'customer' && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
+              </div>
+            </button>
+
+            {/* Dodavatel - měsíční */}
+            <button type="button"
+              onClick={() => setFormData(prev => ({ ...prev, role: 'supplier', billing_period: 'monthly', account_type: '', has_ico: null }))}
+              className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === 'supplier' && formData.billing_period === 'monthly' ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300'}`}
+              data-testid="role-supplier-monthly-btn">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === 'supplier' && formData.billing_period === 'monthly' ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  <Briefcase weight="bold" className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Dodavatel — měsíční</h3>
+                  <p className="text-sm text-zinc-500">Nabízím své služby</p>
+                </div>
+                <span className="text-sm font-bold text-orange-500">190 Kč/měsíc</span>
+                {formData.role === 'supplier' && formData.billing_period === 'monthly' && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
+              </div>
+            </button>
+
+            {/* Dodavatel - roční */}
+            <button type="button"
+              onClick={() => setFormData(prev => ({ ...prev, role: 'supplier', billing_period: 'annual', account_type: '', has_ico: null }))}
+              className={`w-full p-5 border-2 rounded-xl text-left transition-all ${formData.role === 'supplier' && formData.billing_period === 'annual' ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300'}`}
+              data-testid="role-supplier-annual-btn">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.role === 'supplier' && formData.billing_period === 'annual' ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  <Briefcase weight="bold" className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Dodavatel — roční</h3>
+                  <p className="text-sm text-zinc-500">Nabízím své služby</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-orange-500">1 890 Kč/rok</span>
+                  <p className="text-xs text-green-600 font-semibold">ušetříte 390 Kč</p>
+                </div>
+                {formData.role === 'supplier' && formData.billing_period === 'annual' && <Check weight="bold" className="w-6 h-6 text-orange-500" />}
+              </div>
+            </button>
+            <p className="text-xs text-zinc-400 text-center mt-2">Všechny ceny jsou uvedeny včetně 21% DPH.</p>
           </div>
         );
 
