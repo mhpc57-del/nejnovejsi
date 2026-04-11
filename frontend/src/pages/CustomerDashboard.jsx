@@ -44,14 +44,16 @@ import HeaderWidget from '../components/HeaderWidget';
 const CustomerDashboard = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewDemand, setShowNewDemand] = useState(false);
-  const [activeFilter, setActiveFilter] = useState(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [unreadDemands, setUnreadDemands] = useState([]);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [selectedDemand, setSelectedDemand] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({});
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const fetchDemands = async () => {
     try {
@@ -66,446 +68,399 @@ const CustomerDashboard = () => {
     }
   };
 
-  const fetchUnread = async () => {
+  const fetchProfile = async () => {
     try {
-      const res = await axios.get(`${API}/messages/unread-summary`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUnreadDemands(res.data.unread_demands || []);
-    } catch (err) {
-      console.error('Error fetching unread:', err);
-    }
+      const res = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      setProfile(res.data);
+      setProfileForm(res.data);
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => {
     fetchDemands();
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 15000);
-    return () => clearInterval(interval);
+    fetchProfile();
   }, [token]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = () => { logout(); navigate('/'); };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      await axios.put(`${API}/users/profile`, {
+        first_name: profileForm.first_name,
+        last_name: profileForm.last_name,
+        phone: profileForm.phone,
+        sms_notifications: profileForm.sms_notifications,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setEditingProfile(false);
+      fetchProfile();
+    } catch (e) { console.error(e); }
+    setSavingProfile(false);
   };
 
+  // Demand counts
+  const verified = demands.filter(d => d.verified);
+  const unverified = demands.filter(d => !d.verified && d.status === 'open');
+  const inProgress = demands.filter(d => d.status === 'in_progress');
+  const completed = demands.filter(d => d.status === 'completed');
+  const cancelled = demands.filter(d => d.status === 'cancelled');
+
+  const demandTabs = [
+    { key: 'verified', label: 'Ověřené', count: verified.length, color: 'text-emerald-500' },
+    { key: 'unverified', label: 'Neověřené', count: unverified.length, color: 'text-orange-500' },
+    { key: 'in_progress', label: 'Probíhající', count: inProgress.length, color: 'text-blue-500' },
+    { key: 'completed', label: 'Dokončené', count: completed.length, color: 'text-zinc-500' },
+    { key: 'cancelled', label: 'Nedokončené', count: cancelled.length, color: 'text-red-500' },
+  ];
+
+  const getDemandsByTab = (tab) => {
+    switch (tab) {
+      case 'verified': return verified;
+      case 'unverified': return unverified;
+      case 'in_progress': return inProgress;
+      case 'completed': return completed;
+      case 'cancelled': return cancelled;
+      default: return [];
+    }
+  };
+
+  const totalExpenses = demands
+    .filter(d => d.status === 'completed' && d.invoiced_amount)
+    .reduce((sum, d) => sum + d.invoiced_amount, 0);
+
   const getStatusBadge = (status) => {
-    const styles = {
-      open: 'bg-green-100 text-green-700',
-      in_progress: 'bg-blue-100 text-blue-700',
-      completed: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
-      cancelled: 'bg-red-100 text-red-700'
-    };
-    const labels = {
-      open: 'Otevřená',
-      in_progress: 'Probíhá',
-      completed: 'Dokončeno',
-      cancelled: 'Zrušeno'
-    };
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status]}`}>
-        {labels[status]}
-      </span>
-    );
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
+    return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
+  };
+
+  // Render main content based on active tab
+  const renderContent = () => {
+    // Profile tab
+    if (activeTab === 'profile') {
+      return (
+        <div className="space-y-6" data-testid="profile-content">
+          {/* Profile card */}
+          <div className="bg-zinc-800/50 dark:bg-zinc-800/50 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-full bg-zinc-700 dark:bg-zinc-700 bg-zinc-200 flex items-center justify-center text-2xl font-bold text-orange-500">
+                {(profile?.first_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{profile?.first_name} {profile?.last_name}</h2>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Zákazník</span>
+                  {profile?.account_type && (
+                    <span className="px-2 py-0.5 bg-orange-500/15 text-orange-500 text-xs font-semibold rounded-full">
+                      {profile.account_type === 'individual' ? 'Nepodnikatel' : 'Podnikatel'}
+                    </span>
+                  )}
+                  {profile?.is_verified && (
+                    <span className="flex items-center gap-1 text-emerald-500 text-xs font-semibold">
+                      <Check weight="bold" className="w-3.5 h-3.5" /> Ověřeno
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Personal data */}
+          <div className="bg-zinc-800/50 dark:bg-zinc-800/50 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-zinc-900 dark:text-white">Osobní údaje</h3>
+              {editingProfile ? (
+                <button onClick={handleSaveProfile} disabled={savingProfile} className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50" data-testid="save-profile-btn">
+                  {savingProfile ? 'Ukládám...' : 'Uložit'}
+                </button>
+              ) : (
+                <button onClick={() => setEditingProfile(true)} className="px-4 py-1.5 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="edit-profile-btn">
+                  Upravit
+                </button>
+              )}
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Jméno</label>
+                {editingProfile ? (
+                  <input value={profileForm.first_name || ''} onChange={e => setProfileForm(p => ({...p, first_name: e.target.value}))}
+                    className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-first-name" />
+                ) : (
+                  <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.first_name || '—'}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Příjmení</label>
+                {editingProfile ? (
+                  <input value={profileForm.last_name || ''} onChange={e => setProfileForm(p => ({...p, last_name: e.target.value}))}
+                    className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-last-name" />
+                ) : (
+                  <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.last_name || '—'}</p>
+                )}
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Telefon</label>
+              {editingProfile ? (
+                <input value={profileForm.phone || ''} onChange={e => setProfileForm(p => ({...p, phone: e.target.value}))}
+                  className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-phone" />
+              ) : (
+                <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.phone || '—'}</p>
+              )}
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <button onClick={() => { const v = !profileForm.sms_notifications; setProfileForm(p => ({...p, sms_notifications: v})); }}
+                className={`w-11 h-6 rounded-full transition-colors relative ${profileForm.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} data-testid="sms-toggle">
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${profileForm.sms_notifications ? 'left-5.5' : 'left-0.5'}`} />
+              </button>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">Chci dostávat notifikační SMS</span>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">E-mail</label>
+              <p className="px-3 py-2.5 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-500 text-sm">{profile?.email || '—'}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Invoices tab
+    if (activeTab === 'invoices') {
+      return (
+        <div data-testid="invoices-content">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">Faktury</h2>
+          <p className="text-zinc-500 text-sm">Faktury naleznete v sekci <Link to="/faktury" className="text-orange-500 hover:underline">Faktury</Link>.</p>
+        </div>
+      );
+    }
+
+    // Expenses tab
+    if (activeTab === 'expenses') {
+      return (
+        <div data-testid="expenses-content">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">Moje výdaje</h2>
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 mb-6">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Celkové výdaje</p>
+            <p className="text-3xl font-bold text-orange-500 mt-1">{totalExpenses.toLocaleString('cs-CZ')} Kč</p>
+          </div>
+          {completed.filter(d => d.invoiced_amount).length > 0 ? (
+            <div className="space-y-3">
+              {completed.filter(d => d.invoiced_amount).map(d => (
+                <div key={d.id} className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 flex items-center justify-between" data-testid={`expense-${d.id}`}>
+                  <div>
+                    <p className="font-semibold text-zinc-900 dark:text-white text-sm">{d.title}</p>
+                    <p className="text-xs text-zinc-500">{d.category} — {new Date(d.completed_at || d.created_at).toLocaleDateString('cs-CZ')}</p>
+                  </div>
+                  <p className="font-bold text-orange-500">{d.invoiced_amount?.toLocaleString('cs-CZ')} Kč</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-zinc-500 text-sm">Zatím žádné výdaje.</p>
+          )}
+        </div>
+      );
+    }
+
+    // Demand detail
+    if (selectedDemand) {
+      const d = selectedDemand;
+      return (
+        <div data-testid="demand-detail">
+          <button onClick={() => setSelectedDemand(null)} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors" data-testid="back-to-list">
+            <X className="w-4 h-4" /> Zpět na seznam
+          </button>
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-4">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{d.title}</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              {getStatusBadge(d.status)}
+              <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium">{d.category}</span>
+              {d.verified && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span>}
+            </div>
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
+            <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
+              <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" /> {d.address}</span>
+              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" /> {new Date(d.created_at).toLocaleDateString('cs-CZ')}</span>
+            </div>
+            {d.deadline && (
+              <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5">
+                <Clock className="w-4 h-4" />
+                {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
+              </p>
+            )}
+            <hr className="border-zinc-200 dark:border-zinc-700" />
+            <div className="flex gap-3">
+              {d.status === 'open' && (
+                <>
+                  <button className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cancel-demand-action">
+                    <X className="w-4 h-4 inline mr-1" /> Zrušit zakázku
+                  </button>
+                  <Link to={`/zakazka/${d.id}`} className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="edit-demand-action">
+                    Upravit zakázku
+                  </Link>
+                </>
+              )}
+              <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="demand-detail-link">
+                Otevřít detail
+              </Link>
+            </div>
+          </div>
+          {/* Map */}
+          {d.latitude && d.longitude && (
+            <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
+              <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                <Marker position={[d.latitude, d.longitude]}>
+                  <Popup>{d.title}<br/><small>{d.address}</small></Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Demand grid by status tab
+    const demandList = getDemandsByTab(activeTab);
+    const tabInfo = demandTabs.find(t => t.key === activeTab);
+    if (tabInfo) {
+      return (
+        <div data-testid={`demands-${activeTab}`}>
+          {loading ? (
+            <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div></div>
+          ) : demandList.length === 0 ? (
+            <div className="text-center py-16">
+              <List className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+              <p className="text-zinc-500">Žádné poptávky v této kategorii</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {demandList.map(d => (
+                <button key={d.id} onClick={() => setSelectedDemand(d)}
+                  className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all group"
+                  data-testid={`demand-card-${d.id}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate flex-1">{d.title}</h3>
+                    {d.verified && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded">Ověřená</span>}
+                    {!d.verified && d.status === 'open' && <span className="px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded">Neověřená</span>}
+                  </div>
+                  <div className="space-y-1 text-xs text-zinc-500">
+                    <p className="flex items-center gap-1"><User className="w-3 h-3" /> {d.customer_name || 'Zadavatel'}</p>
+                    <p className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {d.address || '—'}</p>
+                    <p className="flex items-center gap-1"><Calendar className="w-3 h-3" />
+                      {d.deadline === 'URGENT' ? <span className="text-orange-500 font-semibold">IHNED!</span> : d.deadline === 'ASAP' ? 'Co nejdříve' : new Date(d.created_at).toLocaleDateString('cs-CZ')}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      <WelcomeModal user={user} token={token} API={API} />
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-200/60 dark:border-zinc-800/60 p-6 hidden lg:block">
-        <Link to="/" className="flex items-center gap-2 mb-10">
-          <CraftBoltLogo size="sm" />
-        </Link>
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex" data-testid="customer-dashboard">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex flex-col w-56 border-r border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-950 fixed top-0 left-0 bottom-0 z-30" data-testid="sidebar">
+        <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800">
+          <Link to="/" className="flex items-center gap-2"><CraftBoltLogo size="xs" /></Link>
+        </div>
 
-        <nav className="space-y-1">
-          <Link 
-            to="/zakaznik" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              location.pathname === '/zakaznik' ? 'bg-orange-500 text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
-            }`}
-            data-testid="nav-dashboard"
-          >
-            <House weight={location.pathname === '/zakaznik' ? 'fill' : 'regular'} className="w-5 h-5" />
-            Hlavní menu
-          </Link>
-          <Link 
-            to="/profil" 
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
-            data-testid="nav-profile"
-          >
-            <User className="w-5 h-5" />
-            Profil
-          </Link>
-          <Link 
-            to="/faktury" 
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
-            data-testid="nav-invoices"
-          >
-            <Receipt className="w-5 h-5" />
-            Faktury
-          </Link>
-          {user?.role === 'customer_supplier' && (
-            <Link 
-              to="/dodavatel" 
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-orange-600 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors font-medium"
-              data-testid="nav-switch-to-supplier"
-            >
-              <Briefcase className="w-5 h-5" />
-              Přepnout na - Dodavatel
-            </Link>
-          )}
+        <div className="p-3">
+          <button onClick={() => setShowNewDemand(true)}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+            data-testid="sidebar-new-demand-btn">
+            <Plus weight="bold" className="w-4 h-4" /> Nová poptávka
+          </button>
+        </div>
+
+        <nav className="flex-1 px-3 space-y-1">
+          <button onClick={() => { setActiveTab('profile'); setSelectedDemand(null); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'profile' ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+            data-testid="sidebar-profile">
+            <User className="w-4 h-4" /> Profil
+          </button>
+          <button onClick={() => { setActiveTab('invoices'); setSelectedDemand(null); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'invoices' ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+            data-testid="sidebar-invoices">
+            <Receipt className="w-4 h-4" /> Faktury
+          </button>
+          <button onClick={() => { setActiveTab('expenses'); setSelectedDemand(null); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'expenses' ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+            data-testid="sidebar-expenses">
+            <Briefcase className="w-4 h-4" /> Moje výdaje
+          </button>
+
+          <div className="pt-4">
+            <p className="px-3 text-xs font-semibold text-zinc-500 dark:text-zinc-500 mb-2 italic">Poptávky:</p>
+            {demandTabs.map(tab => (
+              <button key={tab.key} onClick={() => { setActiveTab(tab.key); setSelectedDemand(null); }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab.key ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                data-testid={`sidebar-tab-${tab.key}`}>
+                <span>{tab.label}</span>
+                <span className={`font-bold ${activeTab === tab.key ? 'text-white' : tab.color}`}>{tab.count}</span>
+              </button>
+            ))}
+          </div>
         </nav>
 
-        <div className="absolute bottom-6 left-6 right-6">
-          <button 
-            onClick={() => setShowDeactivate(true)}
-            className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors mb-1"
-            data-testid="deactivate-btn-sidebar"
-          >
-            <Trash className="w-5 h-5" />
-            Zrušit účet
+        <div className="p-3 border-t border-zinc-200/80 dark:border-zinc-800 space-y-1">
+          <button onClick={() => setShowDeactivate(true)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="sidebar-deactivate">
+            <Trash className="w-4 h-4" /> Zrušit účet
           </button>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg transition-colors"
-            data-testid="logout-btn"
-          >
-            <SignOut className="w-5 h-5" />
-            Odhlásit se
+          <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" data-testid="sidebar-logout">
+            <SignOut className="w-4 h-4" /> Odhlásit se
           </button>
-          <div className="px-4 py-2">
-            <ThemeToggle className="w-full justify-center" />
-          </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen pb-20 lg:pb-0">
-        {/* Header */}
-        <header className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/60 dark:border-zinc-800/60 px-6 py-4 sticky top-0 z-40">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Profil zákazníka</h1>
-              <p className="text-sm text-zinc-500">Vítejte zpět, {user?.company_name || user?.email}</p>
-              <div className="mt-1"><HeaderWidget /></div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setShowNewDemand(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/20 text-sm"
-                data-testid="new-demand-btn"
-              >
-                <Plus weight="bold" className="w-5 h-5" />
-                Nová poptávka
-              </button>
-            </div>
+      {/* Main */}
+      <main className="flex-1 lg:ml-56">
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center justify-between px-6 h-14">
+            <div className="lg:hidden"><CraftBoltLogo size="xs" /></div>
+            <HeaderWidget />
+            <ThemeToggle />
           </div>
         </header>
 
         {/* Content */}
-        <div className="p-6">
-          {/* Stats - clickable cards */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: 'Celkem poptávek', value: demands.length, color: 'bg-blue-500', filter: 'all' },
-              { label: 'Otevřené', value: demands.filter(d => d.status === 'open').length, color: 'bg-emerald-500', filter: 'open' },
-              { label: 'Probíhající', value: demands.filter(d => d.status === 'in_progress').length, color: 'bg-orange-500', filter: 'in_progress' },
-              { label: 'Dokončené', value: demands.filter(d => d.status === 'completed').length, color: 'bg-zinc-500', filter: 'completed' },
-            ].map((stat, i) => {
-              const unreadCount = stat.filter === 'all' 
-                ? unreadDemands.length
-                : unreadDemands.filter(u => u.demand_status === stat.filter).length;
-              const now = new Date();
-              const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
-              let newCount = 0;
-              if (stat.filter === 'completed') {
-                newCount = demands.filter(d => d.status === 'completed' && d.completed_at && new Date(d.completed_at) > dayAgo).length;
-              } else if (stat.filter === 'in_progress') {
-                newCount = demands.filter(d => d.status === 'in_progress' && d.accepted_at && new Date(d.accepted_at) > dayAgo).length;
-              }
-              return (
-              <button key={i} 
-                onClick={() => setActiveFilter(activeFilter === stat.filter ? null : stat.filter)}
-                className={`bg-white dark:bg-zinc-900 rounded-xl p-5 border transition-all text-left relative ${
-                  activeFilter === stat.filter ? 'border-orange-400 ring-2 ring-orange-200/50 dark:ring-orange-800/40 shadow-md' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm'
-                }`}
-                data-testid={`stat-card-${stat.filter}`}
-              >
-                {unreadCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`unread-badge-${stat.filter}`}>
-                    {unreadCount}
-                  </span>
-                )}
-                {unreadCount === 0 && newCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse" data-testid={`new-badge-${stat.filter}`}>
-                    {newCount}
-                  </span>
-                )}
-                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
-                  <List weight="bold" className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">{stat.value}</p>
-                <p className="text-sm text-zinc-500">{stat.label}</p>
-              </button>
-              );
-            })}
-          </div>
-
-          {/* Unread messages notification */}
-          {unreadDemands.length > 0 && (
-            <div className="mb-6 bg-orange-50 dark:bg-orange-500/5 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-4" data-testid="unread-messages-banner">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <ChatCircle weight="fill" className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-orange-800 dark:text-orange-300">Nové zprávy ({unreadDemands.length})</p>
-                  <p className="text-sm text-orange-600 dark:text-orange-400">Máte nepřečtené zprávy v následujících poptávkách</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {unreadDemands.slice(0, 5).map((item) => (
-                  <Link key={item.demand_id} to={`/zakazka/${item.demand_id}`}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-zinc-900 rounded-lg hover:bg-orange-50 dark:hover:bg-zinc-800/50 transition-colors border border-orange-100 dark:border-zinc-800"
-                    data-testid={`unread-${item.demand_id}`}>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-zinc-900 dark:text-white truncate text-sm">{item.demand_title}</p>
-                      <p className="text-xs text-zinc-500 truncate">{item.last_sender}: {item.last_message}</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Map overview of demands */}
-          {demands.length > 0 && demands.some(d => d.latitude && d.longitude) && (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 mb-6" data-testid="customer-demands-map">
-              <h2 className="font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2" style={{ fontFamily: 'Outfit' }}>
-                <MapPin weight="fill" className="w-5 h-5 text-orange-500" />
-                Mapa poptávek
-              </h2>
-              <div className="flex items-center gap-4 mb-3 text-xs">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Otevřené</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Probíhající</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Dokončené</span>
-              </div>
-              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
-                <MapContainer 
-                  center={(() => {
-                    const withCoords = demands.filter(d => d.latitude && d.longitude);
-                    if (withCoords.length > 0) return [withCoords[0].latitude, withCoords[0].longitude];
-                    return [49.8, 15.5];
-                  })()}
-                  zoom={8} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                  {demands.filter(d => d.latitude && d.longitude).map(d => (
-                    <Marker key={d.id} position={[d.latitude, d.longitude]}
-                      icon={d.status === 'open' ? greenIcon : d.status === 'in_progress' ? orangeIcon : greyIcon}>
-                      <Popup>
-                        <strong>{d.title}</strong><br/>
-                        <small>{d.category} — {d.address}</small><br/>
-                        <small style={{color: d.status === 'open' ? '#16a34a' : d.status === 'in_progress' ? '#ea580c' : '#6b7280'}}>
-                          {d.status === 'open' ? 'Otevřená' : d.status === 'in_progress' ? 'Probíhá' : 'Dokončeno'}
-                        </small>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
-              </div>
-            </div>
-          )}
-
-          {/* Filtered Demands Modal - shown when a stat card is clicked */}
-          {activeFilter && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setActiveFilter(null)}>
-              <div 
-                className="bg-white dark:bg-zinc-900 w-full sm:max-w-lg sm:rounded-xl rounded-t-xl max-h-[85vh] flex flex-col border border-zinc-200/50 dark:border-zinc-800"
-                onClick={(e) => e.stopPropagation()}
-                data-testid="filtered-demands-modal"
-              >
-                <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between flex-shrink-0">
-                  <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-                    {activeFilter === 'all' ? 'Všechny poptávky' : activeFilter === 'open' ? 'Otevřené poptávky' : activeFilter === 'in_progress' ? 'Probíhající poptávky' : 'Dokončené poptávky'}
-                  </h2>
-                  <button onClick={() => setActiveFilter(null)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors" data-testid="close-filter-btn">
-                    <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                  </button>
-                </div>
-
-                <div className="overflow-y-auto flex-1">
-                  {(() => {
-                    const filtered = activeFilter === 'all' ? demands : demands.filter(d => d.status === activeFilter);
-                    if (loading) return (
-                      <div className="p-10 text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
-                      </div>
-                    );
-                    if (filtered.length === 0) return (
-                      <div className="p-10 text-center">
-                        <List className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-zinc-500 mb-4">Žádné poptávky v této kategorii</p>
-                        <button onClick={() => { setActiveFilter(null); setShowNewDemand(true); }} className="text-orange-500 hover:text-orange-600 font-medium" data-testid="empty-new-demand-btn">
-                          Vytvořit poptávku
-                        </button>
-                      </div>
-                    );
-                    return (
-                      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                        {filtered.map((demand) => (
-                          <Link key={demand.id} to={`/zakazka/${demand.id}`}
-                            className="block p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                            data-testid={`demand-item-${demand.id}`}>
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{demand.title}</h3>
-                                  {getStatusBadge(demand.status)}
-                                  {(demand.soft_accepts?.length > 0 || demand.status === 'in_progress') && demand.status !== 'completed' && demand.status !== 'cancelled' && (
-                                    <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" data-testid={`response-badge-${demand.id}`}>
-                                      <Bell weight="fill" className="w-3 h-3" />
-                                      {demand.soft_accepts?.length > 0 ? `${demand.soft_accepts.length} ${demand.soft_accepts.length === 1 ? 'reakce' : 'reakcí'}` : 'Přijato'}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="space-y-1 text-sm text-zinc-500">
-                                  <div className="flex items-center gap-1.5">
-                                    <User className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-                                    <span className="truncate">{demand.customer_name || 'Neznámý zadavatel'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-                                    <span className="truncate">{demand.address || 'Neuvedeno'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-                                    <span>
-                                      {demand.deadline 
-                                        ? (demand.deadline === 'ASAP' ? 'Co nejdříve' 
-                                          : demand.deadline === 'URGENT' ? 'IHNED!' 
-                                          : `Termín: ${new Date(demand.deadline).toLocaleDateString('cs-CZ')}`)
-                                        : `Zadáno: ${new Date(demand.created_at).toLocaleDateString('cs-CZ')}`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <ArrowRight className="w-5 h-5 text-zinc-300 flex-shrink-0" />
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="p-6 max-w-5xl">
+          {renderContent()}
         </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-800/60 lg:hidden z-40" data-testid="mobile-bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-800/60 lg:hidden z-40" data-testid="mobile-bottom-nav">
         <div className="flex items-center justify-around py-2">
-          <Link to="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-home">
-            <House className="w-6 h-6" />
-            <span className="text-[10px] font-medium">Domů</span>
-          </Link>
-          <Link to="/zakaznik" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-orange-500" data-testid="mobile-nav-dashboard">
-            <List className="w-6 h-6" weight="fill" />
-            <span className="text-[10px] font-medium">Přehled</span>
-          </Link>
-          <button onClick={() => setShowNewDemand(true)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 -mt-4" data-testid="mobile-nav-new-demand">
-            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-              <Plus weight="bold" className="w-6 h-6 text-white" />
-            </div>
+          <button onClick={() => { setActiveTab('profile'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${activeTab === 'profile' ? 'text-orange-500' : 'text-zinc-400'}`}>
+            <User className="w-5 h-5" /><span className="text-[10px] font-medium">Profil</span>
           </button>
-          <Link to="/profil" className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-profile">
-            <User className="w-6 h-6" />
-            <span className="text-[10px] font-medium">Profil</span>
-          </Link>
-          <button onClick={() => setShowMobileMenu(true)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400 hover:text-orange-500 transition-colors" data-testid="mobile-nav-more">
-            <DotsThreeCircle className="w-6 h-6" />
-            <span className="text-[10px] font-medium">Více</span>
+          <button onClick={() => { setActiveTab('verified'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${demandTabs.some(t => t.key === activeTab) ? 'text-orange-500' : 'text-zinc-400'}`}>
+            <List className="w-5 h-5" /><span className="text-[10px] font-medium">Poptávky</span>
+          </button>
+          <button onClick={() => setShowNewDemand(true)} className="flex flex-col items-center -mt-4">
+            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg"><Plus weight="bold" className="w-6 h-6 text-white" /></div>
+          </button>
+          <button onClick={() => { setActiveTab('expenses'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${activeTab === 'expenses' ? 'text-orange-500' : 'text-zinc-400'}`}>
+            <Briefcase className="w-5 h-5" /><span className="text-[10px] font-medium">Výdaje</span>
+          </button>
+          <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-zinc-400">
+            <SignOut className="w-5 h-5" /><span className="text-[10px] font-medium">Odhlásit</span>
           </button>
         </div>
       </nav>
 
-      {/* Mobile "Více" Drawer */}
-      {showMobileMenu && (
-        <div className="fixed inset-0 z-50 lg:hidden" data-testid="mobile-menu-drawer">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-200">
-            <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-5" />
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <Link to="/faktury" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-invoices">
-                <div className="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Faktury</span>
-              </Link>
-              <button onClick={() => { setShowMobileMenu(false); window.dispatchEvent(new CustomEvent('open-ai-chat')); }} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-ai-chat">
-                <div className="w-11 h-11 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center">
-                  <ChatCircleDots className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                </div>
-                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">AI Chat</span>
-              </button>
-              <button onClick={() => { setShowMobileMenu(false); document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-theme">
-                <div className="w-11 h-11 bg-zinc-100 dark:bg-zinc-700 rounded-full flex items-center justify-center">
-                  <Moon className="w-5 h-5 text-zinc-600 dark:text-zinc-300 dark:hidden" />
-                  <Sun className="w-5 h-5 text-yellow-500 hidden dark:block" />
-                </div>
-                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Režim</span>
-              </button>
-              {user?.role === 'customer_supplier' && (
-                <Link to="/dodavatel" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" data-testid="mobile-menu-switch-role">
-                  <div className="w-11 h-11 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center">
-                    <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium text-center">Dodavatel</span>
-                </Link>
-              )}
-            </div>
-            {user?.trial_ends_at && (
-              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-3 mb-4" data-testid="mobile-trial-info">
-                <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">
-                  Zkušební doba: {new Date(user.trial_ends_at) > new Date()
-                    ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}`
-                    : 'Vypršela'}
-                </p>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button onClick={() => { setShowMobileMenu(false); setShowDeactivate(true); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-red-500 bg-red-50 dark:bg-red-500/10 rounded-xl text-sm font-medium" data-testid="mobile-menu-deactivate">
-                <Trash className="w-4 h-4" /> Zrušit účet
-              </button>
-              <button onClick={() => { setShowMobileMenu(false); handleLogout(); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-sm font-medium" data-testid="mobile-menu-logout">
-                <SignOut className="w-4 h-4" /> Odhlásit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* New Demand Modal */}
       {showNewDemand && (
-        <NewDemandModal 
-          onClose={() => setShowNewDemand(false)} 
-          onSuccess={() => {
-            setShowNewDemand(false);
-            fetchDemands();
-          }}
-          token={token}
-        />
+        <NewDemandModal onClose={() => setShowNewDemand(false)} onSuccess={() => { setShowNewDemand(false); fetchDemands(); }} token={token} />
       )}
-
-      {/* Deactivate Account Modal */}
       {showDeactivate && (
-        <DeactivateModal
-          token={token}
-          onClose={() => setShowDeactivate(false)}
-          onSuccess={() => { logout(); navigate('/'); }}
-        />
+        <DeactivateModal token={token} onClose={() => setShowDeactivate(false)} onSuccess={() => { logout(); navigate('/'); }} />
       )}
     </div>
   );
