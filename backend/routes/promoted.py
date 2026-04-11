@@ -18,6 +18,7 @@ class PromotedSupplierCreate(BaseModel):
     phone: str
     website: Optional[str] = ""
     logo_url: Optional[str] = ""
+    duration: Optional[str] = "day"  # "day" or "month"
 
 class PromotedSupplierResponse(BaseModel):
     id: str
@@ -61,6 +62,7 @@ async def create_promoted_supplier(data: PromotedSupplierCreate):
         "phone": data.phone,
         "website": data.website or "",
         "logo_url": data.logo_url or "",
+        "duration": data.duration or "day",
         "active": False,
         "paid_until": None,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -73,7 +75,7 @@ async def create_promoted_supplier(data: PromotedSupplierCreate):
 
 @router.post("/promoted-suppliers/{supplier_id}/create-checkout")
 async def create_promo_checkout(supplier_id: str):
-    """Create Stripe checkout for promoted supplier (300 CZK/rok + 21% DPH = 363 CZK)"""
+    """Create Stripe checkout for promoted supplier"""
     import os
     import stripe
     
@@ -84,6 +86,18 @@ async def create_promo_checkout(supplier_id: str):
     supplier = await db.promoted_suppliers.find_one({"id": supplier_id}, {"_id": 0})
     if not supplier:
         raise HTTPException(status_code=404, detail="Reklamní banner nenalezen")
+    
+    duration = supplier.get("duration", "day")
+    if duration == "month":
+        price_czk = 990
+        price_label = "990 Kč/měsíc"
+        duration_days = 30
+        desc = "Reklamní banner na hlavní stránce CraftBolt na 1 měsíc"
+    else:
+        price_czk = 39
+        price_label = "39 Kč/den"
+        duration_days = 1
+        desc = "Reklamní banner na hlavní stránce CraftBolt na 1 den"
     
     frontend_url = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
     success_url = frontend_url + f"/?promo_success={supplier_id}"
@@ -97,22 +111,21 @@ async def create_promo_checkout(supplier_id: str):
                     "currency": "czk",
                     "product_data": {
                         "name": f"CraftBolt Reklamní banner — {supplier['company_name']}",
-                        "description": "Reklamní banner na hlavní stránce CraftBolt na 1 rok",
+                        "description": desc,
                     },
-                    "unit_amount": 36300,  # 363 CZK (300 + 21% DPH) in hellers
+                    "unit_amount": price_czk * 100,
                 },
                 "quantity": 1,
             }],
             mode="payment",
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata={"promoted_supplier_id": supplier_id},
+            metadata={"promoted_supplier_id": supplier_id, "duration": duration, "duration_days": str(duration_days)},
         )
         
-        # Store checkout session
         await db.promoted_suppliers.update_one(
             {"id": supplier_id},
-            {"$set": {"stripe_session_id": session.id}}
+            {"$set": {"stripe_session_id": session.id, "price_paid": price_czk}}
         )
         
         return {"checkout_url": session.url}
@@ -128,8 +141,11 @@ async def activate_promoted_supplier(supplier_id: str):
         raise HTTPException(status_code=404, detail="Reklamní banner nenalezen")
     
     now = datetime.now(timezone.utc)
-    # Set paid_until to 1 year from now
-    paid_until = (now + timedelta(days=365)).replace(hour=23, minute=59, second=59)
+    duration = supplier.get("duration", "day")
+    if duration == "month":
+        paid_until = (now + timedelta(days=30)).replace(hour=23, minute=59, second=59)
+    else:
+        paid_until = (now + timedelta(days=1)).replace(hour=23, minute=59, second=59)
     
     await db.promoted_suppliers.update_one(
         {"id": supplier_id},
@@ -170,11 +186,12 @@ async def get_promoted_stats(current_user: dict = Depends(get_current_user)):
             pending_count += 1
         
         if p.get("activated_at"):
-            total_revenue += 363
+            revenue = p.get("price_paid", 39)
+            total_revenue += revenue
             if p["activated_at"] >= month_start:
-                month_revenue += 363
+                month_revenue += revenue
             if p["activated_at"] >= today_start:
-                today_revenue += 363
+                today_revenue += revenue
     
     return {
         "active": active_count,

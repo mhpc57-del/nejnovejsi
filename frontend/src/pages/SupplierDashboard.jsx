@@ -433,37 +433,26 @@ const SupplierDashboard = () => {
             </div>
           )}
           {(() => {
-            const trialExpired = user?.trial_ends_at && new Date(user.trial_ends_at) < new Date();
             const subActive = user?.subscription_active;
             if (subActive) {
               return (
                 <div className="bg-green-50 dark:bg-green-500/10 border border-green-200/60 dark:border-green-800/40 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-green-700 dark:text-green-400 font-medium mb-1">Aktivní předplatné</p>
+                  <p className="text-sm text-green-700 dark:text-green-400 font-medium mb-1">Aktivní přístup</p>
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    {user?.subscription_plan ? SUBSCRIPTION_PLANS_NAMES[user.subscription_plan] || user.subscription_plan : 'Předplatné'}
+                    {user?.subscription_current_period_end ? `Platí do ${new Date(user.subscription_current_period_end).toLocaleDateString('cs-CZ')}` : 'Přístup aktivní'}
                   </p>
-                </div>
-              );
-            }
-            if (trialExpired) {
-              return (
-                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-800/40 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-red-700 dark:text-red-400 font-bold mb-1">Zkušební doba vypršela</p>
-                  <p className="text-xs text-red-600 dark:text-red-400 mb-2">
-                    Vypršela {new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}
-                  </p>
-                  <a href="/cenik" className="inline-block text-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                    Zaplatit předplatné
-                  </a>
                 </div>
               );
             }
             return (
-              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-lg p-4 mb-4">
-                <p className="text-sm text-orange-700 dark:text-orange-400 font-medium mb-1">Zkušební doba</p>
-                <p className="text-xs text-orange-600 dark:text-orange-400">
-                  {user?.trial_ends_at ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}` : 'Aktivní'}
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-800/40 rounded-lg p-4 mb-4">
+                <p className="text-sm text-red-700 dark:text-red-400 font-bold mb-1">Neaktivní přístup</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                  Pro přístup k zakázkám je nutné uhradit platbu.
                 </p>
+                <a href="/cenik" className="inline-block text-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                  Uhradit přístup
+                </a>
               </div>
             );
           })()}
@@ -505,15 +494,15 @@ const SupplierDashboard = () => {
 
         <div className="p-6">
           {/* Paywall banner - no active subscription */}
-          {!user?.subscription_active && user?.trial_ends_at && new Date(user.trial_ends_at) < new Date() && (
+          {!user?.subscription_active && (
             <div className="mb-6 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-800 rounded-xl p-5" data-testid="paywall-banner">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <p className="font-bold text-red-700 dark:text-red-400 text-lg">Nemáte zaplacené měsíční předplatné</p>
-                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">Pro plný přístup k zakázkám a funkcím platformy je nutné předplatné uhradit.</p>
+                  <p className="font-bold text-red-700 dark:text-red-400 text-lg">Nemáte uhrazený přístup k platformě</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">Pro plný přístup k zakázkám a funkcím platformy je nutné uhradit jednorázovou platbu.</p>
                 </div>
                 <a href="/cenik" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm" data-testid="paywall-pay-btn">
-                  Zaplatit předplatné
+                  Uhradit přístup
                 </a>
               </div>
             </div>
@@ -733,13 +722,12 @@ const SupplierDashboard = () => {
                 </Link>
               )}
             </div>
-            {user?.trial_ends_at && (
-              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-3 mb-4" data-testid="mobile-trial-info">
-                <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">
-                  Zkušební doba: {new Date(user.trial_ends_at) > new Date()
-                    ? `Končí ${new Date(user.trial_ends_at).toLocaleDateString('cs-CZ')}`
-                    : 'Vypršela'}
-                </p>
+            {!user?.subscription_active && (
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-800/40 rounded-xl p-3 mb-4" data-testid="mobile-paywall-info">
+                <p className="text-sm text-red-700 dark:text-red-400 font-medium mb-2">Neaktivní přístup</p>
+                <a href="/cenik" className="inline-block text-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                  Uhradit přístup
+                </a>
               </div>
             )}
             <div className="flex gap-3">

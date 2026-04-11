@@ -1,0 +1,99 @@
+{
+  "summary": "Pricing Restructure Testing - Iteration 35. Backend: 13/13 tests passed (100%). Frontend: All pricing displays verified correctly. Customer FREE, Supplier 190/1890 CZK, Promo 39/990 CZK, Verification 49 CZK. No trial period in new code. Minor cleanup needed for legacy trial display code.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "code_cleanup": [
+      {
+        "file": "/app/frontend/src/pages/CustomerDashboard.jsx",
+        "lines": "160-169",
+        "issue": "Legacy trial_ends_at display code still exists. Should be removed since trial periods are completely removed. Only affects old users who have trial_ends_at in database.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pricing_restructure.py",
+    "/app/test_reports/pytest/pytest_results_iteration35.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: Remove trial_ends_at display code from CustomerDashboard.jsx (lines 160-169) and SupplierDashboard.jsx if similar code exists",
+    "OPTIONAL: Clean up trial_ends_at field from old users in database"
+  ],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_pricing_restructure.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (all pricing displays verified)"
+  },
+  "test_credentials": {
+    "admin": "m.schwarzer@email.cz / CraftBolt2026!",
+    "customer": "testvendulka@test.cz / TestHeslo123!",
+    "supplier": "test_supplier_chat@test.cz / TestHeslo123"
+  },
+  "seed_data_creation": "Created test promo suppliers with day/month duration via API",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Pricing restructure fully implemented and tested. Customer is FREE (subscription_active=True on registration). Supplier must pay 190 CZK/month or 1890 CZK/year. Demand verification costs 49 CZK. Promo ads cost 39 CZK/day or 990 CZK/month. All prices include 21% VAT. No trial period in new registrations. Legacy trial display code exists but only affects old users.",
+  "features_tested": {
+    "BACKEND_SUBSCRIPTION_PLANS": {
+      "status": "PASSED",
+      "details": "GET /api/subscription/plans returns only 'dodavatel' plan with price_monthly=190, price_annual=1890, savings_annual=390"
+    },
+    "BACKEND_PROMO_PRICING": {
+      "status": "PASSED",
+      "details": "POST /api/promoted-suppliers accepts duration='day' (39 CZK) or 'month' (990 CZK)"
+    },
+    "BACKEND_CUSTOMER_REGISTRATION": {
+      "status": "PASSED",
+      "details": "Customer registration sets subscription_active=True (free access), no trial_ends_at"
+    },
+    "BACKEND_SUPPLIER_REGISTRATION": {
+      "status": "PASSED",
+      "details": "Supplier registration does NOT set trial_ends_at, subscription_active=False until payment"
+    },
+    "FRONTEND_HOMEPAGE_PRICING": {
+      "status": "PASSED",
+      "details": "2-card layout: Customer ZDARMA with 49 CZK verification, Supplier 190/1890 CZK with 390 CZK savings. 'Všechny ceny jsou uvedeny včetně 21% DPH'"
+    },
+    "FRONTEND_PRICING_PAGE": {
+      "status": "PASSED",
+      "details": "/cenik shows correct 2-card layout with customer free and supplier pricing. Subscribe buttons show 190 Kč/měsíc and 1 890 Kč/rok"
+    },
+    "FRONTEND_PROMO_SECTION": {
+      "status": "PASSED",
+      "details": "Promoted suppliers section shows '39 Kč/den'. Promo modal has day (39 Kč) and month (990 Kč) options"
+    },
+    "FRONTEND_CTA_SECTION": {
+      "status": "PASSED",
+      "details": "CTA says 'Zaregistrujte se ještě dnes a začněte používat CraftBolt' without trial mention"
+    },
+    "FRONTEND_DEMAND_MODAL": {
+      "status": "PASSED",
+      "details": "New demand modal has two buttons: 'Vložit poptávku' (free) and 'Ověřit poptávku — 49 Kč'. Tip mentions 49 Kč verification"
+    },
+    "FRONTEND_SUPPLIER_PAYWALL": {
+      "status": "PASSED",
+      "details": "Paywall banner says 'Nemáte uhrazený přístup k platformě' and 'jednorázovou platbu' - no trial references"
+    },
+    "NO_TRIAL_REFERENCES": {
+      "status": "PASSED",
+      "details": "No '14 dní zdarma' or trial period mentions in pricing sections, CTA, or paywall banner. Legacy trial display code exists but only for old users with trial_ends_at"
+    },
+    "VAT_DISPLAY": {
+      "status": "PASSED",
+      "details": "All pricing sections show 'včetně 21% DPH' (including 21% VAT)"
+    }
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": ["Stripe (live keys but checkout URLs won't work in preview)"]
+  }
+}

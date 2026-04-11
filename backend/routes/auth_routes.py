@@ -34,9 +34,11 @@ async def register(user_data: UserCreate, request: Request, background_tasks: Ba
     
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
-    trial_end = now + timedelta(days=14)
     account_type = user_data.account_type or user_data.supplier_type
     verification_token = secrets.token_urlsafe(32)
+    
+    # Customers get free access, suppliers must pay
+    is_customer = user_data.role in ("customer", "customer_supplier")
     
     user = {
         "id": user_id,
@@ -68,8 +70,7 @@ async def register(user_data: UserCreate, request: Request, background_tasks: Ba
         "branch_addresses": user_data.branch_addresses or [],
         "is_verified": False,
         "verification_token": verification_token,
-        "trial_ends_at": trial_end.isoformat(),
-        "subscription_active": True,
+        "subscription_active": is_customer,
         "created_at": now.isoformat(),
         "rating": 0.0,
         "rating_percentage": 0.0,

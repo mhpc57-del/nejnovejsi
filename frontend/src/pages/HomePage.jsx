@@ -45,17 +45,15 @@ const HomePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [showCookies, setShowCookies] = useState(true);
-  const [showQuickDemand, setShowQuickDemand] = useState(false);
-  const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
+  const [showQuickDemand, setShowQuickDemand] = useState(false);  const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
   const [quickLoading, setQuickLoading] = useState(false);
   const [quickSuccess, setQuickSuccess] = useState(false);
   const [quickError, setQuickError] = useState('');
   const [platformStats, setPlatformStats] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [promotedSuppliers, setPromotedSuppliers] = useState([]);
   const [showPromoForm, setShowPromoForm] = useState(false);
-  const [promoForm, setPromoForm] = useState({ company_name: '', bio: '', phone: '', website: '', logo_url: '' });
+  const [promoForm, setPromoForm] = useState({ company_name: '', bio: '', phone: '', website: '', logo_url: '', duration: 'day' });
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoUploadingLogo, setPromoUploadingLogo] = useState(false);
 
@@ -449,152 +447,69 @@ const HomePage = () => {
       </section>
 
       {/* ───── Pricing ───── */}
-      <section className="py-24 px-6 md:px-12 bg-stone-50 dark:bg-zinc-900/50">
-        <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-10" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+      <section className="py-24 px-6 md:px-12 bg-zinc-900" data-testid="pricing-section">
+        <div className="max-w-5xl mx-auto">
+          <motion.div className="text-center mb-14" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Ceník</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-white mt-4" style={{ fontFamily: 'Outfit' }}>
               Jednoduchý a férový ceník
             </motion.h2>
           </motion.div>
-
-          {/* Billing toggle */}
-          <div className="flex items-center justify-center gap-3 mb-12" data-testid="billing-toggle">
-            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>Měsíčně</span>
-            <button onClick={() => setBillingPeriod(p => p === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative w-14 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full transition-colors"
-              data-testid="billing-toggle-btn">
-              <div className={`absolute top-1 w-5 h-5 bg-orange-500 rounded-full transition-all duration-200 ${billingPeriod === 'yearly' ? 'left-8' : 'left-1'}`} />
-            </button>
-            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'yearly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
-              Ročně <span className="text-orange-500 font-bold">-10%</span>
-            </span>
-          </div>
           
-          <motion.div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            {/* Zákazník */}
+          <motion.div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+            {/* Zákazník — ZDARMA */}
             <motion.div variants={fadeUp} custom={0}
-              className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
-              <div className="mb-6">
-                <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Zákazník</span>
-                {billingPeriod === 'monthly' ? (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-zinc-500">od</span>
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>99</span>
-                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-zinc-500">od</span>
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>1 069</span>
-                      <span className="text-zinc-500 text-sm">Kč/rok</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">1 188 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 119 Kč</span>
-                    </div>
-                  </div>
-                )}
-                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
+              className="bg-zinc-800/80 rounded-xl p-8 border border-zinc-700/50 flex flex-col" data-testid="pricing-card-customer">
+              <div className="mb-8">
+                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Zákazník</span>
+                <p className="text-sm text-zinc-400 mt-1">Vkládání poptávek je</p>
+                <div className="mt-4">
+                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>ZDARMA</span>
+                </div>
               </div>
-              <ul className="space-y-3 mb-8">
-                {["Neomezený počet poptávek","Výběr z ověřených dodavatelů","Online chat s dodavateli","Zamítnutí nabídek","Úpravy stávajících poptávek","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <Check weight="bold" className="w-4 h-4 text-orange-500 flex-shrink-0" />{item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/registrace?role=customer" className="block w-full text-center py-3 bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-customer-btn">
-                Začít jako zákazník
+              <div className="border-t border-orange-500/40 pt-6 flex-1">
+                <p className="text-sm text-orange-400 font-semibold mb-2">Při vytváření poptávky je doporučené</p>
+                <p className="text-2xl font-bold text-orange-500 mb-4" style={{ fontFamily: 'Outfit' }}>Ověření za 49 Kč</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Ověřením poptávky dáváte dodavatelům najevo, že poptávku myslíte vážně, a že se nejedná například o nezávazné zjišťování ceny.
+                </p>
+              </div>
+              <Link to="/registrace?role=customer" className="mt-8 block w-full text-center py-3.5 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-customer-btn">
+                Registrace zákazníka
               </Link>
             </motion.div>
 
-            {/* Dodavatel — Featured */}
+            {/* Dodavatel */}
             <motion.div variants={fadeUp} custom={1}
-              className="bg-white dark:bg-zinc-900 rounded-xl p-8 border-2 border-orange-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-200 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-bold px-4 py-1 rounded tracking-wider uppercase">
-                Pro řemeslníky
-              </span>
-              <div className="mb-6">
-                <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Dodavatel</span>
-                {billingPeriod === 'monthly' ? (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-zinc-500">od</span>
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>199</span>
-                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-zinc-500">od</span>
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>2 149</span>
-                      <span className="text-zinc-500 text-sm">Kč/rok</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">2 388 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 239 Kč</span>
-                    </div>
-                  </div>
-                )}
-                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
+              className="bg-zinc-800/80 rounded-xl border border-zinc-700/50 flex flex-col" data-testid="pricing-card-supplier">
+              {/* Monthly */}
+              <div className="p-8 pb-6">
+                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Dodavatel</span>
+                <p className="text-sm text-zinc-400 mt-1">Jednorázová platba na 1 měsíc</p>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>190</span>
+                  <span className="text-xl text-zinc-400 font-medium">Kč</span>
+                </div>
               </div>
-              <ul className="space-y-3 mb-8">
-                {["Neomezený přístup k zakázkám","Výběr zakázky dle svých možností","Online chat se zákazníky","Ověřený profil nahráním oprávnění","Volba více kategorií","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <Check weight="bold" className="w-4 h-4 text-orange-500 flex-shrink-0" />{item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/registrace?role=supplier" className="block w-full text-center py-3 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-dodavatel-btn">
-                Začít jako dodavatel
-              </Link>
-            </motion.div>
-
-            {/* Zákazník i dodavatel */}
-            <motion.div variants={fadeUp} custom={2}
-              className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
-              <div className="mb-6">
-                <span className="text-xs font-bold text-zinc-500 tracking-[0.2em] uppercase">Zákazník i dodavatel</span>
-                {billingPeriod === 'monthly' ? (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>299</span>
-                      <span className="text-zinc-500 text-sm">Kč/měsíc</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>3 229</span>
-                      <span className="text-zinc-500 text-sm">Kč/rok</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">3 588 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 359 Kč</span>
-                    </div>
-                  </div>
-                )}
-                <span className="text-orange-500 text-sm font-medium block mt-1">14 dní zdarma</span>
+              {/* Annual */}
+              <div className="p-8 pt-4 border-t border-zinc-700/50 flex-1">
+                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Dodavatel</span>
+                <p className="text-sm text-zinc-400 mt-1">Jednorázová platba na celý rok</p>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>1.890</span>
+                  <span className="text-xl text-zinc-400 font-medium">Kč</span>
+                </div>
+                <p className="text-sm text-orange-500 font-semibold mt-2">* ušetříte 390 Kč</p>
               </div>
-              <ul className="space-y-3 mb-8">
-                {["Vše z profilu zákazníka","Vše z profilu dodavatele","Zadávání i přijímání zakázek","Online chat s oběma stranami","Ověřený profil","Vkládání fotografií","Notifikace (E-mail, SMS)"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <Check weight="bold" className="w-4 h-4 text-orange-500 flex-shrink-0" />{item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/registrace?role=customer_supplier" className="block w-full text-center py-3 bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-both-btn">
-                Začít jako obojí
-              </Link>
+              <div className="px-8 pb-8">
+                <Link to="/registrace?role=supplier" className="block w-full text-center py-3.5 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-dodavatel-btn">
+                  Registrace dodavatele
+                </Link>
+              </div>
             </motion.div>
           </motion.div>
           <p className="text-center text-zinc-500 text-sm mt-8">
-            Platba kartou přes zabezpečenou bránu Stripe. <strong className="text-zinc-700 dark:text-zinc-300">Předplatné můžete kdykoliv zrušit.</strong> Ceny jsou uvedeny bez DPH.
+            Platba kartou přes zabezpečenou bránu Stripe. <strong className="text-zinc-300">Všechny ceny jsou uvedeny včetně 21% DPH.</strong>
           </p>
         </div>
       </section>
@@ -649,7 +564,7 @@ const HomePage = () => {
                     <Plus weight="bold" className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
                   </div>
                   <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
-                  <p className="text-xs font-bold text-orange-500">300 Kč/den</p>
+                  <p className="text-xs font-bold text-orange-500">39 Kč/den</p>
                 </motion.button>
               );
             })}
@@ -661,7 +576,7 @@ const HomePage = () => {
                 className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25"
                 data-testid="add-promo-banner-btn">
                 <Plus weight="bold" className="w-4 h-4" />
-                Přidat reklamní banner za 300 Kč/den
+                Přidat reklamní banner
               </button>
             </div>
           )}
@@ -678,11 +593,11 @@ const HomePage = () => {
               Připraveni začít?
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-lg text-zinc-500 dark:text-zinc-400 mt-4 mb-10">
-              Zaregistrujte se ještě dnes a vyzkoušejte CraftBolt 14 dní zcela zdarma.
+              Zaregistrujte se ještě dnes a začněte používat CraftBolt.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <Link to="/registrace" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 rounded-lg transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25" data-testid="cta-register-btn">
-                Vytvořit účet zdarma
+                Vytvořit účet
                 <ArrowRight weight="bold" className="w-4 h-4" />
               </Link>
             </motion.div>
@@ -827,13 +742,28 @@ const HomePage = () => {
             <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               <div>
                 <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Reklamní banner</h2>
-                <p className="text-xs text-zinc-400 mt-0.5">300 Kč/den + 21% DPH = <strong>363 Kč</strong></p>
+                <p className="text-xs text-zinc-400 mt-0.5">Vyberte délku zobrazení</p>
               </div>
               <button onClick={() => setShowPromoForm(false)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors">
                 <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
               </button>
             </div>
             <div className="p-5 space-y-4">
+              {/* Duration selector */}
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setPromoForm(p => ({...p, duration: 'day'}))}
+                  className={`p-3 rounded-lg border-2 text-center transition-all ${promoForm.duration === 'day' ? 'border-orange-500 bg-orange-500/5' : 'border-zinc-200 dark:border-zinc-700'}`}
+                  data-testid="promo-duration-day">
+                  <span className="block text-lg font-bold text-orange-500">39 Kč</span>
+                  <span className="text-xs text-zinc-500">1 den</span>
+                </button>
+                <button onClick={() => setPromoForm(p => ({...p, duration: 'month'}))}
+                  className={`p-3 rounded-lg border-2 text-center transition-all ${promoForm.duration === 'month' ? 'border-orange-500 bg-orange-500/5' : 'border-zinc-200 dark:border-zinc-700'}`}
+                  data-testid="promo-duration-month">
+                  <span className="block text-lg font-bold text-orange-500">990 Kč</span>
+                  <span className="text-xs text-zinc-500">1 měsíc</span>
+                </button>
+              </div>
               <div>
                 <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Název firmy *</label>
                 <input type="text" value={promoForm.company_name} onChange={e => setPromoForm(p => ({...p, company_name: e.target.value}))}
@@ -874,9 +804,9 @@ const HomePage = () => {
               </div>
               <button onClick={handlePromoSubmit} disabled={promoLoading || !promoForm.company_name || !promoForm.bio || !promoForm.phone}
                 className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2" data-testid="promo-submit-btn">
-                {promoLoading ? 'Přesměrování na platbu...' : 'Pokračovat k platbě — 363 Kč'}
+                {promoLoading ? 'Přesměrování na platbu...' : `Pokračovat k platbě — ${promoForm.duration === 'month' ? '990' : '39'} Kč`}
               </button>
-              <p className="text-[11px] text-zinc-400 text-center">Cena 300 Kč + 21% DPH. Banner bude aktivní 24 hodin od zaplacení.</p>
+              <p className="text-[11px] text-zinc-400 text-center">Všechny ceny jsou uvedeny včetně 21% DPH.</p>
             </div>
           </motion.div>
         </div>

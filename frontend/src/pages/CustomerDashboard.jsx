@@ -678,13 +678,15 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await axios.post(`${API}/demands`, {
+      const res = await axios.post(`${API}/demands`, {
         ...formData,
         images: uploadedImages,
         budget_min: formData.budget_min ? parseFloat(formData.budget_min) : null,
@@ -699,6 +701,35 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
       setError(err.response?.data?.detail || 'Nepodařilo se vytvořit poptávku');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmitAndVerify = async (e) => {
+    e.preventDefault();
+    setError('');
+    setVerifyLoading(true);
+
+    try {
+      const res = await axios.post(`${API}/demands`, {
+        ...formData,
+        images: uploadedImages,
+        budget_min: formData.budget_min ? parseFloat(formData.budget_min) : null,
+        budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null,
+        deadline: formData.deadline || null,
+        supplier_radius: formData.supplier_radius || null
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Now create verification checkout
+      const demandId = res.data.id;
+      const checkoutRes = await axios.post(`${API}/demands/${demandId}/verify-checkout`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      window.location.href = checkoutRes.data.url;
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Nepodařilo se vytvořit poptávku');
+      setVerifyLoading(false);
     }
   };
 
@@ -1054,22 +1085,38 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
             <p className="text-xs text-zinc-500 mt-1">Vyberte tlačítko nebo konkrétní datum z kalendáře</p>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="space-y-3 pt-4">
+            <div className="bg-orange-50 dark:bg-orange-500/5 border border-orange-200/60 dark:border-orange-800/40 rounded-xl p-3">
+              <p className="text-xs text-orange-700 dark:text-orange-400 leading-relaxed">
+                <strong>Tip:</strong> Ověřením poptávky za 49 Kč dáváte dodavatelům najevo, že to myslíte vážně.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={loading || verifyLoading}
+                className="flex-1 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 text-sm"
+                data-testid="submit-demand-btn"
+              >
+                {loading ? 'Vytváření...' : 'Vložit poptávku'}
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitAndVerify}
+                disabled={loading || verifyLoading}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 text-sm"
+                data-testid="submit-verify-demand-btn"
+              >
+                {verifyLoading ? 'Zpracování...' : 'Ověřit poptávku — 49 Kč'}
+              </button>
+            </div>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-6 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+              className="w-full py-2.5 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
               data-testid="cancel-demand-btn"
             >
               Zrušit
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-xl transition-colors disabled:opacity-50"
-              data-testid="submit-demand-btn"
-            >
-              {loading ? 'Vytváření...' : 'Vytvořit poptávku'}
             </button>
           </div>
         </form>
