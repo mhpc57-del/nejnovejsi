@@ -157,9 +157,18 @@ class SMSService:
             }
             
             response = requests.post(self.BULKGATE_URL, json=payload, timeout=15)
-            data = response.json()
             
-            if data.get("data", {}).get("status") == "accepted" or response.status_code == 200:
+            if response.status_code != 200:
+                logger.error(f"SMS FAILED to {to_phone}: HTTP {response.status_code}")
+                return False
+            
+            try:
+                data = response.json()
+            except Exception:
+                logger.error(f"SMS FAILED to {to_phone}: Non-JSON response from BulkGate")
+                return False
+            
+            if data.get("data", {}).get("status") == "accepted" or data.get("data"):
                 msg_id = data.get("data", {}).get("sms_id", "unknown")
                 logger.info(f"SMS sent to {to_phone}: ID={msg_id} Status=accepted")
                 return True
