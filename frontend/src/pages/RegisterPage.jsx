@@ -196,6 +196,8 @@ const RegisterPage = () => {
   const [addressSuggestions, setAddressSuggestions] = useState({});
   const [activeAddressField, setActiveAddressField] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
+  const [permanentCoords, setPermanentCoords] = useState(null);
+  const [actualCoords, setActualCoords] = useState(null);
   const searchTimers = React.useRef({});
 
   const handleAddressInput = (e) => {
@@ -227,7 +229,10 @@ const RegisterPage = () => {
     setAddressSuggestions(prev => ({ ...prev, [fieldName]: [] }));
     setActiveAddressField(null);
     if (suggestion.lat && suggestion.lon) {
-      setMapCenter([parseFloat(suggestion.lat), parseFloat(suggestion.lon)]);
+      const coords = [parseFloat(suggestion.lat), parseFloat(suggestion.lon)];
+      setMapCenter(coords);
+      if (fieldName === 'permanent_address') setPermanentCoords(coords);
+      if (fieldName === 'actual_address') setActualCoords(coords);
     }
   };
 
@@ -735,6 +740,7 @@ const RegisterPage = () => {
             </div>
             <p className="text-center text-xs text-zinc-400 -mt-2 mb-2">
               Klikněte na ikonu pro nahrání fotografie
+              <span className="block text-xs text-zinc-400 mt-1">Max 25 MB, JPEG/PNG. Automaticky zmenšeno na 1200px.</span>
             </p>
 
             {formData.has_ico ? (
@@ -918,6 +924,15 @@ const RegisterPage = () => {
                       ))}
                     </div>
                   )}
+                  {permanentCoords && (
+                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-32" data-testid="permanent-address-map">
+                      <MapContainer center={permanentCoords} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false} zoomControl={false}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OSM" />
+                        <Marker position={permanentCoords} />
+                        <MapUpdater center={permanentCoords} />
+                      </MapContainer>
+                    </div>
+                  )}
                 </div>
 
                 {/* Skutečná adresa (nepovinné) */}
@@ -942,6 +957,15 @@ const RegisterPage = () => {
                           <span className="text-zinc-700 dark:text-zinc-300">{s.display_name}</span>
                         </button>
                       ))}
+                    </div>
+                  )}
+                  {actualCoords && (
+                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-32" data-testid="actual-address-map">
+                      <MapContainer center={actualCoords} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false} zoomControl={false}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OSM" />
+                        <Marker position={actualCoords} />
+                        <MapUpdater center={actualCoords} />
+                      </MapContainer>
                     </div>
                   )}
                 </div>
@@ -1006,17 +1030,6 @@ const RegisterPage = () => {
               </div>
               <p className="text-xs text-zinc-400 mt-1">Můžete vybrat více jazyků</p>
             </div>
-
-            {/* Map preview */}
-            {mapCenter && (
-              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48" data-testid="register-map-preview">
-                <MapContainer center={mapCenter} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                  <Marker position={mapCenter} />
-                  <MapUpdater center={mapCenter} />
-                </MapContainer>
-              </div>
-            )}
 
             {/* Bio — for all */}
             <div>
@@ -1155,7 +1168,7 @@ const RegisterPage = () => {
       case 'portfolio':
         return (
           <div data-testid="reg-step-portfolio">
-            <p className="text-zinc-600 dark:text-zinc-400 mb-4">Nahrajte referenční fotografie vaší práce (max 20):</p>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">Nahrajte referenční fotografie vaší práce (max 20, JPEG/PNG, auto-zmenšení na 1200px):</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {formData.reference_photos.map((url, i) => (
                 <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 group" data-testid={`reg-ref-photo-${i}`}>

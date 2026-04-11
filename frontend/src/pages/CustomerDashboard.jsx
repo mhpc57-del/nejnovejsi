@@ -951,7 +951,7 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
 
           {/* Photo upload */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Fotografie (max 5)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Fotografie (max 5, JPEG/PNG, auto-zmenšení na 1200px)</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {uploadedImages.map((url, i) => (
                 <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 group">
