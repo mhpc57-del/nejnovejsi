@@ -192,7 +192,7 @@ const HeroSection = () => {
         </div>
 
         {/* Main content: categories grid + photo */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 items-stretch">
           {/* Left — Category grid + CTA */}
           <div className="lg:col-span-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-testid="hero-categories">
@@ -287,12 +287,12 @@ const HeroSection = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className="relative rounded-2xl overflow-hidden"
+                  className="relative rounded-2xl overflow-hidden h-full"
                 >
                   <img
                     src={active.image}
                     alt={active.label}
-                    className="w-full h-[300px] lg:h-[440px] object-cover"
+                    className="w-full h-full object-cover"
                     data-testid="hero-active-image"
                   />
                   {/* Gradient overlay */}
