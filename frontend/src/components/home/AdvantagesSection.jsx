@@ -30,7 +30,7 @@ const AdvantageCard = ({ adv, index, prefix }) => (
       </div>
     </div>
     <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
-    <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
+    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">{adv.desc}</p>
   </motion.div>
 );
 

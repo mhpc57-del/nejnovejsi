@@ -203,15 +203,15 @@ const HeroSection = () => {
                     onClick={() => handleSelect(i)}
                     className={`relative flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
                       isActive
-                        ? 'bg-white dark:bg-white border-zinc-200 dark:border-white shadow-lg shadow-zinc-200/50 dark:shadow-white/10 scale-105'
-                        : 'bg-white dark:bg-zinc-800/60 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-600 hover:shadow-md'
+                        ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
+                        : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
                     }`}
                     data-testid={`hero-cat-${i}`}
                   >
                     {renderIcon(cat, isActive, 'w-7 h-7')}
                     <span
                       className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${
-                        isActive ? 'text-zinc-900' : 'text-orange-500'
+                        isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'
                       }`}
                     >
                       {cat.label}
@@ -240,7 +240,7 @@ const HeroSection = () => {
             </div>
 
             {/* Orange description text */}
-            <p className="text-orange-500 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+            <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
               Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
             </p>
           </div>
@@ -267,11 +267,11 @@ const HeroSection = () => {
                       return (
                         <div
                           key={i}
-                          className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl bg-stone-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-orange-400 hover:shadow-md transition-all duration-200 cursor-default"
+                          className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-orange-400 hover:shadow-md transition-all duration-200 cursor-default"
                           data-testid={`extra-cat-${i}`}
                         >
                           <Icon className="w-6 h-6 text-orange-500" strokeWidth={2} />
-                          <span className="text-[11px] font-semibold text-orange-500 text-center leading-tight">
+                          <span className="text-[11px] font-semibold text-orange-500 dark:text-orange-400 text-center leading-tight">
                             {cat.label}
                           </span>
                         </div>
@@ -332,7 +332,7 @@ const HeroSection = () => {
                 <div className="w-7 h-7 rounded-md bg-orange-500/15 flex items-center justify-center">
                   <item.Icon weight="duotone" className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
                 </div>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-500">{item.label}</span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{item.label}</span>
               </div>
             ))}
           </div>
