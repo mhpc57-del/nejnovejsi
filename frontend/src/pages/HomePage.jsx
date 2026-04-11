@@ -10,7 +10,6 @@ import {
   AdvantagesSection,
   MobileAppBanner,
   HowItWorksSection,
-  VideoSection,
   PricingSection,
   PromotedSuppliersSection,
   CTASection,
@@ -176,7 +175,6 @@ const HomePage = () => {
       <AdvantagesSection />
       <MobileAppBanner />
       <HowItWorksSection />
-      <VideoSection />
       <PricingSection />
       <PromotedSuppliersSection promotedSuppliers={promotedSuppliers} onShowPromoForm={() => setShowPromoForm(true)} />
       <CTASection />

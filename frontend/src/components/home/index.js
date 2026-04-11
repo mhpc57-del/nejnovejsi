@@ -1,7 +1,6 @@
 export { AdvantagesSection } from './AdvantagesSection';
 export { MobileAppBanner } from './MobileAppBanner';
 export { HowItWorksSection } from './HowItWorksSection';
-export { VideoSection } from './VideoSection';
 export { PricingSection } from './PricingSection';
 export { PromotedSuppliersSection } from './PromotedSuppliersSection';
 export { CTASection } from './CTASection';
