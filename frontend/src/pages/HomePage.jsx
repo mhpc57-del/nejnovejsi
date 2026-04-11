@@ -303,6 +303,7 @@ const HomePage = () => {
                   <path d="M250 250 L160 305" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
                   <path d="M160 305 L70 250" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
                   <path d="M70 210 L70 150" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M70 150 L160 55" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
 
                   {/* Arrow heads */}
                   <polygon points="247,108 255,115 243,115" fill="#f97316" opacity="0.7" />
@@ -310,6 +311,7 @@ const HomePage = () => {
                   <polygon points="163,302 155,310 155,298" fill="#f97316" opacity="0.7" />
                   <polygon points="73,248 65,255 65,243" fill="#f97316" opacity="0.7" />
                   <polygon points="67,152 75,152 71,142" fill="#f97316" opacity="0.7" />
+                  <polygon points="155,60 165,60 160,50" fill="#f97316" opacity="0.7" />
 
                   {/* Step 1 - Zákazník - top center */}
                   <circle cx="160" cy="35" r="30" fill="#f97316" opacity="0.15" />
