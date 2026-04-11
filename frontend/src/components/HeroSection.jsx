@@ -132,7 +132,7 @@ const categories = [
   },
   {
     icon: PlusCircle,
-    label: 'Další kategorie',
+    label: 'Další náhodné kategorie',
     image: null, // Uses 3x3 grid instead
     isLucide: false,
   },
