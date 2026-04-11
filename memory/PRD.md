@@ -40,9 +40,24 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 - Mobilni aplikace CraftBolt banner (ve vyvoji)
 - PDF faktura prilozena k emailum
 
+## Architektura frontendu (po komponentizaci)
+HomePage.jsx: 208 radku (orchestrator)
+Komponenty v src/components/home/:
+- AdvantagesSection.jsx (60)
+- HowItWorksSection.jsx (105)
+- PromoFormModal.jsx (80)
+- PromotedSuppliersSection.jsx (75)
+- QuickDemandModal.jsx (78)
+- PricingSection.jsx (71)
+- HomeFooter.jsx (37)
+- CTASection.jsx (26)
+- MobileAppBanner.jsx (24)
+- VideoSection.jsx (22)
+- CookieBanner.jsx (22)
+- animations.js (11) - sdilene animacni varianty
+
 ## Stav testovani
 - Iterace 35: Pricing restructure (Backend 100%, Frontend 100%)
 
 ## Backlog
-- P2: Komponentizace HomePage.jsx (~870 radku)
 - P3: React Native mobilni app (PAUSED)

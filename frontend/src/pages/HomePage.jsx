@@ -1,51 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-import { 
-  UserCircle, 
-  Briefcase, 
-  ShieldCheck, 
-  CurrencyDollar, 
-  DeviceMobile, 
-
-  Lightning,
-  ChatCircle,
-  Tag,
-  Star,
-
-  ArrowRight,
-  Check,
-  X,
-  Clock,
-  Wrench,
-  House,
-  CaretDown,
-  Play,
-  Plus
-} from '@phosphor-icons/react';
 import HeroSection from '../components/HeroSection';
-// StepsSlider removed - process diagram inline
 import CraftBoltLogo from '../components/CraftBoltLogo';
 import ThemeToggle from '../components/ThemeToggle';
 import HeaderWidget from '../components/HeaderWidget';
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } })
-};
-
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } }
-};
+import {
+  AdvantagesSection,
+  MobileAppBanner,
+  HowItWorksSection,
+  VideoSection,
+  PricingSection,
+  PromotedSuppliersSection,
+  CTASection,
+  HomeFooter,
+  CookieBanner,
+  QuickDemandModal,
+  PromoFormModal,
+} from '../components/home';
 
 const HomePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
   const [showCookies, setShowCookies] = useState(true);
-  const [showQuickDemand, setShowQuickDemand] = useState(false);  const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
+  const [showQuickDemand, setShowQuickDemand] = useState(false);
+  const [quickForm, setQuickForm] = useState({ first_name: '', last_name: '', email: '', phone: '', description: '' });
   const [quickLoading, setQuickLoading] = useState(false);
   const [quickSuccess, setQuickSuccess] = useState(false);
   const [quickError, setQuickError] = useState('');
@@ -60,7 +39,6 @@ const HomePage = () => {
   useEffect(() => {
     fetch(`${API}/platform/stats`).then(r => r.json()).then(setPlatformStats).catch(() => {});
     fetch(`${API}/promoted-suppliers`).then(r => r.json()).then(d => setPromotedSuppliers(d.suppliers || [])).catch(() => {});
-    // Handle promo success redirect from Stripe
     const params = new URLSearchParams(window.location.search);
     const promoSuccess = params.get('promo_success');
     if (promoSuccess) {
@@ -102,7 +80,6 @@ const HomePage = () => {
     }
   };
 
-
   const handleQuickDemand = async () => {
     if (!quickForm.first_name || !quickForm.last_name || !quickForm.phone || !quickForm.email) {
       setQuickError('Vyplnte vsechna povinna pole');
@@ -120,34 +97,9 @@ const HomePage = () => {
     }
   };
 
-  const customerAdvantages = [
-    { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
-    { icon: Tag, title: "Rychlé zjištění ceny", desc: "Dodavatel nabídne odhadovanou cenu před zahájením." },
-    { icon: ShieldCheck, title: "Ověřené profily dodavatelů", desc: "Žádné FAKE účty. Pouze ověření uživatelé." },
-    { icon: Star, title: "Hodnocení dodavatelů", desc: "Hodnocení udělují skuteční zákazníci." },
-    { icon: ChatCircle, title: "Online CHAT", desc: "Diskrétní chat přímo v aplikaci." },
-  ];
-
-  const supplierAdvantages = [
-    { icon: CurrencyDollar, title: "Nejlevnější platforma", desc: "Měsíční paušál bez dalších poplatků a skrytých provizí." },
-    { icon: Lightning, title: "Rychlé získání zakázky", desc: "Bez zbytečného papírování. Zakázka do 5 minut." },
-    { icon: UserCircle, title: "Registrace bez IČ", desc: "Možnost jednorázového přivýdělku bez ŽL." },
-    { icon: ShieldCheck, title: "Neřešíme registry", desc: "Každý se může dostat do problémů. Dáváme druhou šanci." },
-    { icon: ChatCircle, title: "Online CHAT", desc: "Diskrétní chat přímo v aplikaci." },
-  ];
-
-  const steps = [
-    { num: "01", title: "Zákazník zadá poptávku", desc: "Vybere kategorii, popíše požadavek, přidá fotografie, zadá adresu a termín." },
-    { num: "02", title: "Dodavatel vytvoří nabídku", desc: "Dodavatel dostane upozornění o poptávce, vytvoří a odešle nabídku" },
-    { num: "03", title: "Zákazník přijme nabídku", desc: "Zákazník přijme nabídku, informuje dodavatele a dohodnou se na dalším postupu" },
-    { num: "04", title: "Dodavatel zrealizuje zakázku", desc: "Dodavatel provede práci a předá ji zákazníkovi" },
-    { num: "05", title: "Nahrání fotografií z realizace", desc: "Dodavatel nahraje fotografie z průběhu a dokončení realizace zakázky" },
-    { num: "06", title: "Vzájemné hodnocení", desc: "Obě strany ohodnotí spolupráci. Recenze budují důvěru." },
-  ];
-
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      {/* ───── Header ───── */}
+      {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl backdrop-saturate-150 border-b border-zinc-200/60 dark:border-zinc-800/60 shadow-sm'
@@ -190,10 +142,9 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* ───── Hero ───── */}
       <HeroSection />
 
-      {/* ───── Platform Stats ───── */}
+      {/* Platform Stats */}
       {platformStats && (
         <section className="border-y border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm" data-testid="platform-stats-section">
           <div className="max-w-7xl mx-auto px-6 md:px-12 py-5">
@@ -222,596 +173,34 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* ───── Advantages ───── */}
-      <section className="py-24 px-6 md:px-12" data-testid="advantages-section">
-        <div className="max-w-7xl mx-auto space-y-20">
+      <AdvantagesSection />
+      <MobileAppBanner />
+      <HowItWorksSection />
+      <VideoSection />
+      <PricingSection />
+      <PromotedSuppliersSection promotedSuppliers={promotedSuppliers} onShowPromoForm={() => setShowPromoForm(true)} />
+      <CTASection />
+      <HomeFooter />
 
-          {/* Customer Advantages */}
-          <div data-testid="customer-advantages">
-            <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
-              <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Pro zadavatele</motion.span>
-              <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
-                Výhody pro zákazníky
-              </motion.h2>
-            </motion.div>
-            <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
-              {customerAdvantages.map((adv, index) => (
-                <motion.div key={index} variants={fadeUp} custom={index}
-                  className="group bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-black/20 transition-all duration-200"
-                  data-testid={`customer-adv-${index}`}
-                >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-9 h-9 bg-orange-500/10 rounded-md flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                      <adv.icon weight="duotone" className="w-4.5 h-4.5 text-orange-500" />
-                    </div>
-                  </div>
-                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+      {showCookies && <CookieBanner onAccept={() => setShowCookies(false)} />}
 
-          {/* Supplier Advantages */}
-          <div data-testid="supplier-advantages">
-            <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
-              <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Pro dodavatele</motion.span>
-              <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
-                Výhody pro dodavatele
-              </motion.h2>
-            </motion.div>
-            <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
-              {supplierAdvantages.map((adv, index) => (
-                <motion.div key={index} variants={fadeUp} custom={index}
-                  className="group bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200/80 dark:border-zinc-800 hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-black/20 transition-all duration-200"
-                  data-testid={`supplier-adv-${index}`}
-                >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-9 h-9 bg-orange-500/10 rounded-md flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                      <adv.icon weight="duotone" className="w-4.5 h-4.5 text-orange-500" />
-                    </div>
-                  </div>
-                  <h3 className="font-semibold text-zinc-900 dark:text-white text-sm mb-1.5">{adv.title}</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">{adv.desc}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ───── Mobile App Banner ───── */}
-      <section className="px-6 md:px-12" data-testid="mobile-app-banner">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-zinc-900 dark:bg-zinc-800 rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
-            <div className="w-16 h-16 bg-orange-500/15 rounded-xl flex items-center justify-center flex-shrink-0">
-              <DeviceMobile weight="duotone" className="w-8 h-8 text-orange-400" />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center gap-2.5 justify-center md:justify-start mb-2">
-                <h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Outfit' }}>Mobilní aplikace CraftBolt</h3>
-                <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold rounded uppercase tracking-wide">Ve vývoji</span>
-              </div>
-              <p className="text-zinc-400 text-sm leading-relaxed max-w-lg">
-                Pracujeme na nativní aplikaci pro <span className="text-white font-medium">Google Play</span> i <span className="text-white font-medium">Apple App Store</span>.
-                Registrovaní uživatelé budou informováni o možnosti bezplatného stažení.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ───── How It Works ───── */}
-      <section className="py-24 px-6 md:px-12 bg-zinc-900" data-testid="how-it-works">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-            {/* Left — Title + Process Diagram */}
-            <div className="lg:col-span-5">
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-                <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Proces</motion.span>
-                <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-white mt-4 mb-4" style={{ fontFamily: 'Outfit' }}>
-                  Jak to celé funguje
-                </motion.h2>
-                <motion.p variants={fadeUp} custom={2} className="text-zinc-400 leading-relaxed mb-10">
-                  Od zadání poptávky po dokončení zakázky. Pět jednoduchých kroků.
-                </motion.p>
-              </motion.div>
-
-              {/* Process Diagram */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="relative"
-              >
-                <svg viewBox="0 0 300 340" className="w-full max-w-[500px] mx-auto" fill="none">
-                  {/* Hexagon connecting lines */}
-                  <path d="M150 30 L260 80" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M260 80 L260 200" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M260 200 L150 260" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M150 260 L40 200" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M40 200 L40 80" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M40 80 L150 30" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-
-                  {/* Arrow heads on each segment */}
-                  <polygon points="255,78 265,85 253,85" fill="#f97316" opacity="0.7" />
-                  <polygon points="257,195 265,195 261,205" fill="#f97316" opacity="0.7" />
-                  <polygon points="155,257 145,264 145,252" fill="#f97316" opacity="0.7" />
-                  <polygon points="45,202 35,195 47,195" fill="#f97316" opacity="0.7" />
-                  <polygon points="43,85 35,85 39,75" fill="#f97316" opacity="0.7" />
-                  <polygon points="145,33 155,33 150,23" fill="#f97316" opacity="0.7" />
-
-                  {/* Step 1 - top center */}
-                  <circle cx="150" cy="28" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="150" cy="28" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="150" y="25" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">01</text>
-                  <text x="150" y="36" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">POPTÁVKA</text>
-
-                  {/* Step 2 - top right */}
-                  <circle cx="260" cy="80" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="260" cy="80" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="260" y="77" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">02</text>
-                  <text x="260" y="88" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">NABÍDKA</text>
-
-                  {/* Step 3 - bottom right */}
-                  <circle cx="260" cy="200" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="260" cy="200" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="260" y="197" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">03</text>
-                  <text x="260" y="208" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">PŘIJMUTÍ</text>
-
-                  {/* Step 4 - bottom center */}
-                  <circle cx="150" cy="260" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="150" cy="260" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="150" y="257" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">04</text>
-                  <text x="150" y="268" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">REALIZACE</text>
-
-                  {/* Step 5 - bottom left */}
-                  <circle cx="40" cy="200" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="40" cy="200" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="40" y="197" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">05</text>
-                  <text x="40" y="208" textAnchor="middle" fill="#fb923c" fontSize="5" fontWeight="500">FOTOGRAFIE</text>
-
-                  {/* Step 6 - top left */}
-                  <circle cx="40" cy="80" r="24" fill="#f97316" opacity="0.15" />
-                  <circle cx="40" cy="80" r="18" fill="#f97316" opacity="0.25" />
-                  <text x="40" y="77" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">06</text>
-                  <text x="40" y="88" textAnchor="middle" fill="#fb923c" fontSize="5" fontWeight="500">HODNOCENÍ</text>
-
-                  {/* Center text */}
-                  <text x="150" y="145" textAnchor="middle" fill="#f97316" fontSize="11" fontWeight="bold" opacity="0.6">CraftBolt</text>
-                </svg>
-              </motion.div>
-            </div>
-
-            {/* Right — Step cards */}
-            <motion.div className="lg:col-span-7 space-y-3" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-              {steps.map((step, index) => (
-                <motion.div key={index} variants={fadeUp} custom={index}
-                  className="bg-zinc-800/80 rounded-xl p-5 border border-zinc-700/50 hover:border-orange-500/40 transition-all duration-200"
-                  data-testid={`step-card-${index}`}
-                >
-                  <div className="flex gap-4">
-                    <span className="text-3xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>{step.num}</span>
-                    <div>
-                      <h3 className="font-semibold text-white mb-1">{step.title}</h3>
-                      <p className="text-sm text-zinc-400">{step.desc}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* CTA */}
-              <div className="pt-4">
-                <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="how-it-works-cta">
-                  Přidat poptávku
-                  <ArrowRight weight="bold" className="w-4 h-4" />
-                </Link>
-                <p className="text-orange-400 text-sm mt-3 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
-                  Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Important Notice */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-            className="mt-20 bg-orange-500/5 rounded-xl p-8 border border-orange-900/30">
-            <h3 className="font-semibold text-white mb-4" style={{ fontFamily: 'Outfit' }}>Důležité upozornění</h3>
-            <div className="space-y-3 text-sm text-zinc-400 leading-relaxed">
-              <p>V případě, že si obě smluvní strany předají osobní kontakty z důvodu dalších realizací služeb nebo z důvodu poskytnutí záruk, je jim toto samozřejmě umožněno. Pamatujte však na to, že sjednávání dalších služeb mimo tuto platformu je mnohdy rizikovější.</p>
-              <p>Sjednávání zakázek přes naši platformu je pohodlné, rychlé, efektivní a máte vždy jasný přehled o svých zakázkách. Veškerá historie (zakázky, chat, fotografie, hodnocení či případné spory) se Vám nikdy neztratí.</p>
-              <p className="font-semibold text-orange-400">Doporučení: Nikdy neřešte spor osobně či po telefonu. Vždy pamatujte na to, že co je psáno, to je dáno!</p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ───── Video ───── */}
-      <section className="py-24 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto">
-          <motion.div className="text-center mb-10" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.span variants={fadeUp} className="text-xs font-bold text-zinc-500 dark:text-zinc-500 tracking-[0.2em] uppercase">Podívejte se</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white mt-3" style={{ fontFamily: 'Outfit' }}>
-              Jak CraftBolt funguje v praxi
-            </motion.h2>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-            className="relative rounded-xl overflow-hidden bg-zinc-900 aspect-video shadow-2xl ring-1 ring-zinc-200/50 dark:ring-zinc-800">
-            <iframe src="https://www.youtube.com/embed/eR8_-m_mYoE?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3" title="Jak CraftBolt funguje"
-              frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen className="w-full h-full" data-testid="promo-video-youtube" />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ───── Pricing ───── */}
-      <section className="py-24 px-6 md:px-12 bg-zinc-900" data-testid="pricing-section">
-        <div className="max-w-5xl mx-auto">
-          <motion.div className="text-center mb-14" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Ceník</motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-medium tracking-tight text-white mt-4" style={{ fontFamily: 'Outfit' }}>
-              Jednoduchý a férový ceník
-            </motion.h2>
-          </motion.div>
-          
-          <motion.div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            {/* Zákazník — ZDARMA */}
-            <motion.div variants={fadeUp} custom={0}
-              className="bg-zinc-800/80 rounded-xl p-8 border border-zinc-700/50 flex flex-col" data-testid="pricing-card-customer">
-              <div className="mb-8">
-                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Zákazník</span>
-                <p className="text-sm text-zinc-400 mt-1">Vkládání poptávek je</p>
-                <div className="mt-4">
-                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>ZDARMA</span>
-                </div>
-              </div>
-              <div className="border-t border-orange-500/40 pt-6 flex-1">
-                <p className="text-sm text-orange-400 font-semibold mb-2">Při vytváření poptávky je doporučené</p>
-                <p className="text-2xl font-bold text-orange-500 mb-4" style={{ fontFamily: 'Outfit' }}>Ověření za 49 Kč</p>
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  Ověřením poptávky dáváte dodavatelům najevo, že poptávku myslíte vážně, a že se nejedná například o nezávazné zjišťování ceny.
-                </p>
-              </div>
-              <Link to="/registrace?role=customer" className="mt-8 block w-full text-center py-3.5 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-customer-btn">
-                Registrace zákazníka
-              </Link>
-            </motion.div>
-
-            {/* Dodavatel */}
-            <motion.div variants={fadeUp} custom={1}
-              className="bg-zinc-800/80 rounded-xl border border-zinc-700/50 flex flex-col" data-testid="pricing-card-supplier">
-              {/* Monthly */}
-              <div className="p-8 pb-6">
-                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Dodavatel</span>
-                <p className="text-sm text-zinc-400 mt-1">Jednorázová platba na 1 měsíc</p>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>190</span>
-                  <span className="text-xl text-zinc-400 font-medium">Kč</span>
-                </div>
-              </div>
-              {/* Annual */}
-              <div className="p-8 pt-4 border-t border-zinc-700/50 flex-1">
-                <span className="text-xs font-bold text-zinc-400 tracking-[0.2em] uppercase">Dodavatel</span>
-                <p className="text-sm text-zinc-400 mt-1">Jednorázová platba na celý rok</p>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-6xl font-bold text-orange-500 tracking-tight" style={{ fontFamily: 'Outfit' }}>1.890</span>
-                  <span className="text-xl text-zinc-400 font-medium">Kč</span>
-                </div>
-                <p className="text-sm text-orange-500 font-semibold mt-2">* ušetříte 390 Kč</p>
-              </div>
-              <div className="px-8 pb-8">
-                <Link to="/registrace?role=supplier" className="block w-full text-center py-3.5 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium text-white text-sm transition-colors" data-testid="pricing-dodavatel-btn">
-                  Registrace dodavatele
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-          <p className="text-center text-zinc-500 text-sm mt-8">
-            Platba kartou přes zabezpečenou bránu Stripe. <strong className="text-zinc-300">Všechny ceny jsou uvedeny včetně 21% DPH.</strong>
-          </p>
-        </div>
-      </section>
-
-      {/* ───── Promoted Suppliers ───── */}
-      <section className="py-24 px-6 md:px-12" data-testid="promoted-suppliers-section">
-        <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-bold tracking-tight text-orange-500 uppercase mt-4" style={{ fontFamily: 'Outfit' }}>
-              Topovaní dodavatelé
-            </motion.h2>
-          </motion.div>
-
-          <motion.div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            {Array.from({ length: 8 }).map((_, i) => {
-              const supplier = promotedSuppliers[i];
-              if (supplier) {
-                const logoUrl = supplier.logo_url
-                  ? (supplier.logo_url.startsWith('http') ? supplier.logo_url : `${API.replace('/api', '')}${supplier.logo_url.startsWith('/api') ? supplier.logo_url : '/api' + (supplier.logo_url.startsWith('/') ? '' : '/') + supplier.logo_url}`)
-                  : null;
-                return (
-                  <motion.div key={supplier.id} variants={fadeUp} custom={i}
-                    className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-                    data-testid={`promo-card-${i}`}>
-                    <div className="flex items-center gap-4 mb-3">
-                      {logoUrl ? (
-                        <img src={logoUrl} alt={supplier.company_name} className="w-14 h-14 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700" />
-                      ) : (
-                        <div className="w-14 h-14 bg-orange-100 dark:bg-orange-500/15 rounded-lg flex items-center justify-center">
-                          <Briefcase weight="duotone" className="w-7 h-7 text-orange-500" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{supplier.company_name}</h3>
-                        {supplier.website && <a href={supplier.website.startsWith('http') ? supplier.website : `https://${supplier.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-500 hover:text-orange-600 truncate block">{supplier.website}</a>}
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2 mb-2">{supplier.bio}</p>
-                    {supplier.phone && <p className="text-xs text-zinc-400">{supplier.phone}</p>}
-                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                      <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">Sponzorovaný banner</span>
-                    </div>
-                  </motion.div>
-                );
-              }
-              return (
-                <motion.button key={`empty-${i}`} variants={fadeUp} custom={i}
-                  onClick={() => setShowPromoForm(true)}
-                  className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-6 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all duration-200 text-center group cursor-pointer"
-                  data-testid={`promo-empty-${i}`}>
-                  <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/15 rounded-lg flex items-center justify-center mx-auto mb-3 transition-colors">
-                    <Plus weight="bold" className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
-                  </div>
-                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
-                  <p className="text-xs font-bold text-orange-500">39 Kč/den</p>
-                </motion.button>
-              );
-            })}
-          </motion.div>
-
-          {promotedSuppliers.length >= 8 && (
-            <div className="text-center mt-8">
-              <button onClick={() => setShowPromoForm(true)}
-                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25"
-                data-testid="add-promo-banner-btn">
-                <Plus weight="bold" className="w-4 h-4" />
-                Přidat reklamní banner
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-
-
-      {/* ───── CTA ───── */}
-      <section className="py-24 px-6 md:px-12">
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-              Připraveni začít?
-            </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="text-lg text-zinc-500 dark:text-zinc-400 mt-4 mb-10">
-              Zaregistrujte se ještě dnes a začněte používat CraftBolt.
-            </motion.p>
-            <motion.div variants={fadeUp} custom={2}>
-              <Link to="/registrace" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 rounded-lg transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25" data-testid="cta-register-btn">
-                Vytvořit účet
-                <ArrowRight weight="bold" className="w-4 h-4" />
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ───── Footer ───── */}
-      <footer className="bg-zinc-900 dark:bg-zinc-950 text-white py-14 px-6 md:px-12 border-t border-zinc-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-10">
-            <div>
-              <div className="flex items-center mb-4">
-                <CraftBoltLogo size="xs" />
-              </div>
-              <p className="text-zinc-500 text-sm leading-relaxed">Platforma pro propojení zákazníků s ověřenými řemeslníky v okolí.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4">Užitečné odkazy</h4>
-              <ul className="space-y-2.5 text-zinc-500 text-sm">
-                <li><Link to="/cenik" className="hover:text-orange-400 transition-colors">Ceník</Link></li>
-                <li><Link to="/registrace" className="hover:text-orange-400 transition-colors">Registrace</Link></li>
-                <li><Link to="/prihlaseni" className="hover:text-orange-400 transition-colors">Přihlášení</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4">Právní informace</h4>
-              <ul className="space-y-2.5 text-zinc-500 text-sm">
-                <li><Link to="/obchodni-podminky" className="hover:text-orange-400 transition-colors">Obchodní podmínky</Link></li>
-                <li><Link to="/caste-dotazy" className="hover:text-orange-400 transition-colors">Časté dotazy</Link></li>
-                <li><Link to="/kontakt" className="hover:text-orange-400 transition-colors">Kontakt</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-zinc-800 pt-8 text-center">
-            <p className="text-zinc-600 text-xs tracking-wide">© 2026 CraftBolt. Všechna práva vyhrazena.</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* ───── Cookie Banner ───── */}
-      {showCookies && (
-        <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.3 }}
-          className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-xl text-white py-4 px-6 md:px-12 z-50 border-t border-zinc-800">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-zinc-400 text-center sm:text-left">
-              Tento web používá cookies nezbytné pro fungování služby.
-              <a href="#" className="text-orange-400 hover:text-orange-300 ml-1">Více informací</a>
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowCookies(false)} className="px-4 py-2 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors" data-testid="cookies-necessary-btn">
-                Pouze nezbytné
-              </button>
-              <button onClick={() => setShowCookies(false)} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-medium text-white transition-colors" data-testid="cookies-accept-btn">
-                Přijmout vše
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ───── Quick Demand Modal ───── */}
       {showQuickDemand && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4" onClick={() => !quickLoading && setShowQuickDemand(false)}>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border border-zinc-200/50 dark:border-zinc-800" onClick={e => e.stopPropagation()} data-testid="quick-demand-modal">
-            {quickSuccess ? (
-              <div className="p-8 text-center">
-                <div className="w-14 h-14 bg-emerald-500/10 rounded-xl flex items-center justify-center mx-auto mb-5">
-                  <Check weight="bold" className="w-7 h-7 text-emerald-600" />
-                </div>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2" style={{ fontFamily: 'Outfit' }}>Poptávka odeslána!</h2>
-                <p className="text-sm text-zinc-500 mb-1">Vaše rychlá poptávka byla úspěšně přijata.</p>
-                <p className="text-sm text-zinc-500 mb-6">Jakmile dodavatel zareaguje, budeme vás informovat emailem a SMS.</p>
-                <div className="flex gap-3">
-                  <button onClick={() => { setShowQuickDemand(false); setQuickSuccess(false); setQuickForm({ first_name: '', last_name: '', email: '', phone: '', description: '' }); }}
-                    className="flex-1 py-3 border border-zinc-200 dark:border-zinc-700 rounded-lg font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm">
-                    Zavřít
-                  </button>
-                  <Link to="/registrace" className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-center text-sm">
-                    Dokončit registraci
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                  <div>
-                    <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Rychlá poptávka</h2>
-                    <p className="text-xs text-zinc-400 mt-0.5">Bez registrace — stačí základní údaje</p>
-                  </div>
-                  <button onClick={() => setShowQuickDemand(false)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors">
-                    <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-4">
-                  {quickError && <div className="p-3 bg-red-500/5 border border-red-200 dark:border-red-900/30 rounded-lg text-red-600 text-sm">{quickError}</div>}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Jméno *</label>
-                      <input type="text" value={quickForm.first_name} onChange={e => setQuickForm(p => ({...p, first_name: e.target.value}))}
-                        className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="Jan" data-testid="quick-first-name" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Příjmení *</label>
-                      <input type="text" value={quickForm.last_name} onChange={e => setQuickForm(p => ({...p, last_name: e.target.value}))}
-                        className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="Novák" data-testid="quick-last-name" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Email *</label>
-                    <input type="email" value={quickForm.email} onChange={e => setQuickForm(p => ({...p, email: e.target.value}))}
-                      className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="jan@email.cz" data-testid="quick-email" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Telefon *</label>
-                    <input type="tel" value={quickForm.phone} onChange={e => setQuickForm(p => ({...p, phone: e.target.value}))}
-                      className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="+420" data-testid="quick-phone" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Stručný popis poptávky</label>
-                    <textarea value={quickForm.description} onChange={e => setQuickForm(p => ({...p, description: e.target.value}))} rows={3}
-                      className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm resize-none" placeholder="Popište, co potřebujete..." data-testid="quick-description" />
-                  </div>
-                  <button onClick={handleQuickDemand} disabled={quickLoading}
-                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2" data-testid="quick-submit-btn">
-                    {quickLoading ? 'Odesílám...' : 'Odeslat poptávku'}
-                  </button>
-                  <p className="text-[11px] text-zinc-400 text-center">Odesláním souhlasíte se zpracováním osobních údajů.</p>
-                </div>
-              </>
-            )}
-          </motion.div>
-        </div>
+        <QuickDemandModal
+          quickForm={quickForm} setQuickForm={setQuickForm}
+          quickLoading={quickLoading} quickSuccess={quickSuccess} quickError={quickError}
+          onSubmit={handleQuickDemand} onClose={() => setShowQuickDemand(false)}
+          onReset={() => { setShowQuickDemand(false); setQuickSuccess(false); setQuickForm({ first_name: '', last_name: '', email: '', phone: '', description: '' }); }}
+        />
       )}
 
-      {/* ───── Promo Form Modal ───── */}
       {showPromoForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4" onClick={() => !promoLoading && setShowPromoForm(false)}>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border border-zinc-200/50 dark:border-zinc-800" onClick={e => e.stopPropagation()} data-testid="promo-form-modal">
-            <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-              <div>
-                <h2 className="font-semibold text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>Reklamní banner</h2>
-                <p className="text-xs text-zinc-400 mt-0.5">Vyberte délku zobrazení</p>
-              </div>
-              <button onClick={() => setShowPromoForm(false)} className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors">
-                <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              {/* Duration selector */}
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => setPromoForm(p => ({...p, duration: 'day'}))}
-                  className={`p-3 rounded-lg border-2 text-center transition-all ${promoForm.duration === 'day' ? 'border-orange-500 bg-orange-500/5' : 'border-zinc-200 dark:border-zinc-700'}`}
-                  data-testid="promo-duration-day">
-                  <span className="block text-lg font-bold text-orange-500">39 Kč</span>
-                  <span className="text-xs text-zinc-500">1 den</span>
-                </button>
-                <button onClick={() => setPromoForm(p => ({...p, duration: 'month'}))}
-                  className={`p-3 rounded-lg border-2 text-center transition-all ${promoForm.duration === 'month' ? 'border-orange-500 bg-orange-500/5' : 'border-zinc-200 dark:border-zinc-700'}`}
-                  data-testid="promo-duration-month">
-                  <span className="block text-lg font-bold text-orange-500">990 Kč</span>
-                  <span className="text-xs text-zinc-500">1 měsíc</span>
-                </button>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Název firmy *</label>
-                <input type="text" value={promoForm.company_name} onChange={e => setPromoForm(p => ({...p, company_name: e.target.value}))}
-                  className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="Název vaší firmy" data-testid="promo-company-name" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Stručný popis *</label>
-                <textarea value={promoForm.bio} onChange={e => setPromoForm(p => ({...p, bio: e.target.value}))} rows={2}
-                  className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm resize-none" placeholder="Co nabízíte..." data-testid="promo-bio" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Telefon *</label>
-                  <input type="tel" value={promoForm.phone} onChange={e => setPromoForm(p => ({...p, phone: e.target.value}))}
-                    className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="+420..." data-testid="promo-phone" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Web</label>
-                  <input type="text" value={promoForm.website} onChange={e => setPromoForm(p => ({...p, website: e.target.value}))}
-                    className="w-full px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white dark:bg-zinc-900 text-sm" placeholder="www.firma.cz" data-testid="promo-website" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Logo</label>
-                <div className="flex items-center gap-3">
-                  {promoForm.logo_url ? (
-                    <img src={promoForm.logo_url.startsWith('http') ? promoForm.logo_url : `${API.replace('/api', '')}${promoForm.logo_url.startsWith('/api') ? promoForm.logo_url : '/api' + (promoForm.logo_url.startsWith('/') ? '' : '/') + promoForm.logo_url}`} alt="Logo" className="w-14 h-14 rounded-lg object-cover border border-zinc-200" />
-                  ) : (
-                    <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
-                      <Briefcase className="w-6 h-6 text-zinc-400" />
-                    </div>
-                  )}
-                  <label className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
-                    {promoUploadingLogo ? 'Nahrávám...' : 'Nahrát logo'}
-                    <input type="file" accept="image/*" onChange={handlePromoLogoUpload} className="hidden" disabled={promoUploadingLogo} />
-                  </label>
-                </div>
-              </div>
-              <button onClick={handlePromoSubmit} disabled={promoLoading || !promoForm.company_name || !promoForm.bio || !promoForm.phone}
-                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2" data-testid="promo-submit-btn">
-                {promoLoading ? 'Přesměrování na platbu...' : `Pokračovat k platbě — ${promoForm.duration === 'month' ? '990' : '39'} Kč`}
-              </button>
-              <p className="text-[11px] text-zinc-400 text-center">Všechny ceny jsou uvedeny včetně 21% DPH.</p>
-            </div>
-          </motion.div>
-        </div>
+        <PromoFormModal
+          promoForm={promoForm} setPromoForm={setPromoForm}
+          promoLoading={promoLoading} promoUploadingLogo={promoUploadingLogo}
+          onSubmit={handlePromoSubmit} onClose={() => setShowPromoForm(false)}
+          onLogoUpload={handlePromoLogoUpload}
+        />
       )}
-
     </div>
   );
 };
