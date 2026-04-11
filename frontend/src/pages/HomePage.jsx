@@ -430,19 +430,21 @@ const HomePage = () => {
                 {billingPeriod === 'monthly' ? (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>199</span>
+                      <span className="text-sm text-zinc-500">od</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>99</span>
                       <span className="text-zinc-500 text-sm">Kč/měsíc</span>
                     </div>
                   </div>
                 ) : (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>2 149</span>
+                      <span className="text-sm text-zinc-500">od</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>1 069</span>
                       <span className="text-zinc-500 text-sm">Kč/rok</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">2 388 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 239 Kč</span>
+                      <span className="text-zinc-400 line-through text-sm">1 188 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 119 Kč</span>
                     </div>
                   </div>
                 )}
@@ -471,19 +473,21 @@ const HomePage = () => {
                 {billingPeriod === 'monthly' ? (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>299</span>
+                      <span className="text-sm text-zinc-500">od</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>199</span>
                       <span className="text-zinc-500 text-sm">Kč/měsíc</span>
                     </div>
                   </div>
                 ) : (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>3 229</span>
+                      <span className="text-sm text-zinc-500">od</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>2 149</span>
                       <span className="text-zinc-500 text-sm">Kč/rok</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">3 588 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 359 Kč</span>
+                      <span className="text-zinc-400 line-through text-sm">2 388 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 239 Kč</span>
                     </div>
                   </div>
                 )}
@@ -509,19 +513,19 @@ const HomePage = () => {
                 {billingPeriod === 'monthly' ? (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>399</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>299</span>
                       <span className="text-zinc-500 text-sm">Kč/měsíc</span>
                     </div>
                   </div>
                 ) : (
                   <div className="mt-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>4 309</span>
+                      <span className="text-5xl font-bold text-zinc-900 dark:text-white tracking-tight" style={{ fontFamily: 'Outfit' }}>3 229</span>
                       <span className="text-zinc-500 text-sm">Kč/rok</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-zinc-400 line-through text-sm">4 788 Kč</span>
-                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 479 Kč</span>
+                      <span className="text-zinc-400 line-through text-sm">3 588 Kč</span>
+                      <span className="text-orange-500 text-xs font-bold">UŠETŘÍTE 359 Kč</span>
                     </div>
                   </div>
                 )}

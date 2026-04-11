@@ -66,7 +66,7 @@ const HeroSection = () => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % categories.length);
-    }, 2500);
+    }, 4000);
     return () => clearInterval(timer);
   }, [isPaused]);
 
@@ -103,7 +103,7 @@ const HeroSection = () => {
             Portál pro vkládání poptávek
           </h1>
           <p
-            className="text-3xl sm:text-4xl md:text-5xl text-orange-500 italic font-bold mt-2"
+            className="text-3xl sm:text-4xl md:text-5xl text-orange-500 font-bold mt-2"
             style={{ fontFamily: 'Outfit' }}
           >
             Jednoduše, rychle, spolehlivě
@@ -200,12 +200,12 @@ const HeroSection = () => {
         {/* Micro features: mobilní aplikace label + features */}
         <div className="mt-10">
           <p className="text-xs font-bold text-zinc-900 dark:text-white tracking-wider uppercase text-center mb-3">
-            mobilní aplikace
+            od 99 Kč měsíčně
           </p>
           <div className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
             {[
               { Icon: ChatCircle, label: 'SMS notifikace', isPhosphor: true },
-              { Icon: CurrencyCircleDollar, label: 'od 199 Kč bez dalších poplatků', isPhosphor: true },
+              { Icon: CurrencyCircleDollar, label: 'od 99 Kč měsíčně', isPhosphor: true },
               { Icon: Broadcast, label: 'RealTime sledování příjezdů', isPhosphor: true },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-2">
