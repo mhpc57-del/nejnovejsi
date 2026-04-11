@@ -174,27 +174,26 @@ const HeroSection = () => {
   return (
     <section className="relative bg-stone-50 dark:bg-zinc-900 overflow-hidden" data-testid="hero-section">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-10 md:pt-36 md:pb-14 relative">
-        {/* Left-aligned titles */}
-        <div className="mb-8 md:mb-10">
-          <h1
-            className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
-            style={{ fontFamily: 'Outfit' }}
-            data-testid="hero-title"
-          >
-            Portál pro vkládání poptávek
-          </h1>
-          <p
-            className="text-3xl sm:text-4xl md:text-5xl text-orange-500 font-bold mt-2"
-            style={{ fontFamily: 'Outfit' }}
-          >
-            Jednoduše, rychle, spolehlivě
-          </p>
-        </div>
-
-        {/* Main content: categories grid + photo */}
-        <div className="grid lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left — Category grid + CTA */}
+        {/* Main 2-column layout: left content + right photo */}
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          {/* Left — Titles + Category grid + CTA */}
           <div className="lg:col-span-5">
+            {/* Titles */}
+            <div className="mb-8">
+              <h1
+                className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
+                style={{ fontFamily: 'Outfit' }}
+                data-testid="hero-title"
+              >
+                Portál pro vkládání poptávek
+              </h1>
+              <p
+                className="text-3xl sm:text-4xl md:text-5xl text-orange-500 font-bold mt-2"
+                style={{ fontFamily: 'Outfit' }}
+              >
+                Jednoduše, rychle, spolehlivě
+              </p>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-testid="hero-categories">
               {categories.map((cat, i) => {
                 const isActive = i === activeIndex;
