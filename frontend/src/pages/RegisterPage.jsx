@@ -549,7 +549,6 @@ const RegisterPage = () => {
       case 'role':
         return (
           <div className="space-y-4">
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6">Jak chcete platformu používat?</p>
             {/* Zákazník */}
             <button type="button"
               onClick={() => setFormData(prev => ({ ...prev, role: 'customer', account_type: '', has_ico: null }))}
@@ -1171,7 +1170,7 @@ const RegisterPage = () => {
     const step = steps[currentStep];
     const titles = {
       basic: 'Základní údaje',
-      role: 'Výběr role',
+      role: 'Zvolte typ účtu',
       ico_choice: 'Máte IČ?',
       ico_type: 'Typ podnikání',
       details: 'Údaje o účtu',
