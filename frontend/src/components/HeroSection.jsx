@@ -3,9 +3,23 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wall, Lightning, Drop, Fire, PlusCircle, ArrowRight,
-  ChatCircle, CurrencyCircleDollar, Broadcast
+  ChatCircle, Broadcast, DeviceMobile
 } from '@phosphor-icons/react';
-import { Drill, PaintRoller, SprayCan } from 'lucide-react';
+import { Drill, PaintRoller, Smartphone } from 'lucide-react';
+
+// Custom bucket + broom icon for cleaning
+const BucketBroomIcon = ({ className, strokeWidth = 2 }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {/* Bucket */}
+    <path d="M4 10h12l-1.5 10H5.5L4 10z" />
+    <path d="M3.5 10h13" />
+    <ellipse cx="10" cy="10" rx="6.5" ry="1.5" />
+    {/* Broom handle leaning */}
+    <line x1="18" y1="3" x2="14" y2="18" />
+    {/* Broom bristles */}
+    <path d="M17 19l-3-1 3 3" />
+  </svg>
+);
 
 const categories = [
   {
@@ -21,7 +35,7 @@ const categories = [
     isLucide: true,
   },
   {
-    icon: SprayCan,
+    icon: BucketBroomIcon,
     label: 'Úklidové práce',
     image: '/hero/uklizecka.png',
     isLucide: true,
@@ -197,15 +211,12 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Micro features: mobilní aplikace label + features */}
+        {/* Micro features */}
         <div className="mt-10">
-          <p className="text-xs font-bold text-zinc-900 dark:text-white tracking-wider uppercase text-center mb-3">
-            mobilní aplikace
-          </p>
           <div className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
             {[
               { Icon: ChatCircle, label: 'SMS notifikace', isPhosphor: true },
-              { Icon: CurrencyCircleDollar, label: 'od 99 Kč měsíčně', isPhosphor: true },
+              { Icon: DeviceMobile, label: 'mobilní aplikace', isPhosphor: true },
               { Icon: Broadcast, label: 'RealTime sledování příjezdů', isPhosphor: true },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-2">
