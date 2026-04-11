@@ -127,10 +127,14 @@ const SupplierDashboard = () => {
     }
   };
 
+  const availableVerified = availableDemands.filter(d => d.verified);
+  const availableUnverified = availableDemands.filter(d => !d.verified);
+
   const totalIncome = finances?.total_income || completed.reduce((s, d) => s + (d.invoiced_amount || 0), 0);
 
   const demandTabs = [
-    { key: 'available', label: 'Dostupné', count: availableDemands.length, color: 'text-emerald-500' },
+    { key: 'available_verified', label: 'Ověřené', count: availableVerified.length, color: 'text-emerald-500' },
+    { key: 'available_unverified', label: 'Neověřené', count: availableUnverified.length, color: 'text-orange-500' },
     { key: 'in_progress', label: 'Rozdělané', count: inProgress.length, color: 'text-blue-500' },
     { key: 'completed', label: 'Dokončené', count: completed.length, color: 'text-zinc-500' },
     { key: 'cancelled', label: 'Nedokončené', count: cancelled.length, color: 'text-red-500' },
@@ -138,7 +142,8 @@ const SupplierDashboard = () => {
 
   const getDemandsByTab = (tab) => {
     switch (tab) {
-      case 'available': return availableDemands;
+      case 'available_verified': return availableVerified;
+      case 'available_unverified': return availableUnverified;
       case 'in_progress': return inProgress;
       case 'completed': return completed;
       case 'cancelled': return cancelled;
@@ -465,7 +470,7 @@ const SupplierDashboard = () => {
           <button onClick={() => { setActiveTab('profile'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${activeTab === 'profile' ? 'text-orange-500' : 'text-zinc-400'}`}>
             <User className="w-5 h-5" /><span className="text-[10px] font-medium">Profil</span>
           </button>
-          <button onClick={() => { setActiveTab('available'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${demandTabs.some(t => t.key === activeTab) ? 'text-orange-500' : 'text-zinc-400'}`}>
+          <button onClick={() => { setActiveTab('available_verified'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${demandTabs.some(t => t.key === activeTab) ? 'text-orange-500' : 'text-zinc-400'}`}>
             <List className="w-5 h-5" /><span className="text-[10px] font-medium">Zakázky</span>
           </button>
           <button onClick={() => { setActiveTab('income'); setSelectedDemand(null); }} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 ${activeTab === 'income' ? 'text-orange-500' : 'text-zinc-400'}`}>
