@@ -140,7 +140,8 @@ const HomePage = () => {
     { num: "02", title: "Dodavatel vytvoří nabídku", desc: "Dodavatel dostane upozornění o poptávce, vytvoří a odešle nabídku" },
     { num: "03", title: "Zákazník přijme nabídku", desc: "Zákazník přijme nabídku, informuje dodavatele a dohodnou se na dalším postupu" },
     { num: "04", title: "Dodavatel zrealizuje zakázku", desc: "Dodavatel provede práci a předá ji zákazníkovi" },
-    { num: "05", title: "Vzájemné hodnocení", desc: "Obě strany ohodnotí spolupráci. Recenze budují důvěru." },
+    { num: "05", title: "Nahrání fotografií z realizace", desc: "Dodavatel nahraje fotografie z průběhu a dokončení realizace zakázky" },
+    { num: "06", title: "Vzájemné hodnocení", desc: "Obě strany ohodnotí spolupráci. Recenze budují důvěru." },
   ];
 
   return (
@@ -296,55 +297,61 @@ const HomePage = () => {
                 transition={{ duration: 0.8, delay: 0.3 }}
                 className="relative"
               >
-                <svg viewBox="0 0 320 360" className="w-full max-w-[320px] mx-auto" fill="none">
-                  {/* Connecting arrows */}
-                  <path d="M160 55 L250 110" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M250 150 L250 210" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M250 250 L160 305" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M160 305 L70 250" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M70 210 L70 150" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-                  <path d="M70 150 L160 55" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                <svg viewBox="0 0 300 340" className="w-full max-w-[300px] mx-auto" fill="none">
+                  {/* Hexagon connecting lines */}
+                  <path d="M150 30 L260 80" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M260 80 L260 200" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M260 200 L150 260" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M150 260 L40 200" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M40 200 L40 80" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
+                  <path d="M40 80 L150 30" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
 
-                  {/* Arrow heads */}
-                  <polygon points="247,108 255,115 243,115" fill="#f97316" opacity="0.7" />
-                  <polygon points="247,210 255,210 251,220" fill="#f97316" opacity="0.7" />
-                  <polygon points="163,302 155,310 155,298" fill="#f97316" opacity="0.7" />
-                  <polygon points="73,248 65,255 65,243" fill="#f97316" opacity="0.7" />
-                  <polygon points="67,152 75,152 71,142" fill="#f97316" opacity="0.7" />
-                  <polygon points="155,60 165,60 160,50" fill="#f97316" opacity="0.7" />
+                  {/* Arrow heads on each segment */}
+                  <polygon points="255,78 265,85 253,85" fill="#f97316" opacity="0.7" />
+                  <polygon points="257,195 265,195 261,205" fill="#f97316" opacity="0.7" />
+                  <polygon points="155,257 145,264 145,252" fill="#f97316" opacity="0.7" />
+                  <polygon points="45,202 35,195 47,195" fill="#f97316" opacity="0.7" />
+                  <polygon points="43,85 35,85 39,75" fill="#f97316" opacity="0.7" />
+                  <polygon points="145,33 155,33 150,23" fill="#f97316" opacity="0.7" />
 
-                  {/* Step 1 - Zákazník - top center */}
-                  <circle cx="160" cy="35" r="30" fill="#f97316" opacity="0.15" />
-                  <circle cx="160" cy="35" r="22" fill="#f97316" opacity="0.25" />
-                  <text x="160" y="31" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">01</text>
-                  <text x="160" y="43" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">ZÁKAZNÍK</text>
+                  {/* Step 1 - top center */}
+                  <circle cx="150" cy="28" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="150" cy="28" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="150" y="25" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">01</text>
+                  <text x="150" y="36" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">POPTÁVKA</text>
 
-                  {/* Step 2 - Nabídka - top right */}
-                  <circle cx="250" cy="130" r="30" fill="#f97316" opacity="0.15" />
-                  <circle cx="250" cy="130" r="22" fill="#f97316" opacity="0.25" />
-                  <text x="250" y="126" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">02</text>
-                  <text x="250" y="138" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">NABÍDKA</text>
+                  {/* Step 2 - top right */}
+                  <circle cx="260" cy="80" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="260" cy="80" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="260" y="77" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">02</text>
+                  <text x="260" y="88" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">NABÍDKA</text>
 
-                  {/* Step 3 - Přijmutí - bottom right */}
-                  <circle cx="250" cy="230" r="30" fill="#f97316" opacity="0.15" />
-                  <circle cx="250" cy="230" r="22" fill="#f97316" opacity="0.25" />
-                  <text x="250" y="226" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">03</text>
-                  <text x="250" y="238" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">PŘIJMUTÍ</text>
+                  {/* Step 3 - bottom right */}
+                  <circle cx="260" cy="200" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="260" cy="200" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="260" y="197" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">03</text>
+                  <text x="260" y="208" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">PŘIJMUTÍ</text>
 
-                  {/* Step 4 - Realizace - bottom center */}
-                  <circle cx="160" cy="325" r="30" fill="#f97316" opacity="0.15" />
-                  <circle cx="160" cy="325" r="22" fill="#f97316" opacity="0.25" />
-                  <text x="160" y="321" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">04</text>
-                  <text x="160" y="333" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">REALIZACE</text>
+                  {/* Step 4 - bottom center */}
+                  <circle cx="150" cy="260" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="150" cy="260" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="150" y="257" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">04</text>
+                  <text x="150" y="268" textAnchor="middle" fill="#fb923c" fontSize="5.5" fontWeight="500">REALIZACE</text>
 
-                  {/* Step 5 - Hodnocení - bottom left */}
-                  <circle cx="70" cy="230" r="30" fill="#f97316" opacity="0.15" />
-                  <circle cx="70" cy="230" r="22" fill="#f97316" opacity="0.25" />
-                  <text x="70" y="226" textAnchor="middle" fill="#f97316" fontSize="16" fontWeight="bold">05</text>
-                  <text x="70" y="238" textAnchor="middle" fill="#fb923c" fontSize="6" fontWeight="500">HODNOCENÍ</text>
+                  {/* Step 5 - bottom left */}
+                  <circle cx="40" cy="200" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="40" cy="200" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="40" y="197" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">05</text>
+                  <text x="40" y="208" textAnchor="middle" fill="#fb923c" fontSize="5" fontWeight="500">FOTOGRAFIE</text>
 
-                  {/* Center logo / text */}
-                  <text x="160" y="180" textAnchor="middle" fill="#f97316" fontSize="11" fontWeight="bold" opacity="0.6">CraftBolt</text>
+                  {/* Step 6 - top left */}
+                  <circle cx="40" cy="80" r="24" fill="#f97316" opacity="0.15" />
+                  <circle cx="40" cy="80" r="18" fill="#f97316" opacity="0.25" />
+                  <text x="40" y="77" textAnchor="middle" fill="#f97316" fontSize="14" fontWeight="bold">06</text>
+                  <text x="40" y="88" textAnchor="middle" fill="#fb923c" fontSize="5" fontWeight="500">HODNOCENÍ</text>
+
+                  {/* Center text */}
+                  <text x="150" y="145" textAnchor="middle" fill="#f97316" fontSize="11" fontWeight="bold" opacity="0.6">CraftBolt</text>
                 </svg>
               </motion.div>
             </div>
