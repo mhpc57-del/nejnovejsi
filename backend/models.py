@@ -167,6 +167,7 @@ class DemandResponse(BaseModel):
     price_confirmed_at: Optional[str] = None
     price_dispute_reason: Optional[str] = None
     supplier_radius: Optional[int] = None
+    quotes: List[dict] = []
 
 
 class MessageCreate(BaseModel):

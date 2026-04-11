@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   ArrowLeft, MapPin, Calendar, User, Clock, Check, X,
   PaperPlaneTilt, Star, ChatCircle, Phone, NavigationArrow, Warning, HandWaving, CurrencyCircleDollar,
-  PencilSimple, ImageSquare, Plus, Camera, Trash
+  PencilSimple, ImageSquare, Plus, Camera, Trash, FileText, DownloadSimple, Upload, CheckCircle, XCircle
 } from '@phosphor-icons/react';
 import LiveMap from '../components/LiveMap';
 import ThemeToggle from '../components/ThemeToggle';
@@ -52,6 +52,16 @@ const DemandDetail = () => {
   const [priceDisputeReason, setPriceDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [confirmingPrice, setConfirmingPrice] = useState(false);
+
+  // Quote/budget states
+  const [showQuoteUpload, setShowQuoteUpload] = useState(false);
+  const [quoteFile, setQuoteFile] = useState(null);
+  const [quoteFileName, setQuoteFileName] = useState('');
+  const [quoteAmount, setQuoteAmount] = useState('');
+  const [quoteNote, setQuoteNote] = useState('');
+  const [uploadingQuote, setUploadingQuote] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const [notificationToast, setNotificationToast] = useState(null);
 
@@ -520,6 +530,85 @@ const DemandDetail = () => {
     );
   }
 
+  // ============ QUOTE HANDLERS ============
+  const handleQuoteFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowedExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!allowedExts.includes(ext)) {
+      alert('Nepodporovaný formát. Povolené: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG');
+      return;
+    }
+    setUploadingQuote(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/api/uploads`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      });
+      setQuoteFile(res.data.file_url);
+      setQuoteFileName(file.name);
+    } catch {
+      alert('Chyba při nahrávání souboru');
+    } finally {
+      setUploadingQuote(false);
+    }
+  };
+
+  const handleSubmitQuote = async () => {
+    if (!quoteFile) return alert('Nahrajte soubor s rozpočtem');
+    setUploadingQuote(true);
+    try {
+      await axios.post(`${API}/api/demands/${id}/quotes`, {
+        file_url: quoteFile,
+        file_name: quoteFileName,
+        amount: quoteAmount ? parseFloat(quoteAmount) : null,
+        note: quoteNote,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setQuoteFile(null);
+      setQuoteFileName('');
+      setQuoteAmount('');
+      setQuoteNote('');
+      setShowQuoteUpload(false);
+      // Refresh demand
+      const res = await axios.get(`${API}/api/demands/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setDemand(res.data);
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Chyba při odesílání rozpočtu');
+    } finally {
+      setUploadingQuote(false);
+    }
+  };
+
+  const handleAcceptQuote = async (quoteId) => {
+    if (!window.confirm('Opravdu chcete přijmout tento rozpočet?')) return;
+    try {
+      await axios.put(`${API}/api/demands/${id}/quotes/${quoteId}/accept`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const res = await axios.get(`${API}/api/demands/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setDemand(res.data);
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Chyba při přijímání rozpočtu');
+    }
+  };
+
+  const handleRejectQuote = async (quoteId) => {
+    if (!rejectReason.trim()) return alert('Napište důvod odmítnutí');
+    try {
+      await axios.put(`${API}/api/demands/${id}/quotes/${quoteId}/reject`, {
+        reason: rejectReason,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setShowRejectModal(null);
+      setRejectReason('');
+      const res = await axios.get(`${API}/api/demands/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setDemand(res.data);
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Chyba při odmítání rozpočtu');
+    }
+  };
+
   const isCustomer = user?.id === demand.customer_id;
   const isAssignedSupplier = user?.id === demand.assigned_supplier_id;
   const canChat = isAssignedSupplier || (user?.role === 'supplier' && demand.status === 'open') || (isCustomer && demand.status !== 'open') || (isCustomer && messages.length > 0);
@@ -972,6 +1061,150 @@ const DemandDetail = () => {
                 </div>
               )}
             </div>
+
+            {/* ============ QUOTES / ROZPOČTY ============ */}
+            {demand.status === 'in_progress' && (isCustomer || isAssignedSupplier) && (
+              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden" data-testid="quotes-section">
+                <div className="p-4 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-orange-500" />
+                    <h2 className="font-semibold text-zinc-900 dark:text-white">Rozpočty a nabídky</h2>
+                  </div>
+                  {isAssignedSupplier && (
+                    <button
+                      onClick={() => setShowQuoteUpload(!showQuoteUpload)}
+                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                      data-testid="add-quote-btn"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Nahrát rozpočet
+                    </button>
+                  )}
+                </div>
+
+                {/* Upload form for supplier */}
+                {showQuoteUpload && isAssignedSupplier && (
+                  <div className="p-4 bg-orange-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 space-y-3" data-testid="quote-upload-form">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Soubor rozpočtu *</label>
+                      {quoteFile ? (
+                        <div className="flex items-center gap-2 p-3 bg-white dark:bg-zinc-900 rounded-lg border border-green-200">
+                          <FileText className="w-5 h-5 text-green-500" />
+                          <span className="text-sm text-zinc-700 dark:text-zinc-300 flex-1">{quoteFileName}</span>
+                          <button onClick={() => { setQuoteFile(null); setQuoteFileName(''); }} className="text-red-400 hover:text-red-600">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg cursor-pointer hover:border-orange-400 transition-colors">
+                          <Upload className="w-5 h-5 text-zinc-400" />
+                          <span className="text-sm text-zinc-500">{uploadingQuote ? 'Nahrávám...' : 'PDF, DOC, XLS, JPG, PNG'}</span>
+                          <input type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onChange={handleQuoteFileUpload} disabled={uploadingQuote} data-testid="quote-file-input" />
+                        </label>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Celková částka (Kč)</label>
+                        <input type="number" value={quoteAmount} onChange={(e) => setQuoteAmount(e.target.value)} placeholder="např. 50000" className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm" data-testid="quote-amount-input" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Poznámka</label>
+                        <input type="text" value={quoteNote} onChange={(e) => setQuoteNote(e.target.value)} placeholder="Stručný popis nabídky..." className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm" data-testid="quote-note-input" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={handleSubmitQuote} disabled={!quoteFile || uploadingQuote} className="px-5 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors" data-testid="submit-quote-btn">
+                        Odeslat rozpočet zákazníkovi
+                      </button>
+                      <button onClick={() => { setShowQuoteUpload(false); setQuoteFile(null); setQuoteFileName(''); setQuoteAmount(''); setQuoteNote(''); }} className="px-5 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        Zrušit
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* List of quotes */}
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {(!demand.quotes || demand.quotes.length === 0) ? (
+                    <div className="p-6 text-center text-zinc-400 text-sm">
+                      Zatím nebyl odeslán žádný rozpočet
+                    </div>
+                  ) : (
+                    demand.quotes.map((q) => (
+                      <div key={q.id} className={`p-4 ${q.status === 'accepted' ? 'bg-green-50 dark:bg-green-950/20' : q.status === 'rejected' ? 'bg-red-50 dark:bg-red-950/20' : ''}`} data-testid={`quote-item-${q.id}`}>
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2">
+                            <FileText className={`w-5 h-5 ${q.status === 'accepted' ? 'text-green-500' : q.status === 'rejected' ? 'text-red-400' : 'text-orange-500'}`} />
+                            <div>
+                              <a href={`${API}${q.file_url}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1" data-testid={`quote-download-${q.id}`}>
+                                {q.file_name}
+                                <DownloadSimple className="w-3.5 h-3.5" />
+                              </a>
+                              <p className="text-xs text-zinc-400 mt-0.5">
+                                {q.supplier_name} — {new Date(q.created_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {q.amount && (
+                              <span className="text-sm font-bold text-zinc-900 dark:text-white">{Number(q.amount).toLocaleString('cs-CZ')} Kč</span>
+                            )}
+                            {q.status === 'pending' && (
+                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Čeká na schválení</span>
+                            )}
+                            {q.status === 'accepted' && (
+                              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium flex items-center gap-1">
+                                <CheckCircle className="w-3.5 h-3.5" /> Přijato
+                              </span>
+                            )}
+                            {q.status === 'rejected' && (
+                              <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium flex items-center gap-1">
+                                <XCircle className="w-3.5 h-3.5" /> Odmítnuto
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {q.note && <p className="text-sm text-zinc-600 dark:text-zinc-400 ml-7 mb-2">{q.note}</p>}
+                        {q.rejection_reason && (
+                          <div className="ml-7 p-2 bg-red-50 dark:bg-red-950/30 border-l-3 border-red-400 rounded text-sm text-red-700 dark:text-red-300 mt-1">
+                            <span className="font-medium">Důvod odmítnutí:</span> {q.rejection_reason}
+                          </div>
+                        )}
+                        {/* Accept/Reject buttons for customer on pending quotes */}
+                        {isCustomer && q.status === 'pending' && (
+                          <div className="flex gap-2 mt-3 ml-7">
+                            <button onClick={() => handleAcceptQuote(q.id)} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors" data-testid={`accept-quote-${q.id}`}>
+                              <CheckCircle className="w-4 h-4" />
+                              Přijmout nabídku
+                            </button>
+                            <button onClick={() => { setShowRejectModal(q.id); setRejectReason(''); }} className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors" data-testid={`reject-quote-${q.id}`}>
+                              <XCircle className="w-4 h-4" />
+                              Odmítnout
+                            </button>
+                          </div>
+                        )}
+                        {/* Reject reason modal inline */}
+                        {showRejectModal === q.id && (
+                          <div className="mt-3 ml-7 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800 space-y-2" data-testid={`reject-modal-${q.id}`}>
+                            <label className="block text-sm font-medium text-red-700 dark:text-red-300">Důvod odmítnutí *</label>
+                            <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Napište důvod, proč rozpočet odmítáte..." className="w-full px-3 py-2 rounded-lg border border-red-300 dark:border-red-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm resize-none" rows={3} data-testid={`reject-reason-${q.id}`} />
+                            <div className="flex gap-2">
+                              <button onClick={() => handleRejectQuote(q.id)} disabled={!rejectReason.trim()} className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors" data-testid={`confirm-reject-${q.id}`}>
+                                Odeslat odmítnutí
+                              </button>
+                              <button onClick={() => setShowRejectModal(null)} className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                                Zrušit
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Chat - shown only after clicking "Spustit chat" */}
             {canChat && (showChat || autoShowChat) && (

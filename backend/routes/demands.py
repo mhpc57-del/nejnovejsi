@@ -879,3 +879,264 @@ async def soft_accept_demand(demand_id: str, reason: str = "", current_user: dic
         logger.error(f"Failed to send soft-accept notification: {str(e)}")
     
     return {"message": "Nezávazné přijetí odesláno zákazníkovi"}
+
+
+# ============ QUOTES / ROZPOČTY ============
+
+ALLOWED_QUOTE_EXTENSIONS = {"pdf", "doc", "docx", "xls", "xlsx", "jpg", "jpeg", "png"}
+
+
+@router.post("/demands/{demand_id}/quotes")
+async def submit_quote(demand_id: str, data: dict, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """Supplier submits a quote/budget for a demand."""
+    if current_user["role"] not in ["supplier", "customer_supplier"]:
+        raise HTTPException(status_code=403, detail="Pouze dodavatel může odeslat rozpočet")
+
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("assigned_supplier_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nejste přiřazený dodavatel této zakázky")
+    if demand["status"] != "in_progress":
+        raise HTTPException(status_code=400, detail="Rozpočet lze odeslat pouze u probíhající zakázky")
+
+    file_url = data.get("file_url", "")
+    file_name = data.get("file_name", "")
+    amount = data.get("amount")
+    note = data.get("note", "")
+
+    if not file_url:
+        raise HTTPException(status_code=400, detail="Soubor rozpočtu je povinný")
+
+    # Validate file extension
+    ext = file_name.rsplit(".", 1)[-1].lower() if "." in file_name else ""
+    if ext not in ALLOWED_QUOTE_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Nepodporovaný formát. Povolené: {', '.join(ALLOWED_QUOTE_EXTENSIONS)}")
+
+    now = datetime.now(timezone.utc)
+    supplier_name = current_user.get("company_name") or f"{current_user.get('first_name', '')} {current_user.get('last_name', '')}".strip() or current_user["email"]
+
+    quote = {
+        "id": str(uuid.uuid4()),
+        "supplier_id": current_user["id"],
+        "supplier_name": supplier_name,
+        "file_url": file_url,
+        "file_name": file_name,
+        "amount": float(amount) if amount else None,
+        "note": note,
+        "status": "pending",  # pending / accepted / rejected
+        "rejection_reason": None,
+        "created_at": now.isoformat(),
+        "responded_at": None,
+    }
+
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$push": {"quotes": quote}}
+    )
+
+    # Notify customer in background
+    background_tasks.add_task(
+        _notify_quote_submitted,
+        demand=demand,
+        supplier_name=supplier_name,
+        amount=amount
+    )
+
+    return {"message": "Rozpočet byl odeslán zákazníkovi", "quote": quote}
+
+
+async def _notify_quote_submitted(demand: dict, supplier_name: str, amount):
+    """Send notification to customer about new quote."""
+    try:
+        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
+        if not customer:
+            return
+
+        amount_text = f" ve vysi {amount:,.0f} Kc" if amount else ""
+        demand_url = f"https://craftbolt.cz/zakazka/{demand['id']}"
+
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Novy rozpocet k vasi zakazce</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobry den,</p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{supplier_name}</strong> vam zaslal rozpocet{amount_text}
+                k zakazce <strong>{demand['title']}</strong>.
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Prohlednete si rozpocet a rozhodnete se, zda nabidku prijmete nebo odmitnete.
+            </p>
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="{demand_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Zobrazit rozpočet
+                </a>
+            </div>
+        """
+        subject = f"Nový rozpočet od {supplier_name} — {demand['title']}"
+        html = notification_service.templates.email_base(content, subject)
+        await notification_service.email_service.send_email(customer["email"], subject, html)
+
+        # SMS
+        if customer.get("phone"):
+            sms_enabled = await db.users.find_one({"email": customer["email"]}, {"_id": 0, "sms_notifications": 1})
+            if sms_enabled and sms_enabled.get("sms_notifications"):
+                notification_service.sms_service.send_sms(
+                    customer["phone"],
+                    f"CraftBolt: {supplier_name} zaslal rozpocet{amount_text} k zakazce '{demand['title'][:25]}'. Prihlas se pro detail."
+                )
+    except Exception as e:
+        logger.error(f"Failed to send quote notification: {e}")
+
+
+@router.put("/demands/{demand_id}/quotes/{quote_id}/accept")
+async def accept_quote(demand_id: str, quote_id: str, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """Customer accepts a quote."""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand["customer_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Pouze zákazník může přijmout rozpočet")
+
+    quotes = demand.get("quotes", [])
+    quote = next((q for q in quotes if q["id"] == quote_id), None)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Rozpočet nenalezen")
+    if quote["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Tento rozpočet již byl vyřízen")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Update the accepted quote
+    await db.demands.update_one(
+        {"id": demand_id, "quotes.id": quote_id},
+        {"$set": {
+            "quotes.$.status": "accepted",
+            "quotes.$.responded_at": now,
+            "agreed_price": quote.get("amount"),
+        }}
+    )
+
+    # Reject all other pending quotes
+    for q in quotes:
+        if q["id"] != quote_id and q["status"] == "pending":
+            await db.demands.update_one(
+                {"id": demand_id, "quotes.id": q["id"]},
+                {"$set": {
+                    "quotes.$.status": "rejected",
+                    "quotes.$.rejection_reason": "Byl přijat jiný rozpočet",
+                    "quotes.$.responded_at": now,
+                }}
+            )
+
+    # Notify supplier
+    background_tasks.add_task(
+        _notify_quote_response,
+        demand=demand,
+        quote=quote,
+        accepted=True,
+        reason=""
+    )
+
+    return {"message": "Rozpočet byl přijat"}
+
+
+@router.put("/demands/{demand_id}/quotes/{quote_id}/reject")
+async def reject_quote(demand_id: str, quote_id: str, data: dict, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """Customer rejects a quote with a reason."""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand["customer_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Pouze zákazník může odmítnout rozpočet")
+
+    reason = data.get("reason", "").strip()
+    if not reason:
+        raise HTTPException(status_code=400, detail="Důvod odmítnutí je povinný")
+
+    quotes = demand.get("quotes", [])
+    quote = next((q for q in quotes if q["id"] == quote_id), None)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Rozpočet nenalezen")
+    if quote["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Tento rozpočet již byl vyřízen")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.demands.update_one(
+        {"id": demand_id, "quotes.id": quote_id},
+        {"$set": {
+            "quotes.$.status": "rejected",
+            "quotes.$.rejection_reason": reason,
+            "quotes.$.responded_at": now,
+        }}
+    )
+
+    # Notify supplier
+    background_tasks.add_task(
+        _notify_quote_response,
+        demand=demand,
+        quote=quote,
+        accepted=False,
+        reason=reason
+    )
+
+    return {"message": "Rozpočet byl odmítnut"}
+
+
+async def _notify_quote_response(demand: dict, quote: dict, accepted: bool, reason: str):
+    """Notify supplier about quote acceptance/rejection."""
+    try:
+        supplier = await db.users.find_one({"id": quote["supplier_id"]}, {"_id": 0, "email": 1, "phone": 1})
+        if not supplier:
+            return
+
+        customer_name = demand.get("customer_name", "Zákazník")
+
+        if accepted:
+            amount_text = f" ve vysi {quote['amount']:,.0f} Kc" if quote.get('amount') else ""
+            heading = "Zakaznik prijal vas rozpocet!"
+            body = (
+                f"Zakaznik <strong>{customer_name}</strong> prijal vas rozpocet{amount_text}"
+                f" k zakazce <strong>{demand['title']}</strong>."
+            )
+            color = "#22c55e"
+        else:
+            heading = "Zakaznik odmitl vas rozpocet"
+            body = (
+                f"Zakaznik <strong>{customer_name}</strong> odmitl vas rozpocet"
+                f" k zakazce <strong>{demand['title']}</strong>."
+            )
+            color = "#ef4444"
+
+        reason_block = ""
+        if reason:
+            reason_block = f"""
+                <div style="background-color: {'#fef2f2' if not accepted else '#f0fdf4'}; border-left: 4px solid {color}; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+                    <p style="margin: 0 0 4px 0; font-weight: 600;">{'Důvod odmítnutí:' if not accepted else 'Poznámka:'}</p>
+                    <p style="margin: 0;">{reason}</p>
+                </div>
+            """
+
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">{heading}</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobrý den,</p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">{body}</p>
+            {reason_block}
+            <a href="https://craftbolt.cz/zakazka/{demand['id']}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Zobrazit zakázku
+            </a>
+        """
+        subject = f"CraftBolt — Rozpočet {'přijat' if accepted else 'odmítnut'}: {demand['title']}"
+        html = notification_service.templates.email_base(content, subject)
+        await notification_service.email_service.send_email(supplier["email"], subject, html)
+
+        # SMS
+        if supplier.get("phone"):
+            sms_enabled = await db.users.find_one({"email": supplier["email"]}, {"_id": 0, "sms_notifications": 1})
+            if sms_enabled and sms_enabled.get("sms_notifications"):
+                sms_text = f"CraftBolt: Zakaznik {'prijal' if accepted else 'odmitl'} vas rozpocet k zakazce '{demand['title'][:25]}'."
+                if not accepted and reason:
+                    sms_text += f" Duvod: {reason[:60]}"
+                notification_service.sms_service.send_sms(supplier["phone"], sms_text)
+    except Exception as e:
+        logger.error(f"Failed to send quote response notification: {e}")
