@@ -103,7 +103,7 @@ const categories = [
   {
     icon: BucketBroomIcon,
     label: 'Úklidové práce',
-    image: '/hero/uklizecka.png',
+    image: '/hero/uklidove-prace.png',
     isLucide: true,
   },
   {
