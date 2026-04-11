@@ -151,7 +151,6 @@ const HomePage = () => {
               {[
                 { label: 'Zákazníci', value: platformStats.customers, color: 'bg-emerald-500', textColor: 'text-emerald-600', id: 'stat-customers' },
                 { label: 'Dodavatelé', value: platformStats.suppliers, color: 'bg-red-500', textColor: 'text-red-500', id: 'stat-suppliers' },
-                { label: 'Zákazníci/Dodavatelé', value: platformStats.customer_suppliers, color: 'bg-orange-500', textColor: 'text-orange-500', id: 'stat-both' },
                 { label: 'Online', value: platformStats.online || 0, color: 'bg-emerald-500', textColor: 'text-emerald-500', id: 'stat-online', isOnline: true },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-2.5" data-testid={stat.id}>

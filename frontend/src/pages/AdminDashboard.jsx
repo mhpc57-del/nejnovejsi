@@ -852,7 +852,6 @@ const AdminDashboard = () => {
                   className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm" data-testid="modal-role">
                   <option value="customer">Zákazník</option>
                   <option value="supplier">Dodavatel</option>
-                  <option value="customer_supplier">Zákazník i dodavatel</option>
                 </select>
               </div>
               <div>

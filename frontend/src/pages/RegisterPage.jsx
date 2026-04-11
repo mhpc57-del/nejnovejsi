@@ -366,7 +366,7 @@ const RegisterPage = () => {
       base.push('ico_type');
     }
     base.push('details');
-    if (formData.role === 'supplier' || formData.role === 'customer_supplier') {
+    if (formData.role === 'supplier') {
       base.push('categories');
       base.push('service_areas');
       base.push('portfolio');
@@ -551,9 +551,8 @@ const RegisterPage = () => {
           <div className="space-y-4">
             <p className="text-zinc-600 dark:text-zinc-400 mb-6">Jak chcete platformu používat?</p>
             {[
-              { value: 'customer', label: 'Zákazník', desc: 'Hledám řemeslníky a služby', price: '199 Kč/měsíc', Icon: User },
-              { value: 'supplier', label: 'Dodavatel', desc: 'Nabízím své služby', price: '299 Kč/měsíc', Icon: Briefcase },
-              { value: 'customer_supplier', label: 'Zákazník i dodavatel', desc: 'Hledám i nabízím služby', price: '399 Kč/měsíc', Icon: Buildings },
+              { value: 'customer', label: 'Zákazník', desc: 'Hledám řemeslníky a služby', price: 'ZDARMA', Icon: User },
+              { value: 'supplier', label: 'Dodavatel', desc: 'Nabízím své služby', price: 'od 190 Kč/měsíc', Icon: Briefcase },
             ].map(({ value, label, desc, price, Icon }) => (
               <button key={value} type="button"
                 onClick={() => setFormData(prev => ({ ...prev, role: value, account_type: '', has_ico: null }))}
