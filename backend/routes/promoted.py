@@ -73,7 +73,7 @@ async def create_promoted_supplier(data: PromotedSupplierCreate):
 
 @router.post("/promoted-suppliers/{supplier_id}/create-checkout")
 async def create_promo_checkout(supplier_id: str):
-    """Create Stripe checkout for promoted supplier (300 CZK + 21% DPH = 363 CZK)"""
+    """Create Stripe checkout for promoted supplier (300 CZK/rok + 21% DPH = 363 CZK)"""
     import os
     import stripe
     
@@ -97,7 +97,7 @@ async def create_promo_checkout(supplier_id: str):
                     "currency": "czk",
                     "product_data": {
                         "name": f"CraftBolt Reklamní banner — {supplier['company_name']}",
-                        "description": "Reklamní banner na hlavní stránce CraftBolt na 1 den",
+                        "description": "Reklamní banner na hlavní stránce CraftBolt na 1 rok",
                     },
                     "unit_amount": 36300,  # 363 CZK (300 + 21% DPH) in hellers
                 },
@@ -128,9 +128,8 @@ async def activate_promoted_supplier(supplier_id: str):
         raise HTTPException(status_code=404, detail="Reklamní banner nenalezen")
     
     now = datetime.now(timezone.utc)
-    # Set paid_until to end of tomorrow (gives full day)
-    from datetime import timedelta
-    paid_until = (now + timedelta(days=1)).replace(hour=23, minute=59, second=59)
+    # Set paid_until to 1 year from now
+    paid_until = (now + timedelta(days=365)).replace(hour=23, minute=59, second=59)
     
     await db.promoted_suppliers.update_one(
         {"id": supplier_id},
@@ -220,7 +219,7 @@ async def admin_deactivate_promoted(supplier_id: str, current_user: dict = Depen
 
 @router.put("/admin/promoted/{supplier_id}/extend")
 async def admin_extend_promoted(supplier_id: str, current_user: dict = Depends(get_current_user)):
-    """Admin: extend a promoted supplier by 1 day"""
+    """Admin: extend a promoted supplier by 1 year"""
     if current_user["role"] != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin only")
     
@@ -238,7 +237,7 @@ async def admin_extend_promoted(supplier_id: str, current_user: dict = Depends(g
     except (ValueError, AttributeError):
         base = now
     
-    new_until = (base + timedelta(days=1)).replace(hour=23, minute=59, second=59)
+    new_until = (base + timedelta(days=365)).replace(hour=23, minute=59, second=59)
     
     await db.promoted_suppliers.update_one(
         {"id": supplier_id},

@@ -24,7 +24,14 @@ async def create_subscription_checkout(request: Request, data: CreateCheckoutReq
     if data.plan_id not in SUBSCRIPTION_PLANS:
         raise HTTPException(status_code=400, detail="Neplatný tarif")
     
+    if data.billing_period not in ("monthly", "annual"):
+        raise HTTPException(status_code=400, detail="Neplatné fakturační období")
+    
     plan = SUBSCRIPTION_PLANS[data.plan_id]
+    price = plan["price_annual"] if data.billing_period == "annual" else plan["price_monthly"]
+    period_label = "roční" if data.billing_period == "annual" else "měsíční"
+    period_days = 365 if data.billing_period == "annual" else 30
+    
     stripe_api_key = os.environ.get('STRIPE_API_KEY')
     if not stripe_api_key:
         raise HTTPException(status_code=500, detail="Stripe není nakonfigurován")
@@ -38,14 +45,16 @@ async def create_subscription_checkout(request: Request, data: CreateCheckoutReq
     
     try:
         checkout_request = CheckoutSessionRequest(
-            amount=plan["price"], currency="czk",
+            amount=price, currency="czk",
             success_url=success_url, cancel_url=cancel_url,
             metadata={
                 "user_id": current_user["id"],
                 "user_email": current_user["email"],
                 "plan_id": data.plan_id,
-                "plan_name": plan["name"],
-                "subscription_type": "monthly_recurring",
+                "plan_name": f"{plan['name']} ({period_label})",
+                "billing_period": data.billing_period,
+                "period_days": str(period_days),
+                "subscription_type": f"{data.billing_period}_recurring",
                 "trial_days": str(plan["trial_days"])
             }
         )
@@ -58,16 +67,18 @@ async def create_subscription_checkout(request: Request, data: CreateCheckoutReq
             "user_id": current_user["id"],
             "user_email": current_user["email"],
             "plan_id": data.plan_id,
-            "plan_name": plan["name"],
-            "amount": plan["price"],
+            "plan_name": f"{plan['name']} ({period_label})",
+            "billing_period": data.billing_period,
+            "period_days": period_days,
+            "amount": price,
             "currency": "CZK",
             "payment_status": "pending",
-            "subscription_type": "monthly_recurring",
+            "subscription_type": f"{data.billing_period}_recurring",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.payment_transactions.insert_one(transaction)
         
-        logger.info(f"Subscription checkout created for {current_user['email']}, plan: {data.plan_id}")
+        logger.info(f"Subscription checkout created for {current_user['email']}, plan: {data.plan_id}, period: {data.billing_period}")
         return {"url": session.url, "session_id": session.session_id}
         
     except Exception as e:
@@ -98,12 +109,14 @@ async def get_subscription_status(request: Request, session_id: str, current_use
         )
         
         if status.payment_status == "paid" and transaction.get("payment_status") != "paid":
-            next_billing = datetime.now(timezone.utc) + timedelta(days=30)
+            period_days = transaction.get("period_days", 30)
+            next_billing = datetime.now(timezone.utc) + timedelta(days=period_days)
             await db.users.update_one(
                 {"id": transaction["user_id"]},
                 {"$set": {
                     "subscription_active": True,
                     "subscription_plan": transaction["plan_id"],
+                    "subscription_billing_period": transaction.get("billing_period", "monthly"),
                     "subscription_status": "active",
                     "subscription_current_period_end": next_billing.isoformat(),
                     "subscription_started_at": datetime.now(timezone.utc).isoformat(),
@@ -184,7 +197,7 @@ async def stripe_webhook(request: Request):
                     {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
                 )
                 
-                next_billing = datetime.now(timezone.utc) + timedelta(days=30)
+                next_billing = datetime.now(timezone.utc) + timedelta(days=transaction.get("period_days", 30))
                 await db.users.update_one(
                     {"id": transaction["user_id"]},
                     {"$set": {

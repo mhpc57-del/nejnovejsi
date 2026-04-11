@@ -249,6 +249,7 @@ class TrustScoreUpdate(BaseModel):
 
 class CreateCheckoutRequest(BaseModel):
     plan_id: str
+    billing_period: str = "monthly"  # "monthly" or "annual"
     origin_url: str
 
 
@@ -395,21 +396,24 @@ CATEGORIES = sorted(
 SUBSCRIPTION_PLANS = {
     "zakaznik": {
         "name": "Zákazník",
-        "price": 199.0,
+        "price_monthly": 99.0,
+        "price_annual": 1069.0,
         "description": "Neomezený počet zadání, výběr z ověřených dodavatelů",
         "role": "customer",
         "trial_days": 14
     },
     "dodavatel": {
         "name": "Dodavatel",
-        "price": 299.0,
+        "price_monthly": 199.0,
+        "price_annual": 2149.0,
         "description": "Neomezený přístup k zakázkám, ověřený profil",
         "role": "supplier",
         "trial_days": 14
     },
     "zakaznik_dodavatel": {
         "name": "Zákazník i Dodavatel",
-        "price": 399.0,
+        "price_monthly": 299.0,
+        "price_annual": 3229.0,
         "description": "Kompletní přístup — zadávání i přijímání zakázek",
         "role": "customer_supplier",
         "trial_days": 14

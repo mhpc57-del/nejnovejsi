@@ -155,6 +155,7 @@ const PricingPage = () => {
   const [plans, setPlans] = useState({});
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState(null);
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
   const { token, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -185,6 +186,7 @@ const PricingPage = () => {
         `${API}/subscription/checkout`,
         {
           plan_id: planId,
+          billing_period: billingPeriod === 'yearly' ? 'annual' : 'monthly',
           origin_url: window.location.origin
         },
         {
@@ -265,9 +267,22 @@ const PricingPage = () => {
           <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mt-2 mb-4">
             Jednoduchý a férový ceník.
           </h1>
-          <p className="text-zinc-600 text-lg">
+          <p className="text-zinc-600 text-lg mb-6">
             Vyberte si tarif podle toho, zda hledáte řemeslníka, nabízíte služby, nebo obojí.
           </p>
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-3" data-testid="pricing-billing-toggle">
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>Měsíčně</span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+              className="relative w-14 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full transition-colors"
+            >
+              <div className={`absolute top-1 w-5 h-5 bg-orange-500 rounded-full transition-all duration-200 ${billingPeriod === 'yearly' ? 'left-8' : 'left-1'}`} />
+            </button>
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'yearly' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
+              Ročně <span className="text-orange-500 font-bold">-10%</span>
+            </span>
+          </div>
         </div>
 
         {loading ? (
@@ -303,9 +318,27 @@ const PricingPage = () => {
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline mb-1">
-                    <span className="text-4xl font-bold text-zinc-900 dark:text-white">{plan.price}</span>
-                    <span className="text-zinc-500 ml-2 text-sm">Kč/měsíc bez DPH</span>
+                    <span className="text-sm text-zinc-500 mr-1">od</span>
+                    <span className="text-4xl font-bold text-zinc-900 dark:text-white">
+                      {billingPeriod === 'yearly'
+                        ? Math.round(plan.price_annual).toLocaleString('cs-CZ')
+                        : Math.round(plan.price_monthly)
+                      }
+                    </span>
+                    <span className="text-zinc-500 ml-2 text-sm">
+                      {billingPeriod === 'yearly' ? 'Kč/rok' : 'Kč/měsíc'}
+                    </span>
                   </div>
+                  {billingPeriod === 'yearly' && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-zinc-400 line-through text-sm">
+                        {Math.round(plan.price_monthly * 12).toLocaleString('cs-CZ')} Kč
+                      </span>
+                      <span className="text-orange-500 text-xs font-bold">
+                        UŠETŘÍTE {Math.round(plan.price_monthly * 12 - plan.price_annual).toLocaleString('cs-CZ')} Kč
+                      </span>
+                    </div>
+                  )}
                   <p className="text-orange-500 text-sm mb-5">{plan.trial_days} dní zdarma na vyzkoušení</p>
 
                   <ul className="space-y-2.5 mb-6 flex-1">
