@@ -174,87 +174,66 @@ const HeroSection = () => {
   return (
     <section className="relative bg-stone-50 dark:bg-zinc-900 overflow-hidden" data-testid="hero-section">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-10 md:pt-36 md:pb-14 relative">
-        {/* Main 2-column layout: left content + right photo */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
-          {/* Left — Titles + Category grid + CTA */}
-          <div className="lg:col-span-5">
-            {/* Titles */}
-            <div className="mb-8">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+          {/* === Block 1: Title (always first) === */}
+          <div className="lg:col-span-5 order-1">
+            <div className="mb-2 lg:mb-8">
               <h1
-                className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
+                className="hidden lg:block text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
                 style={{ fontFamily: 'Outfit' }}
                 data-testid="hero-title"
               >
                 Portál pro vkládání poptávek
               </h1>
               <p
-                className="text-3xl sm:text-4xl md:text-5xl text-orange-500 font-bold mt-2"
+                className="text-3xl sm:text-4xl md:text-5xl text-orange-500 font-bold"
                 style={{ fontFamily: 'Outfit' }}
               >
                 Jednoduše, rychle, spolehlivě
               </p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-testid="hero-categories">
-              {categories.map((cat, i) => {
-                const isActive = i === activeIndex;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleSelect(i)}
-                    className={`relative flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
-                      isActive
-                        ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
-                        : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
-                    }`}
-                    data-testid={`hero-cat-${i}`}
-                  >
-                    {renderIcon(cat, isActive, 'w-7 h-7')}
-                    <span
-                      className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${
-                        isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'
+
+            {/* Desktop only: categories + CTA inline */}
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-4 gap-2" data-testid="hero-categories-desktop">
+                {categories.map((cat, i) => {
+                  const isActive = i === activeIndex;
+                  return (
+                    <button key={i} onClick={() => handleSelect(i)}
+                      className={`relative flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                        isActive
+                          ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
+                          : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
                       }`}
+                      data-testid={`hero-cat-${i}`}
                     >
-                      {cat.label}
-                    </span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeDot"
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-orange-500"
-                      />
-                    )}
-                  </button>
-                );
-              })}
+                      {renderIcon(cat, isActive, 'w-7 h-7')}
+                      <span className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'}`}>
+                        {cat.label}
+                      </span>
+                      {isActive && <motion.div layoutId="activeDot" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-6">
+                <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="hero-register-btn">
+                  Přidat poptávku
+                  <ArrowRight weight="bold" className="w-4 h-4" />
+                </Link>
+              </div>
+              <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+                Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
+              </p>
             </div>
-
-            {/* CTA Button */}
-            <div className="mt-6">
-              <Link
-                to="/registrace"
-                className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm"
-                data-testid="hero-register-btn"
-              >
-                Přidat poptávku
-                <ArrowRight weight="bold" className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Orange description text */}
-            <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
-              Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
-            </p>
           </div>
 
-          {/* Right — Photo with overlay OR 3x3 Grid */}
-          <div className="lg:col-span-7">
+          {/* === Block 2: Photo/Grid (mobile: 2nd, desktop: right column) === */}
+          <div className="lg:col-span-7 order-2">
             <AnimatePresence mode="wait">
               {isExtraGrid ? (
-                <motion.div
-                  key="extra-grid"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
+                <motion.div key="extra-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
                   className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 flex flex-col justify-center"
                   data-testid="extra-categories-grid"
                 >
@@ -265,38 +244,23 @@ const HeroSection = () => {
                     {extraCategories.map((cat, i) => {
                       const Icon = cat.icon;
                       return (
-                        <div
-                          key={i}
+                        <div key={i}
                           className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-orange-400 hover:shadow-md transition-all duration-200 cursor-default"
                           data-testid={`extra-cat-${i}`}
                         >
                           <Icon className="w-6 h-6 text-orange-500" strokeWidth={2} />
-                          <span className="text-[11px] font-semibold text-orange-500 dark:text-orange-400 text-center leading-tight">
-                            {cat.label}
-                          </span>
+                          <span className="text-[11px] font-semibold text-orange-500 dark:text-orange-400 text-center leading-tight">{cat.label}</span>
                         </div>
                       );
                     })}
                   </div>
                 </motion.div>
               ) : (
-                <motion.div
-                  key={activeIndex}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                <motion.div key={activeIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}
                   className="relative rounded-2xl overflow-hidden"
                 >
-                  <img
-                    src={active.image}
-                    alt={active.label}
-                    className="w-full object-cover"
-                    data-testid="hero-active-image"
-                  />
-                  {/* Gradient overlay */}
+                  <img src={active.image} alt={active.label} className="w-full object-cover" data-testid="hero-active-image" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  {/* Category label + icon inside image */}
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
@@ -305,11 +269,7 @@ const HeroSection = () => {
                           : <active.icon weight="fill" className="w-5 h-5 text-white" />
                         }
                       </div>
-                      <span
-                        className="text-white font-bold text-lg md:text-xl"
-                        style={{ fontFamily: 'Outfit' }}
-                        data-testid="hero-active-label"
-                      >
+                      <span className="text-white font-bold text-lg md:text-xl" style={{ fontFamily: 'Outfit' }} data-testid="hero-active-label">
                         {active.label}
                       </span>
                     </div>
@@ -318,6 +278,41 @@ const HeroSection = () => {
               )}
             </AnimatePresence>
           </div>
+
+          {/* === Block 3: Mobile-only categories + CTA (after photo) === */}
+          <div className="lg:hidden order-3 col-span-full">
+            <div className="grid grid-cols-2 gap-2" data-testid="hero-categories">
+              {categories.map((cat, i) => {
+                const isActive = i === activeIndex;
+                return (
+                  <button key={i} onClick={() => handleSelect(i)}
+                    className={`relative flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      isActive
+                        ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
+                        : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
+                    }`}
+                    data-testid={`hero-cat-mobile-${i}`}
+                  >
+                    {renderIcon(cat, isActive, 'w-7 h-7')}
+                    <span className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'}`}>
+                      {cat.label}
+                    </span>
+                    {isActive && <motion.div layoutId="activeDotMobile" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-6">
+              <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 text-sm" data-testid="hero-register-btn-mobile">
+                Přidat poptávku
+                <ArrowRight weight="bold" className="w-4 h-4" />
+              </Link>
+            </div>
+            <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed" style={{ fontFamily: 'Outfit' }}>
+              Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
+            </p>
+          </div>
+
         </div>
 
         {/* Micro features */}
