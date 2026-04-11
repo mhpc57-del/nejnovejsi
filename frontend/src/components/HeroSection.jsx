@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wall, Lightning, Drop, Fire, PlusCircle, ArrowRight,
-  ChatCircle, CurrencyCircleDollar, Broadcast, Broom
+  ChatCircle, CurrencyCircleDollar, Broadcast
 } from '@phosphor-icons/react';
-import { Drill, PaintRoller } from 'lucide-react';
+import { Drill, PaintRoller, SprayCan } from 'lucide-react';
 
 const categories = [
   {
@@ -21,10 +21,10 @@ const categories = [
     isLucide: true,
   },
   {
-    icon: Broom,
+    icon: SprayCan,
     label: 'Úklidové práce',
     image: '/hero/uklizecka.png',
-    isLucide: false,
+    isLucide: true,
   },
   {
     icon: Wall,
@@ -133,7 +133,7 @@ const HeroSection = () => {
                       className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${
                         isActive
                           ? 'text-zinc-900'
-                          : 'text-zinc-600 dark:text-white/80 group-hover:text-zinc-900 dark:group-hover:text-white'
+                          : 'text-orange-500'
                       }`}
                     >
                       {cat.label}
@@ -162,7 +162,7 @@ const HeroSection = () => {
             </div>
 
             {/* Orange description text */}
-            <p className="text-orange-500 italic text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+            <p className="text-orange-500 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
               Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
             </p>
           </div>
@@ -200,7 +200,7 @@ const HeroSection = () => {
         {/* Micro features: mobilní aplikace label + features */}
         <div className="mt-10">
           <p className="text-xs font-bold text-zinc-900 dark:text-white tracking-wider uppercase text-center mb-3">
-            od 99 Kč měsíčně
+            mobilní aplikace
           </p>
           <div className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
             {[
