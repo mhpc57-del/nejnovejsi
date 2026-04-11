@@ -44,7 +44,8 @@ class EmailService:
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None
+        text_content: Optional[str] = None,
+        attachments: Optional[list] = None
     ) -> bool:
         """Send an email using SMTP with daily limit protection"""
         global _daily_email_count, _daily_email_date
@@ -64,15 +65,25 @@ class EmailService:
             return False
             
         try:
-            message = MIMEMultipart("alternative")
+            message = MIMEMultipart("mixed")
             message["Subject"] = subject
             message["From"] = f"{self.from_name} <{self.from_email}>"
             message["To"] = to_email
             
-            # Add text and HTML parts
+            # Add HTML/text body
+            body_part = MIMEMultipart("alternative")
             if text_content:
-                message.attach(MIMEText(text_content, "plain", "utf-8"))
-            message.attach(MIMEText(html_content, "html", "utf-8"))
+                body_part.attach(MIMEText(text_content, "plain", "utf-8"))
+            body_part.attach(MIMEText(html_content, "html", "utf-8"))
+            message.attach(body_part)
+            
+            # Add attachments
+            if attachments:
+                from email.mime.application import MIMEApplication
+                for att in attachments:
+                    part = MIMEApplication(att['data'], Name=att['filename'])
+                    part['Content-Disposition'] = f'attachment; filename="{att["filename"]}"'
+                    message.attach(part)
             
             await aiosmtplib.send(
                 message,

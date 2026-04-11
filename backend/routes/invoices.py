@@ -47,6 +47,9 @@ async def create_invoice_for_payment(transaction: dict) -> dict:
     customer_name = user.get("company_name") or f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or user.get("email", "")
     customer_address = user.get("address") or user.get("permanent_address") or ""
     
+    plan_name = transaction.get('plan_name', 'Měsíční')
+    item_desc = 'Předplatné CraftBolt — ' + plan_name
+    
     invoice = {
         "id": str(uuid.uuid4()),
         "invoice_number": invoice_number,
@@ -54,6 +57,11 @@ async def create_invoice_for_payment(transaction: dict) -> dict:
         "user_email": transaction["user_email"],
         "transaction_id": transaction.get("id", ""),
         "session_id": transaction.get("session_id", ""),
+        "issue_date": now.strftime("%Y-%m-%d"),
+        "tax_date": now.strftime("%Y-%m-%d"),
+        "due_date": now.strftime("%Y-%m-%d"),
+        "variable_symbol": invoice_number.replace("FV", ""),
+        "payment_method": 'Platební karta (Stripe)',
         "customer": {
             "name": customer_name,
             "email": user.get("email", ""),
@@ -62,7 +70,7 @@ async def create_invoice_for_payment(transaction: dict) -> dict:
             "dic": user.get("dic", ""),
         },
         "items": [{
-            "description": f"Predplatne CraftBolt - {transaction.get('plan_name', 'Mesicni')}",
+            "description": item_desc,
             "quantity": 1,
             "unit_price": amount,
             "vat_rate": vat_rate,
@@ -74,11 +82,6 @@ async def create_invoice_for_payment(transaction: dict) -> dict:
         "vat_amount": vat_amount,
         "total": amount,
         "currency": "CZK",
-        "issue_date": now.strftime("%Y-%m-%d"),
-        "tax_date": now.strftime("%Y-%m-%d"),
-        "due_date": now.strftime("%Y-%m-%d"),  # Already paid
-        "variable_symbol": invoice_number.replace("FV", ""),
-        "payment_method": "Platebni karta (Stripe)",
         "payment_status": "paid",
         "plan_id": transaction.get("plan_id", ""),
         "plan_name": transaction.get("plan_name", ""),
@@ -89,26 +92,30 @@ async def create_invoice_for_payment(transaction: dict) -> dict:
     
     logger.info(f"Invoice created: {invoice_number} for {transaction['user_email']}")
     
-    # Send invoice email
+    # Send invoice email with PDF attachment
     try:
         pdf_bytes = generate_invoice_pdf(invoice)
         await notification_service.email_service.send_email(
             transaction["user_email"],
-            f"CraftBolt — Faktura {invoice_number}",
+            f"CraftBolt \u2014 Faktura {invoice_number}",
             notification_service.templates.email_base(f"""
-                <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Faktura za predplatne CraftBolt</h2>
-                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobry den,</p>
+                <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Faktura za p\u0159edplatn\u00e9 CraftBolt</h2>
+                <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">Dobr\u00fd den,</p>
                 <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
-                    Dekujeme za vasi platbu. V priloze najdete fakturu cislo <strong>{invoice_number}</strong>.
+                    D\u011bkujeme za Va\u0161i platbu. V p\u0159\u00edloze najdete fakturu \u010d\u00edslo <strong>{invoice_number}</strong>.
                 </p>
                 <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; margin: 0 0 24px 0; border-radius: 0 8px 8px 0;">
-                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a;">Castka: {amount:,.0f} Kc</p>
-                    <p style="margin: 0; color: #4b5563;">Plan: {transaction.get('plan_name', '-')}</p>
+                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a;">\u010c\u00e1stka: {amount:,.0f} K\u010d</p>
+                    <p style="margin: 0; color: #4b5563;">Tarif: {transaction.get('plan_name', '-')}</p>
                 </div>
                 <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
-                    Fakturu si muzete take stahnout ve svem uctu na platforme CraftBolt.
+                    Fakturu si m\u016f\u017eete tak\u00e9 st\u00e1hnout ve sv\u00e9m \u00fa\u010dtu na platform\u011b CraftBolt.
                 </p>
-            """, f"Faktura {invoice_number}")
+            """, f"Faktura {invoice_number}"),
+            attachments=[{
+                'data': pdf_bytes,
+                'filename': f'{invoice_number}.pdf'
+            }]
         )
     except Exception as e:
         logger.error(f"Failed to send invoice email: {e}")
