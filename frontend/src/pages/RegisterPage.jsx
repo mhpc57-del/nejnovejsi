@@ -299,11 +299,35 @@ const RegisterPage = () => {
     }
   };
 
+  // Compress image before upload (avoids proxy size limits on production)
+  const compressImage = (file, maxWidth = 1200, quality = 0.8) => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) { resolve(file); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Check file size client-side (25MB)
     if (file.size > 25 * 1024 * 1024) {
       setError(`Soubor je příliš velký (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 25 MB.`);
       return;
@@ -312,9 +336,9 @@ const RegisterPage = () => {
     setUploadingPhoto(true);
     setError('');
     try {
+      const compressed = await compressImage(file);
       const fd = new FormData();
-      fd.append('file', file);
-      // Use public upload endpoint (no auth needed during registration)
+      fd.append('file', compressed);
       const response = await axios.post(`${API}/upload/public`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -342,8 +366,9 @@ const RegisterPage = () => {
         continue;
       }
       try {
+        const compressed = await compressImage(file);
         const fd = new FormData();
-        fd.append('file', file);
+        fd.append('file', compressed);
         const response = await axios.post(`${API}/upload/public`, fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });

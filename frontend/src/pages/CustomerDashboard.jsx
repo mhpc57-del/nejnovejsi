@@ -595,6 +595,31 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
     }
   };
 
+  // Compress image before upload
+  const compressImage = (file, maxWidth = 1200, quality = 0.8) => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) { resolve(file); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle image upload
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -606,8 +631,9 @@ const NewDemandModal = ({ onClose, onSuccess, token }) => {
     setError('');
     for (const file of files) {
       try {
+        const compressed = await compressImage(file);
         const fd = new FormData();
-        fd.append('file', file);
+        fd.append('file', compressed);
         const response = await axios.post(`${API}/upload`, fd, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
         });
