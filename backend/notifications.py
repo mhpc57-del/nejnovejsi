@@ -111,8 +111,8 @@ class SMSService:
     def __init__(self):
         self.app_id = os.environ.get('BULKGATE_APP_ID', '')
         self.app_token = os.environ.get('BULKGATE_APP_TOKEN', '')
-        self.sender_id = os.environ.get('BULKGATE_SENDER_ID', 'CraftBolt')
-        self.sender_id_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', 'gText')
+        self.sender_id = os.environ.get('BULKGATE_SENDER_ID', 'gProfile')
+        self.sender_id_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', '18254')
         
         if self.app_id and self.app_token:
             logger.info(f"BulkGate SMS initialized (App ID: {self.app_id[:8]}...)")
@@ -152,8 +152,8 @@ class SMSService:
                 "application_token": self.app_token,
                 "number": to_phone,
                 "text": message,
-                "sender_id": self.sender_id_value,
-                "sender_id_value": self.sender_id,
+                "sender_id": self.sender_id,
+                "sender_id_value": self.sender_id_value,
             }
             
             response = requests.post(self.BULKGATE_URL, json=payload, timeout=15)
