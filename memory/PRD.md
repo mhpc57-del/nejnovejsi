@@ -1,34 +1,46 @@
-# CraftBolt - PRD & Architecture
+# CraftBolt.cz - PRD (Product Requirements Document)
 
-## Popis
-Servisni trziste CraftBolt.cz - React + Vite + FastAPI + MongoDB
+## Produkt
+Platforma pro propojení zákazníků s řemeslníky a dodavateli služeb v České republice.
 
-## Implementovano
-- JWT auth + email verifikace + zapomenute heslo
-- 3 role + admin, registrace (OSVC/Firma/Nepodnikatel), ARES
-- Dark mode, SMS (BulkGate), SMTP (Wedos), Stripe (199/299/399 Kc)
-- Poptavky s mapou, chat s read tracking, profily, certifikaty, service area
-- AI Chat (GPT), Quick Demand, Weather widget
-- Admin Panel: uzivatele, zakazky, kategorie, faktury, REKLAMA
-- Fakturacni system, Persistentni upload, SMS toggle
-- Kompletni UI/UX Redesign + Framer Motion
-- Homepage: oranzove slova, rocni cenovy prepinac, 8 karet TOPOVANI DODAVATELE
-- Mobilni navigace: Domu/Prehled/+/Profil/Vice drawer
-- Hero Slider: 13 profesionalnich fotek (uzivatel doda vlastni)
-- Welcome Modal pro nove uzivatele
-- YouTube embed: modestbranding, skryte anotace
-- **FAQ stranka (2026-04-11)**:
-  - /caste-dotazy — 5 castych dotazu s odrazkami (accordion)
-  - Odkaz v paticce homepage
-  - Dotazy: zpoplatneni, responzivita, email, poloha, neaktivni dodavatel
+## Tech Stack
+- **Frontend**: React (CRA), Tailwind CSS, Vite-compatible
+- **Backend**: FastAPI, MongoDB
+- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS (čeká na klíče), Stripe (test mode), Wedos SMTP
+- **Mapy**: Photon/Nominatim geocoding, Leaflet
 
-## Architektura
-- Frontend: React + Vite + Tailwind CSS + Framer Motion (/app/frontend)
-- Backend: FastAPI + MongoDB (/app/backend)
+## Implementované funkce
+- JWT autentizace (admin/customer/supplier/customer_supplier)
+- 4-krokový registrační wizard s emailovou verifikací (Wedos SMTP)
+- Reset hesla
+- CRUD poptávek (demands) s fotkami, mapou, kategorií
+- Chat/zprávy v poptávkách s přílohami
+- Cenové návrhy a potvrzení
+- Fakturace (PDF/XML/ISDOC, ZIP export)
+- Stripe platby (test mode, 199/299/399 Kč – čeká na finální nastavení)
+- Promoted Suppliers (reklamní karty) s admin dashboardem
+- AI Chat asistent (GPT-4o)
+- Dark Mode
+- Mobile navigace (bottom bar + drawer menu)
+- Welcome Modal pro nové uživatele
+- FAQ stránka
+- Cookie consent
+- SMS notifikace toggle (BulkGate – kód hotový, čeká na klíče)
+- Weather + Name day widget v headeru
+- **NOVÉ: Custom SVG logo (šestihranný šroub + oranžová přilba)** nasazeno na všech stránkách
+- **NOVÉ: Kompletní marketingový balíček loga** (SVG, PNG, JPG, social media profily, FB cover, favicon, print varianty)
+
+## Stav testování (Iterace 33)
+- Backend: 97% (35/36 testů)
+- Frontend: 95% (všechny hlavní toky funkční)
+- Bezpečnostní oprava: JWT klíč prodloužen na 32+ bajtů
+
+## Blokováno
+- P0: Stripe pricing restrukturalizace (čeká na uživatele)
+- P1: Hero slider fotky (uživatel připravuje)
+- P1: BulkGate SMS klíče (čeká na schválení)
 
 ## Backlog
-- P0: BulkGate SMS - ceka na schvaleni registrace
-- P0: Stripe reklamni karty - nastavit klic
-- P0: Hero slider fotky - uzivatel doda vlastni
-- P1: Stripe Live finalizace (ucetni)
-- P2: Wedos SMTP, Mobilni app
+- P2: Wedos SMTP monitoring
+- P2: React Native mobilní app (PAUSED)
+- P3: HomePage.jsx refaktoring (~900 řádků)

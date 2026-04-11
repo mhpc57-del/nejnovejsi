@@ -6,7 +6,7 @@ import jwt
 import bcrypt
 import os
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'craftbolt-secret-key-2026')
+JWT_SECRET = os.environ.get('JWT_SECRET', 'craftbolt-secret-key-2026-secure!')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
