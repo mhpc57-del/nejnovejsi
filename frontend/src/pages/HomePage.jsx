@@ -25,7 +25,7 @@ import {
   Play,
   Plus
 } from '@phosphor-icons/react';
-import HeroSlider from '../components/HeroSlider';
+import HeroSection from '../components/HeroSection';
 import StepsSlider from '../components/StepsSlider';
 import CraftBoltLogo from '../components/CraftBoltLogo';
 import ThemeToggle from '../components/ThemeToggle';
@@ -189,68 +189,7 @@ const HomePage = () => {
       </header>
 
       {/* ───── Hero ───── */}
-      <section className="relative pt-28 pb-24 md:pt-36 md:pb-32 px-6 md:px-12 overflow-hidden">
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-        
-        <div className="max-w-7xl mx-auto relative">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left — Text */}
-            <motion.div className="lg:col-span-6" initial="hidden" animate="visible" variants={staggerContainer}>
-              <motion.div variants={fadeUp} custom={0} className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-600 dark:text-orange-400 px-4 py-1.5 rounded-md text-xs font-bold tracking-[0.15em] uppercase">
-                  <Lightning weight="fill" className="w-3.5 h-3.5" />
-                  Bezkonkurenční platforma
-                </span>
-                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">pro malé i větší zakázky</span>
-              </motion.div>
-              <motion.p variants={fadeUp} custom={1} className="text-xs font-bold text-zinc-500 dark:text-zinc-500 tracking-[0.2em] uppercase mt-6 mb-4">
-                Poptávky — Nabídky — Služby
-              </motion.p>
-              <motion.h1 variants={fadeUp} custom={2} className="text-5xl sm:text-6xl font-semibold tracking-tighter leading-tight text-zinc-900 dark:text-white" style={{ fontFamily: 'Outfit' }}>
-                <span className="text-orange-500">Jednoduše,</span> rychle,{' '}
-                efektivně,{' '}
-                <span className="text-orange-500">spolehlivě.</span>
-              </motion.h1>
-              <motion.p variants={fadeUp} custom={3} className="text-lg text-zinc-500 dark:text-zinc-400 mt-6 leading-relaxed max-w-md">
-                Zadejte poptávku, nebo se registrujte jako dodavatel. Začněte teď hned.
-              </motion.p>
-              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-3 mt-10">
-                <Link to="/registrace" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-lg transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="hero-register-btn">
-                  Začít zdarma — 14 dní
-                  <ArrowRight weight="bold" className="w-4 h-4" />
-                </Link>
-                <button onClick={() => setShowQuickDemand(true)} className="inline-flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-orange-300 dark:hover:border-orange-700 text-zinc-700 dark:text-zinc-300 font-medium px-7 py-3.5 rounded-lg transition-all duration-200 text-sm" data-testid="quick-demand-btn">
-                  Rychlá poptávka bez registrace
-                </button>
-              </motion.div>
-
-              {/* Micro stats */}
-              <motion.div variants={fadeUp} custom={5} className="flex items-center gap-6 mt-12">
-                {[
-                  { icon: ChatCircle, label: 'SMS notifikace' },
-                  { icon: CurrencyDollar, label: 'od 199 Kč bez dalších poplatků' },
-                  { icon: Clock, label: 'RealTime sledování příjezdů' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center">
-                      <item.icon weight="duotone" className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{item.label}</span>
-                  </div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* Right — Slider */}
-            <motion.div className="lg:col-span-6" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}>
-              <div className="h-[380px] lg:h-[480px]">
-                <HeroSlider />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <HeroSection onQuickDemand={() => setShowQuickDemand(true)} />
 
       {/* ───── Platform Stats ───── */}
       {platformStats && (
@@ -261,23 +200,21 @@ const HomePage = () => {
                 { label: 'Zákazníci', value: platformStats.customers, color: 'bg-emerald-500', textColor: 'text-emerald-600', id: 'stat-customers' },
                 { label: 'Dodavatelé', value: platformStats.suppliers, color: 'bg-red-500', textColor: 'text-red-500', id: 'stat-suppliers' },
                 { label: 'Zákazníci/Dodavatelé', value: platformStats.customer_suppliers, color: 'bg-orange-500', textColor: 'text-orange-500', id: 'stat-both' },
+                { label: 'Online', value: platformStats.online || 0, color: 'bg-emerald-500', textColor: 'text-emerald-500', id: 'stat-online', isOnline: true },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-2.5" data-testid={stat.id}>
-                  <div className={`w-2 h-2 rounded-full ${stat.color}`} />
+                  {stat.isOnline ? (
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                    </span>
+                  ) : (
+                    <div className={`w-2.5 h-2.5 rounded-full ${stat.color}`} />
+                  )}
                   <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase tracking-wider font-medium">{stat.label}</span>
                   <span className={`text-base font-bold ${stat.textColor}`}>{stat.value}</span>
                 </div>
               ))}
-              {platformStats.online > 0 && (
-                <div className="flex items-center gap-2.5" data-testid="stat-online">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase tracking-wider font-medium">Online</span>
-                  <span className="text-base font-bold text-emerald-600">{platformStats.online}</span>
-                </div>
-              )}
             </div>
           </div>
         </section>
