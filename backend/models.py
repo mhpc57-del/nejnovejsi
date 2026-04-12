@@ -168,6 +168,8 @@ class DemandResponse(BaseModel):
     price_dispute_reason: Optional[str] = None
     supplier_radius: Optional[int] = None
     quotes: List[dict] = []
+    verified: bool = False
+    verified_at: Optional[str] = None
 
 
 class MessageCreate(BaseModel):
