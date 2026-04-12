@@ -61,15 +61,21 @@ const SupplierDashboard = () => {
   const [invoices, setInvoices] = useState([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [viewedDemands, setViewedDemands] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(`viewed_demands_${user?.id}`) || '[]'); } catch { return []; }
-  });
+  const [viewedDemands, setViewedDemands] = useState([]);
 
-  const markDemandViewed = (demandId) => {
+  const fetchViewedDemands = async () => {
+    try {
+      const res = await axios.get(`${API}/demands/viewed`, { headers: { Authorization: `Bearer ${token}` } });
+      setViewedDemands(res.data.demand_ids || []);
+    } catch { /* ignore */ }
+  };
+
+  const markDemandViewed = async (demandId) => {
     if (viewedDemands.includes(demandId)) return;
-    const updated = [...viewedDemands, demandId];
-    setViewedDemands(updated);
-    localStorage.setItem(`viewed_demands_${user?.id}`, JSON.stringify(updated));
+    setViewedDemands(prev => [...prev, demandId]);
+    try {
+      await axios.post(`${API}/demands/viewed/${demandId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    } catch { /* ignore */ }
   };
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
@@ -105,6 +111,7 @@ const SupplierDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchProfile();
+    fetchViewedDemands();
     // Sync pending payments (e.g. subscription that wasn't activated)
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })

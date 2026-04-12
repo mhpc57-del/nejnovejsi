@@ -13,6 +13,24 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/demands/viewed")
+async def get_viewed_demands(current_user: dict = Depends(get_current_user)):
+    """Get list of demand IDs that supplier has already viewed"""
+    record = await db.viewed_demands.find_one({"user_id": current_user["id"]}, {"_id": 0, "demand_ids": 1})
+    return {"demand_ids": record.get("demand_ids", []) if record else []}
+
+
+@router.post("/demands/viewed/{demand_id}")
+async def mark_demand_viewed(demand_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a demand as viewed by the supplier"""
+    await db.viewed_demands.update_one(
+        {"user_id": current_user["id"]},
+        {"$addToSet": {"demand_ids": demand_id}},
+        upsert=True
+    )
+    return {"status": "ok"}
+
+
 class QuickDemandCreate(BaseModel):
     first_name: str
     last_name: str
