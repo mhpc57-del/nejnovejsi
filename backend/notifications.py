@@ -354,8 +354,9 @@ class NotificationTemplates:
     # ============ NEW MESSAGE ============
     
     @staticmethod
-    def new_message_email(sender_name: str, demand_title: str, message_preview: str) -> tuple:
+    def new_message_email(sender_name: str, demand_title: str, message_preview: str, demand_id: str = "", recipient_role: str = "customer") -> tuple:
         """Email template for new chat message"""
+        dashboard_url = "https://craftbolt.cz/zakaznik" if recipient_role == "customer" else "https://craftbolt.cz/dodavatel"
         content = f"""
             <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Nová zpráva</h2>
             <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
@@ -369,8 +370,8 @@ class NotificationTemplates:
                     "{message_preview[:200]}{'...' if len(message_preview) > 200 else ''}"
                 </p>
             </div>
-            <a href="https://craftbolt.cz/dashboard" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                Odpovědět
+            <a href="{dashboard_url}?open_demand={demand_id}&chat=1" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Odpovědět v chatu
             </a>
         """
         subject = f"Nová zpráva od {sender_name}"
@@ -603,7 +604,7 @@ class NotificationService:
         if user and user.get("push_token"):
             await send_expo_push([user["push_token"]], "Nová nabídka", f"{supplier_name} nabízí služby na '{demand_title}'", {"type": "new_offer"})
     
-    async def notify_new_message(self, recipient_email: str, recipient_phone: Optional[str], sender_name: str, demand_title: str, message: str):
+    async def notify_new_message(self, recipient_email: str, recipient_phone: Optional[str], sender_name: str, demand_title: str, message: str, demand_id: str = "", recipient_role: str = "customer"):
         """Notify about new chat message (rate limited: max 1 per 15 min per conversation)"""
         cache_key = f"{recipient_email}:{demand_title}"
         now = datetime.now(timezone.utc).timestamp()
@@ -620,7 +621,7 @@ class NotificationService:
             return
         
         _chat_notification_cache[cache_key] = now
-        subject, html = self.templates.new_message_email(sender_name, demand_title, message)
+        subject, html = self.templates.new_message_email(sender_name, demand_title, message, demand_id, recipient_role)
         await self.email_service.send_email(recipient_email, subject, html)
         logger.info(f"Chat email sent to {recipient_email}")
         

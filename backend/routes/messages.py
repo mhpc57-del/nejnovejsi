@@ -99,12 +99,15 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
                 recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0, "email": 1, "phone": 1})
                 if recipient:
                     logger.info(f"Sending message notification to {recipient.get('email')}, phone={recipient.get('phone', 'NONE')}")
+                    recipient_role = "supplier" if recipient_id == demand.get("assigned_supplier_id") else "customer"
                     await notification_service.notify_new_message(
                         recipient_email=recipient["email"],
                         recipient_phone=recipient.get("phone"),
                         sender_name=sender_display,
                         demand_title=demand["title"],
-                        message=message_data.content
+                        message=message_data.content,
+                        demand_id=message_data.demand_id,
+                        recipient_role=recipient_role
                     )
                 else:
                     logger.warning(f"Recipient {recipient_id} not found in DB for message notification")

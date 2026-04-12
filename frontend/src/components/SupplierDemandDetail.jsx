@@ -38,6 +38,8 @@ const DISPUTE_OPTIONS = [
   { key: 'b', label: 'Přijel jsem na určené místo, ale zákazník neotevřel dveře, nebo jsem se nemohl dostat přes uzamčený plot.' },
   { key: 'c', label: 'Místo práce je nedostupné, nebo jsou na staveništi překážky, které brání k zahájení nebo pokračování mojí práce.' },
   { key: 'd', label: 'Nemohl jsem se dostavit z náhlého důvodu (porucha vozidla, nemoc, výluka autobusu). Zákazníkovi se omluvím na online chatu a napíši náhradní termín.' },
+  { key: 'e', label: 'Zákazník neměl peníze na více práce.' },
+  { key: 'f', label: 'Jiný důvod — popíši vlastními slovy', hasCustomDescription: true },
 ];
 
 const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRefresh }) => {
@@ -209,13 +211,15 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   };
 
   const handleSubmitDispute = async () => {
-    if (!disputeDescription.trim()) { alert('Popište důvod'); return; }
     if (!disputeReason) { alert('Vyberte důvod'); return; }
-    if (disputeReason === 'a' && budgetFiles.length === 0) { alert('Přiložte rozpočet na více práce'); return; }
+    const selectedOpt = DISPUTE_OPTIONS.find(o => o.key === disputeReason);
+    if (selectedOpt?.hasCustomDescription && !disputeDescription.trim()) { alert('Popište situaci'); return; }
+    if (selectedOpt?.hasBudget && budgetFiles.length === 0) { alert('Přiložte rozpočet na více práce'); return; }
+    const desc = selectedOpt?.hasCustomDescription ? disputeDescription.trim() : selectedOpt?.label || '';
     setSubmittingDispute(true);
     try {
       await axios.post(`${API}/demands/${d.id}/dispute`, {
-        reason_type: disputeReason, description: disputeDescription.trim(),
+        reason_type: disputeReason, description: desc,
         photos: disputePhotos, budget_files: budgetFiles.map(f => f.url),
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Spor byl vytvořen a zákazník byl informován.');
@@ -233,6 +237,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   };
 
   if (showDisputeForm) {
+    const selectedOption = DISPUTE_OPTIONS.find(o => o.key === disputeReason);
     return (
       <div data-testid="dispute-form">
         <button onClick={() => { if (disputeStep === 2) setDisputeStep(1); else setShowDisputeForm(false); }} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors">
@@ -241,39 +246,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         {disputeStep === 1 && (
           <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-5">
             <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Zakázku nelze dodělat</h2>
-            <p className="text-sm text-zinc-500">Krok 1/2 — Popište problém</p>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Detailní popis problému *</label>
-              <textarea value={disputeDescription} onChange={e => setDisputeDescription(e.target.value)} rows={4} placeholder="Popište, co se stalo a proč zakázku nelze dokončit..."
-                className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white resize-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="dispute-description" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Fotografie (max. 20)</label>
-              <div className="flex gap-2 flex-wrap mb-2">
-                {disputePhotos.map((url, i) => (
-                  <div key={i} className="relative">
-                    <img src={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} alt="" className="w-20 h-20 object-cover rounded-lg border border-zinc-200" />
-                    <button onClick={() => setDisputePhotos(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"><X className="w-3 h-3" /></button>
-                  </div>
-                ))}
-              </div>
-              <label className="inline-flex items-center gap-2 px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
-                {uploadingDisputePhoto ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" /> : <Upload className="w-4 h-4" />}
-                Nahrát fotografie
-                <input type="file" accept="image/*" multiple onChange={handleUploadDisputePhoto} className="hidden" disabled={uploadingDisputePhoto} />
-              </label>
-              <span className="text-xs text-zinc-400 ml-2">{disputePhotos.length}/20</span>
-            </div>
-            <button onClick={() => { if (!disputeDescription.trim()) { alert('Popište důvod'); return; } setDisputeStep(2); }}
-              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="dispute-next-step">
-              Pokračovat — Vybrat důvod
-            </button>
-          </div>
-        )}
-        {disputeStep === 2 && (
-          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-5">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Jak chcete pokračovat?</h2>
-            <p className="text-sm text-zinc-500">Krok 2/2 — Vyberte možnost</p>
+            <p className="text-sm text-zinc-500">Krok 1/2 — Vyberte důvod</p>
             <div className="space-y-3">
               {DISPUTE_OPTIONS.map(opt => (
                 <label key={opt.key} className={`block p-4 border rounded-xl cursor-pointer transition-all ${disputeReason === opt.key ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300'}`}>
@@ -284,7 +257,26 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 </label>
               ))}
             </div>
-            {disputeReason === 'a' && (
+            <button onClick={() => { if (!disputeReason) { alert('Vyberte důvod'); return; } setDisputeStep(2); }}
+              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50" disabled={!disputeReason} data-testid="dispute-next-step">
+              Pokračovat
+            </button>
+          </div>
+        )}
+        {disputeStep === 2 && (
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-5">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Doplňující informace</h2>
+            <p className="text-sm text-zinc-500">Krok 2/2 — {selectedOption?.label}</p>
+            {/* Custom description for option "f" */}
+            {selectedOption?.hasCustomDescription && (
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Popište situaci vlastními slovy *</label>
+                <textarea value={disputeDescription} onChange={e => setDisputeDescription(e.target.value)} rows={4} placeholder="Popište, co se stalo a proč zakázku nelze dokončit..."
+                  className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white resize-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="dispute-description" />
+              </div>
+            )}
+            {/* Budget upload for option "a" */}
+            {selectedOption?.hasBudget && (
               <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-800 rounded-xl p-5">
                 <p className="text-sm font-bold text-orange-700 dark:text-orange-400 mb-3">Přiložte rozpočet na více práce *</p>
                 <div className="space-y-2 mb-3">
@@ -302,7 +294,25 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 </label>
               </div>
             )}
-            <button onClick={handleSubmitDispute} disabled={!disputeReason || submittingDispute}
+            {/* Photos */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Fotografie (volitelné, max. 20)</label>
+              <div className="flex gap-2 flex-wrap mb-2">
+                {disputePhotos.map((url, i) => (
+                  <div key={i} className="relative">
+                    <img src={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} alt="" className="w-20 h-20 object-cover rounded-lg border border-zinc-200" />
+                    <button onClick={() => setDisputePhotos(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"><X className="w-3 h-3" /></button>
+                  </div>
+                ))}
+              </div>
+              <label className="inline-flex items-center gap-2 px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+                {uploadingDisputePhoto ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" /> : <Upload className="w-4 h-4" />}
+                Nahrát fotografie
+                <input type="file" accept="image/*" multiple onChange={handleUploadDisputePhoto} className="hidden" disabled={uploadingDisputePhoto} />
+              </label>
+              <span className="text-xs text-zinc-400 ml-2">{disputePhotos.length}/20</span>
+            </div>
+            <button onClick={handleSubmitDispute} disabled={submittingDispute || (selectedOption?.hasCustomDescription && !disputeDescription.trim()) || (selectedOption?.hasBudget && budgetFiles.length === 0)}
               className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-colors" data-testid="dispute-submit">
               {submittingDispute ? 'Odesílám...' : 'Odeslat zákazníkovi'}
             </button>

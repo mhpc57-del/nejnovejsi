@@ -51,6 +51,7 @@ const CustomerDashboard = () => {
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [selectedDemand, setSelectedDemand] = useState(null);
+  const [unreadDemandIds, setUnreadDemandIds] = useState([]);
   const [profile, setProfile] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({});
@@ -84,10 +85,13 @@ const CustomerDashboard = () => {
   useEffect(() => {
     fetchDemands();
     fetchProfile();
-    // Sync any pending payments (e.g. demand verification that wasn't processed)
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) fetchDemands(); })
       .catch(() => {});
+    axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
+    const unreadInterval = setInterval(() => {
+      axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
+    }, 15000);
     
     // Handle verify_demand query param (from email link)
     const params = new URLSearchParams(window.location.search);
@@ -109,6 +113,7 @@ const CustomerDashboard = () => {
       // Clean URL
       window.history.replaceState({}, '', '/dashboard');
     }
+    return () => clearInterval(unreadInterval);
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -453,8 +458,11 @@ const CustomerDashboard = () => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {demandList.map(d => (
                 <button key={d.id} onClick={() => setSelectedDemand(d)}
-                  className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all group"
+                  className="relative bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all group"
                   data-testid={`demand-card-${d.id}`}>
+                  {unreadDemandIds.includes(d.id) && (
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full shadow-sm animate-pulse" data-testid="unread-badge">Zpráva</span>
+                  )}
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate flex-1">{d.title}</h3>
                     {d.verified && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded">Ověřená</span>}

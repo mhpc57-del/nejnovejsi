@@ -76,6 +76,7 @@ const SupplierDashboard = () => {
   const [showCustomCategoryForm, setShowCustomCategoryForm] = useState(false);
   const [submittingCustomCategory, setSubmittingCustomCategory] = useState(false);
   const [editingServiceAreas, setEditingServiceAreas] = useState(false);
+  const [unreadDemandIds, setUnreadDemandIds] = useState([]);
   const [viewedDemands, setViewedDemands] = useState([]);
 
   const fetchViewedDemands = async () => {
@@ -129,6 +130,10 @@ const SupplierDashboard = () => {
     fetchProfile();
     fetchViewedDemands();
     axios.get(`${API}/categories`).then(r => setAllCategories(r.data.categories || [])).catch(() => {});
+    axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
+    const unreadInterval = setInterval(() => {
+      axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
+    }, 15000);
     // Sync pending payments (e.g. subscription that wasn't activated)
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })
@@ -141,6 +146,7 @@ const SupplierDashboard = () => {
         }, () => {}
       );
     }
+    return () => clearInterval(unreadInterval);
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -702,12 +708,16 @@ const SupplierDashboard = () => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {demandList.map(d => {
                 const isNew = !viewedDemands.includes(d.id);
+                const hasUnread = unreadDemandIds.includes(d.id);
                 return (
                 <button key={d.id} onClick={() => { markDemandViewed(d.id); setSelectedDemand(d); }}
                   className="relative bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all"
                   data-testid={`supplier-demand-card-${d.id}`}>
                   {isNew && (
                     <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-sm" data-testid="new-badge">Nová</span>
+                  )}
+                  {hasUnread && !isNew && (
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full shadow-sm animate-pulse" data-testid="unread-badge">Zpráva</span>
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate flex-1">{d.title}</h3>

@@ -17,6 +17,8 @@ DISPUTE_REASONS = {
     "b": "Přijel jsem na určené místo, ale zákazník neotevřel dveře, nebo jsem se nemohl dostat přes uzamčený plot.",
     "c": "Místo práce je nedostupné, nebo jsou na staveništi překážky, které brání k zahájení nebo pokračování mojí práce.",
     "d": "Nemohl jsem se dostavit z náhlého důvodu (porucha vozidla, nemoc, výluka autobusu).",
+    "e": "Zákazník neměl peníze na více práce.",
+    "f": "Jiný důvod — vlastní popis.",
 }
 
 
