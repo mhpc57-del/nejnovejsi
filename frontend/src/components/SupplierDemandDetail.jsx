@@ -270,7 +270,10 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   return (
     <div data-testid="supplier-demand-detail">
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors"><X className="w-4 h-4" /> Zpět na seznam</button>
-      <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-4">
+      <div className={`${canChat && showChat ? 'grid lg:grid-cols-2 gap-4 items-start' : ''}`}>
+        {/* Left column - demand detail */}
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-4">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{d.title}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {getStatusBadge(d.status)}
@@ -391,47 +394,50 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           )}
         </div>
       </div>
-      {isVerified && d.latitude && d.longitude && (
-        <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
-          <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-            <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
-          </MapContainer>
+          {isVerified && d.latitude && d.longitude && (
+            <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
+              <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
+              </MapContainer>
+            </div>
+          )}
         </div>
-      )}
-      {canChat && showChat && (
-        <div className="mt-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden" data-testid="inline-chat">
-          <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
-            <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
-            {messages.length > 0 && <span className="text-xs text-zinc-400">({messages.length} zpráv)</span>}
-          </div>
-          <div className="h-72 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
-            {messages.length === 0 ? (
-              <p className="text-center text-zinc-400 text-sm py-8">Zatím žádné zprávy. Napište zákazníkovi.</p>
-            ) : messages.map((msg, i) => {
-              const isMine = msg.sender_id === userId;
-              return (
-                <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm ${isMine ? 'bg-orange-500 text-white rounded-br-md' : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-bl-md'}`}>
-                    <p className="leading-relaxed">{msg.content}</p>
-                    <p className={`text-[10px] mt-1 ${isMine ? 'text-orange-200' : 'text-zinc-400'}`}>{new Date(msg.created_at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}</p>
+        {/* Right column - chat */}
+        {canChat && showChat && (
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden sticky top-4" data-testid="inline-chat">
+            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
+              <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
+              {messages.length > 0 && <span className="text-xs text-zinc-400">({messages.length} zpráv)</span>}
+            </div>
+            <div className="h-[400px] overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
+              {messages.length === 0 ? (
+                <p className="text-center text-zinc-400 text-sm py-8">Zatím žádné zprávy. Napište zákazníkovi.</p>
+              ) : messages.map((msg, i) => {
+                const isMine = msg.sender_id === userId;
+                return (
+                  <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm ${isMine ? 'bg-orange-500 text-white rounded-br-md' : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-bl-md'}`}>
+                      <p className="leading-relaxed">{msg.content}</p>
+                      <p className={`text-[10px] mt-1 ${isMine ? 'text-orange-200' : 'text-zinc-400'}`}>{new Date(msg.created_at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className="p-3 border-t border-zinc-200 dark:border-zinc-700 flex gap-2">
+              <input value={chatMessage} onChange={e => setChatMessage(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                placeholder="Napište zprávu..." className="flex-1 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="chat-input" />
+              <button onClick={handleSendMessage} disabled={!chatMessage.trim() || sendingChat}
+                className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors" data-testid="chat-send-btn">
+                <PaperPlaneTilt weight="bold" className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div className="p-3 border-t border-zinc-200 dark:border-zinc-700 flex gap-2">
-            <input value={chatMessage} onChange={e => setChatMessage(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-              placeholder="Napište zprávu..." className="flex-1 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="chat-input" />
-            <button onClick={handleSendMessage} disabled={!chatMessage.trim() || sendingChat}
-              className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors" data-testid="chat-send-btn">
-              <PaperPlaneTilt weight="bold" className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
