@@ -215,7 +215,7 @@ async def create_demand(demand_data: DemandCreate, current_user: dict = Depends(
             "categories": demand_data.category,
             "is_blocked": {"$ne": True},
             "id": {"$ne": current_user["id"]}
-        }, {"_id": 0, "id": 1, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1}).to_list(200)
+        }, {"_id": 0, "id": 1, "email": 1, "phone": 1, "push_token": 1, "service_areas": 1, "sms_notifications": 1, "categories": 1}).to_list(200)
         
         logger.info(f"New demand '{demand_data.title}' category='{demand_data.category}': found {len(all_suppliers)} matching suppliers")
         

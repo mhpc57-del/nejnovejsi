@@ -1,0 +1,68 @@
+{
+  "summary": "Iteration 37: Verified two critical bug fixes - 1) Location sharing toggle now persists after navigation (location_sharing field added to user_to_response in helpers.py), 2) SMS notifications now sent to suppliers with sms_notifications=true (sms_notifications field added to MongoDB query projection in demands.py). All 10 backend tests passed. Frontend UI tests confirmed location sharing toggle persistence for both supplier and customer.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_location_sms_bugfixes.py",
+    "/app/test_reports/pytest/pytest_results_iteration37.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_location_sms_bugfixes.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "supplier": "info@acdcmont.cz / ACDCmont1132@",
+    "customer": "test-accept@test.cz / Test1234!"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both critical bugs are now fixed and verified: 1) Location sharing persistence - the location_sharing field is now included in user_to_response() in helpers.py line 49, so auth/me returns the correct value. Frontend auto-restores toggle state on demand detail load. 2) SMS to suppliers - sms_notifications field is now included in MongoDB query projection in demands.py line 218, so suppliers with sms_notifications=true receive SMS for new demands in their categories. Backend logs show successful SMS delivery via BulkGate API.",
+  "tests_executed": {
+    "backend_api_tests": [
+      "test_auth_me_returns_location_sharing_field - PASSED",
+      "test_enable_location_sharing_persists - PASSED",
+      "test_disable_location_sharing_persists - PASSED",
+      "test_location_sharing_toggle_cycle - PASSED",
+      "test_customer_location_sharing - PASSED",
+      "test_supplier_has_sms_notifications_field - PASSED",
+      "test_enable_sms_notifications - PASSED",
+      "test_create_demand_in_supplier_category - PASSED",
+      "test_user_response_contains_all_required_fields - PASSED",
+      "test_demand_creation_returns_success - PASSED"
+    ],
+    "frontend_ui_tests": [
+      "Supplier location sharing toggle persistence - PASSED (enable -> navigate away -> navigate back -> toggle still ON)",
+      "Customer location sharing toggle visible - PASSED",
+      "SMS notifications toggle in supplier profile - PASSED (toggle persists after navigation)",
+      "Mobile responsiveness - PASSED (horizontal scrollable tabs on 390x844 viewport)",
+      "K potvrzení tab shows pending_completion demands - PASSED"
+    ]
+  },
+  "bug_fixes_verified": {
+    "location_sharing_persistence": {
+      "status": "FIXED",
+      "root_cause": "location_sharing field was missing from user_to_response() in helpers.py",
+      "fix_location": "/app/backend/helpers.py line 49",
+      "verification": "auth/me now returns location_sharing:true after enabling, and location_sharing:false after disabling"
+    },
+    "sms_to_suppliers": {
+      "status": "FIXED",
+      "root_cause": "sms_notifications field was missing from MongoDB query projection in demands.py create_demand function",
+      "fix_location": "/app/backend/routes/demands.py line 218",
+      "verification": "Backend logs show 'Sending demand SMS to +420777123456' and 'Demand SMS to +420777123456: result=True' for supplier with sms_notifications=true"
+    }
+  }
+}

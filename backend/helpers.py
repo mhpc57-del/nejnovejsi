@@ -45,5 +45,6 @@ def user_to_response(user: dict) -> UserResponse:
         avg_arrival_minutes=user.get("avg_arrival_minutes"),
         preferred_languages=user.get("preferred_languages", []),
         branch_addresses=user.get("branch_addresses", []),
-        branches=user.get("branches", [])
+        branches=user.get("branches", []),
+        location_sharing=user.get("location_sharing", False)
     )
