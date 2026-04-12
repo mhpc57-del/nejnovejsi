@@ -5,8 +5,28 @@ import axios from 'axios';
 import {
   X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText, NavigationArrow
 } from '@phosphor-icons/react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+const blueIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const orangeMarkerIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+
+const haversineKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+};
 
 const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, userId }) => {
   const isDispute = d.status === 'dispute';
@@ -270,25 +290,35 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
           )}
         </div>
       </div>
-      {d.latitude && d.longitude && (
-        <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
-          <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-            <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
-          </MapContainer>
-        </div>
-      )}
-      {supplierLocation && (
-        <div className="mt-4">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Poloha dodavatele</p>
-          <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48">
-            <MapContainer center={[supplierLocation.latitude, supplierLocation.longitude]} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-              <Marker position={[supplierLocation.latitude, supplierLocation.longitude]}><Popup>Dodavatel</Popup></Marker>
-            </MapContainer>
+      {d.latitude && d.longitude && (() => {
+        const hasSupplier = supplierLocation?.latitude && supplierLocation?.longitude;
+        const center = hasSupplier
+          ? [(d.latitude + supplierLocation.latitude) / 2, (d.longitude + supplierLocation.longitude) / 2]
+          : [d.latitude, d.longitude];
+        const dist = hasSupplier ? haversineKm(d.latitude, d.longitude, supplierLocation.latitude, supplierLocation.longitude) : null;
+        return (
+          <div className="mt-4">
+            {dist !== null && (
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                Vzdálenost dodavatele: <span className="text-orange-500">{dist.toFixed(1)} km</span>
+              </p>
+            )}
+            <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-72">
+              <MapContainer center={center} zoom={hasSupplier ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}
+                bounds={hasSupplier ? [[d.latitude, d.longitude], [supplierLocation.latitude, supplierLocation.longitude]] : undefined} boundsOptions={{ padding: [50, 50] }}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo zakázky</strong><br/><small>{d.address}</small></Popup></Marker>
+                {hasSupplier && (
+                  <>
+                    <Marker position={[supplierLocation.latitude, supplierLocation.longitude]} icon={blueIcon}><Popup><strong>Dodavatel</strong></Popup></Marker>
+                    <Polyline positions={[[d.latitude, d.longitude], [supplierLocation.latitude, supplierLocation.longitude]]} pathOptions={{ color: '#f97316', weight: 2, dashArray: '8, 8' }} />
+                  </>
+                )}
+              </MapContainer>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
         </div>
         {/* Right column - chat */}
         {canChat && showChat && (

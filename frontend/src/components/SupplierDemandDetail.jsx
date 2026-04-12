@@ -5,8 +5,28 @@ import {
   X, Check, MapPin, Calendar, Clock, Warning, User, ChatCircle, PaperPlaneTilt, Briefcase,
   Upload, FileText
 } from '@phosphor-icons/react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+const blueIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+const orangeMarkerIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+
+const haversineKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+};
 
 const DISPUTE_OPTIONS = [
   { key: 'a', label: 'Zakázku dodělám, ale zákazník musí potvrdit rozpočet na více práce.', hasBudget: true },
@@ -419,25 +439,37 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           )}
         </div>
       </div>
-          {isVerified && d.latitude && d.longitude && (
-            <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
-              <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
-              </MapContainer>
-            </div>
-          )}
-          {customerLocation && (
-            <div className="mt-4">
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Poloha zákazníka</p>
-              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48">
-                <MapContainer center={[customerLocation.latitude, customerLocation.longitude]} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                  <Marker position={[customerLocation.latitude, customerLocation.longitude]}><Popup>Zákazník</Popup></Marker>
-                </MapContainer>
+          {isVerified && d.latitude && d.longitude && (() => {
+            const hasCustomer = customerLocation?.latitude && customerLocation?.longitude;
+            const bounds = hasCustomer
+              ? [[d.latitude, d.longitude], [customerLocation.latitude, customerLocation.longitude]]
+              : [[d.latitude, d.longitude]];
+            const center = hasCustomer
+              ? [(d.latitude + customerLocation.latitude) / 2, (d.longitude + customerLocation.longitude) / 2]
+              : [d.latitude, d.longitude];
+            const dist = hasCustomer ? haversineKm(d.latitude, d.longitude, customerLocation.latitude, customerLocation.longitude) : null;
+            return (
+              <div className="mt-4">
+                {dist !== null && (
+                  <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                    Vzdálenost: <span className="text-orange-500">{dist.toFixed(1)} km</span>
+                  </p>
+                )}
+                <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-72">
+                  <MapContainer center={center} zoom={hasCustomer ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true} bounds={hasCustomer ? bounds : undefined} boundsOptions={{ padding: [50, 50] }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                    <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo zakázky</strong><br/><small>{d.address}</small></Popup></Marker>
+                    {hasCustomer && (
+                      <>
+                        <Marker position={[customerLocation.latitude, customerLocation.longitude]} icon={blueIcon}><Popup><strong>Zákazník</strong></Popup></Marker>
+                        <Polyline positions={[[d.latitude, d.longitude], [customerLocation.latitude, customerLocation.longitude]]} pathOptions={{ color: '#f97316', weight: 2, dashArray: '8, 8' }} />
+                      </>
+                    )}
+                  </MapContainer>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
         {/* Right column - chat */}
         {canChat && showChat && (
