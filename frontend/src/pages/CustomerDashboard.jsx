@@ -431,6 +431,14 @@ const CustomerDashboard = () => {
               )}
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
+            
+            {/* Warning for unverified demands */}
+            {isUnverified && isOpen && (
+              <p className="text-red-600 dark:text-red-400 text-sm font-semibold leading-relaxed" data-testid="unverified-warning">
+                U neověřených poptávek dodavatelé neuvidí Vaše iniciály a online mapu. Nemohou také přiložit rozpočet. DOPORUČUJEME POPTÁVKU OVĚŘIT.
+              </p>
+            )}
+
             <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
               <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" /> {d.address}</span>
               <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" /> {new Date(d.created_at).toLocaleDateString('cs-CZ')}</span>
