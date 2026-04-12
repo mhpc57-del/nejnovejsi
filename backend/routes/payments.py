@@ -270,7 +270,24 @@ async def stripe_webhook(request: Request):
         if event_type == "checkout.session.completed":
             session = event["data"]["object"]
             session_id = session.get("id")
+            metadata = session.get("metadata", {})
             
+            # Handle promoted supplier activation
+            promoted_supplier_id = metadata.get("promoted_supplier_id")
+            if promoted_supplier_id:
+                supplier = await db.promoted_suppliers.find_one({"id": promoted_supplier_id}, {"_id": 0})
+                if supplier and not supplier.get("active"):
+                    duration = metadata.get("duration", supplier.get("duration", "day"))
+                    duration_days = int(metadata.get("duration_days", 1))
+                    now = datetime.now(timezone.utc)
+                    paid_until = (now + timedelta(days=duration_days)).replace(hour=23, minute=59, second=59)
+                    await db.promoted_suppliers.update_one(
+                        {"id": promoted_supplier_id},
+                        {"$set": {"active": True, "paid_until": paid_until.isoformat(), "activated_at": now.isoformat()}}
+                    )
+                    logger.info(f"Promoted supplier activated via webhook: {supplier.get('company_name')} until {paid_until.isoformat()}")
+            
+            # Handle payment transactions
             transaction = await db.payment_transactions.find_one({"session_id": session_id})
             if transaction and transaction.get("payment_status") != "paid":
                 await db.payment_transactions.update_one(

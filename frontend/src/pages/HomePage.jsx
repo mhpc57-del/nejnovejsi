@@ -41,9 +41,21 @@ const HomePage = () => {
     const params = new URLSearchParams(window.location.search);
     const promoSuccess = params.get('promo_success');
     if (promoSuccess) {
-      fetch(`${API}/promoted-suppliers/${promoSuccess}/activate`, { method: 'POST' })
-        .then(() => fetch(`${API}/promoted-suppliers`).then(r => r.json()).then(d => setPromotedSuppliers(d.suppliers || [])))
-        .catch(() => {});
+      // Activate promo banner + retry
+      const activatePromo = async (id, attempts = 3) => {
+        for (let i = 0; i < attempts; i++) {
+          try {
+            await fetch(`${API}/promoted-suppliers/${id}/activate`, { method: 'POST' });
+            const res = await fetch(`${API}/promoted-suppliers`);
+            const data = await res.json();
+            setPromotedSuppliers(data.suppliers || []);
+            return;
+          } catch (e) {
+            if (i < attempts - 1) await new Promise(r => setTimeout(r, 1000));
+          }
+        }
+      };
+      activatePromo(promoSuccess);
       window.history.replaceState({}, '', '/');
     }
     const interval = setInterval(() => {
