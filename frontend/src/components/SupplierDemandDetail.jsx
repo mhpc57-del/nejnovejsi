@@ -49,6 +49,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const isDispute = d.status === 'dispute';
   const isAssigned = d.assigned_supplier_id === userId;
   const canChat = isAssigned && !isOpen;
+  const [verificationRequested, setVerificationRequested] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [chatMessage, setChatMessage] = useState('');
@@ -132,7 +133,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const handleRequestVerification = async () => {
     try {
       await axios.post(`${API}/demands/${d.id}/request-verification`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      alert('Žádost o ověření byla odeslána zákazníkovi emailem i SMS.');
+      setVerificationRequested(true);
     } catch (error) {
       alert(error.response?.data?.detail || 'Nepodařilo se odeslat žádost');
     }
@@ -391,9 +392,15 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
               <button onClick={() => onAccept(d.id)} className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="accept-unverified-btn">
                 <Check weight="bold" className="w-4 h-4 inline mr-1" /> Risknu to a zakázku přijímám bez ověření
               </button>
-              <button onClick={handleRequestVerification} className="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn">
-                <Warning weight="bold" className="w-4 h-4 inline mr-1.5" /> Zakázku bych přijmul, ale poptávka není ověřena
-              </button>
+              {verificationRequested ? (
+                <p className="w-full text-sm text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                  <Check weight="bold" className="w-4 h-4 inline mr-1" /> Návrh na ověření úspěšně odeslán zákazníkovi.
+                </p>
+              ) : (
+                <button onClick={handleRequestVerification} className="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn">
+                  <Warning weight="bold" className="w-4 h-4 inline mr-1.5" /> Zakázku bych přijmul, ale poptávka není ověřena
+                </button>
+              )}
             </>
           )}
           {isInProgress && isAssigned && (
