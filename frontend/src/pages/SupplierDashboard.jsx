@@ -367,44 +367,51 @@ const SupplierDashboard = () => {
                   )}
                 </div>
               ))}
-              {/* Branches (unlimited) */}
+              {/* Branches (unlimited) - always editable */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Pobočky</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Pobočky</label>
+                </div>
                 <div className="space-y-2">
-                  {(editingProfile ? (profileForm.branches || []) : (profile?.branches || [])).map((branch, i) => (
+                  {(profileForm.branches || profile?.branches || []).map((branch, i) => (
                     <div key={i} className="flex gap-2 items-center">
-                      {editingProfile ? (
-                        <>
-                          <div className="flex-1 relative">
-                            <input value={branch} onChange={async (e) => {
-                              const b = [...(profileForm.branches || [])];
-                              b[i] = e.target.value;
-                              setProfileForm(p => ({...p, branches: b}));
-                            }} placeholder={`Adresa pobočky ${i+1}`}
-                              className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
-                          </div>
-                          <button onClick={() => setProfileForm(p => ({...p, branches: (p.branches || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
-                        </>
-                      ) : (
-                        <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm min-h-[42px] flex-1">{branch || '—'}</p>
-                      )}
+                      <input value={branch} onChange={(e) => {
+                        const b = [...(profileForm.branches || profile?.branches || [])];
+                        b[i] = e.target.value;
+                        setProfileForm(p => ({...p, branches: b}));
+                      }} placeholder={`Adresa pobočky ${i+1}`}
+                        className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                      <button onClick={async () => {
+                        const b = (profileForm.branches || profile?.branches || []).filter((_, j) => j !== i);
+                        setProfileForm(p => ({...p, branches: b}));
+                        try { await axios.put(`${API}/users/profile`, { branches: b }, { headers: { Authorization: `Bearer ${token}` } }); fetchProfile(); } catch {}
+                      }} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
                     </div>
                   ))}
-                  {(editingProfile ? (profileForm.branches || []) : (profile?.branches || [])).length === 0 && !editingProfile && (
-                    <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">—</p>
-                  )}
-                  {editingProfile && (
-                    <div className="flex gap-2 items-center">
-                      <input id="new-branch-input" placeholder="Zadejte adresu nové pobočky..."
-                        className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
-                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const val = e.target.value.trim(); if (val) { setProfileForm(p => ({...p, branches: [...(p.branches || []), val]})); e.target.value = ''; } } }} />
-                      <button type="button" onClick={() => {
-                        const input = document.getElementById('new-branch-input');
-                        const val = input?.value?.trim();
-                        if (val) { setProfileForm(p => ({...p, branches: [...(p.branches || []), val]})); input.value = ''; }
-                      }} className="px-3 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
-                    </div>
-                  )}
+                  <div className="flex gap-2 items-center">
+                    <input id="new-branch-input" placeholder="Zadejte adresu nové pobočky..."
+                      className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = e.target.value.trim();
+                          if (!val) return;
+                          const newBranches = [...(profileForm.branches || profile?.branches || []), val];
+                          setProfileForm(p => ({...p, branches: newBranches}));
+                          e.target.value = '';
+                          try { await axios.put(`${API}/users/profile`, { branches: newBranches }, { headers: { Authorization: `Bearer ${token}` } }); fetchProfile(); alert('Pobočka přidána.'); } catch { alert('Nepodařilo se uložit.'); }
+                        }
+                      }} />
+                    <button type="button" onClick={async () => {
+                      const input = document.getElementById('new-branch-input');
+                      const val = input?.value?.trim();
+                      if (!val) return;
+                      const newBranches = [...(profileForm.branches || profile?.branches || []), val];
+                      setProfileForm(p => ({...p, branches: newBranches}));
+                      input.value = '';
+                      try { await axios.put(`${API}/users/profile`, { branches: newBranches }, { headers: { Authorization: `Bearer ${token}` } }); fetchProfile(); alert('Pobočka přidána.'); } catch { alert('Nepodařilo se uložit.'); }
+                    }} className="px-3 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
+                  </div>
                 </div>
               </div>
             </div>
