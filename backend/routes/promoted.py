@@ -140,12 +140,18 @@ async def activate_promoted_supplier(supplier_id: str):
     if not supplier:
         raise HTTPException(status_code=404, detail="Reklamní banner nenalezen")
     
+    # Skip if already active
+    if supplier.get("active") and supplier.get("paid_until"):
+        return {"status": "active", "paid_until": supplier.get("paid_until")}
+    
     now = datetime.now(timezone.utc)
     duration = supplier.get("duration", "day")
     if duration == "month":
         paid_until = (now + timedelta(days=30)).replace(hour=23, minute=59, second=59)
+        price = 990
     else:
         paid_until = (now + timedelta(days=1)).replace(hour=23, minute=59, second=59)
+        price = 39
     
     await db.promoted_suppliers.update_one(
         {"id": supplier_id},
@@ -153,6 +159,45 @@ async def activate_promoted_supplier(supplier_id: str):
     )
     
     logger.info(f"Promoted supplier activated: {supplier.get('company_name')} until {paid_until.isoformat()}")
+    
+    # Generate invoice and send email
+    try:
+        from routes.invoices import create_invoice_for_payment
+        from notifications import notification_service
+        
+        transaction = {
+            "id": str(uuid.uuid4()),
+            "user_email": supplier.get("phone", ""),
+            "plan_name": f"Reklamní banner — {supplier.get('company_name')} ({'měsíc' if duration == 'month' else 'den'})",
+            "amount": price,
+            "currency": "CZK",
+            "payment_type": "promoted_supplier",
+            "created_at": now.isoformat(),
+            "company_name": supplier.get("company_name"),
+        }
+        
+        # Try to find user email from supplier data or stripe session
+        email = supplier.get("email", "")
+        if not email and supplier.get("stripe_session_id"):
+            try:
+                stripe.api_key = os.environ.get('STRIPE_LIVE_KEY') or os.environ.get('STRIPE_API_KEY')
+                session = stripe.checkout.Session.retrieve(supplier["stripe_session_id"])
+                email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
+            except:
+                pass
+        
+        if email:
+            transaction["user_email"] = email
+            await create_invoice_for_payment(transaction)
+            await notification_service.notify_payment_success(
+                user_email=email,
+                plan_name=transaction["plan_name"],
+                amount=price
+            )
+            logger.info(f"Invoice and email sent for promo: {email}")
+    except Exception as e:
+        logger.error(f"Failed to create invoice/send email for promo: {e}")
+    
     return {"status": "active", "paid_until": paid_until.isoformat()}
 
 
