@@ -177,7 +177,7 @@ const HeroSection = () => {
         <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-end">
 
           {/* === Block 1: Title (always first) === */}
-          <div className="lg:col-span-5 order-1 flex flex-col">
+          <div className="lg:col-span-6 order-1 flex flex-col">
             <div className="mb-2 lg:mb-8">
               <h1
                 className="hidden lg:block text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
@@ -221,7 +221,7 @@ const HeroSection = () => {
           </div>
 
           {/* === Block 2: Photo/Grid (mobile: 2nd, desktop: right column) === */}
-          <div className="lg:col-span-7 order-2" data-testid="hero-media-container">
+          <div className="lg:col-span-6 order-2" data-testid="hero-media-container">
             <AnimatePresence mode="wait">
               {isExtraGrid ? (
                 <motion.div key="extra-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
