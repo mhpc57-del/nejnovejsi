@@ -58,9 +58,15 @@ async def mark_welcome_seen(current_user: dict = Depends(get_current_user)):
 
 @router.post("/users/location")
 async def update_location(location: LocationUpdate, current_user: dict = Depends(get_current_user)):
+    update = {"location": {"lat": location.latitude, "lng": location.longitude, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    # If setting location to null, disable sharing
+    if location.latitude is None:
+        update["location_sharing"] = False
+    else:
+        update["location_sharing"] = True
     await db.users.update_one(
         {"id": current_user["id"]},
-        {"$set": {"location": {"lat": location.latitude, "lng": location.longitude, "updated_at": datetime.now(timezone.utc).isoformat()}}}
+        {"$set": update}
     )
     return {"message": "Location updated"}
 

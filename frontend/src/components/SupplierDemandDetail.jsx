@@ -82,6 +82,27 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [myLocation, setMyLocation] = useState(null);
   const [customerLocation, setCustomerLocation] = useState(null);
 
+  // Auto-enable location sharing if previously enabled
+  useEffect(() => {
+    const checkLocationSharing = async () => {
+      try {
+        const res = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.data.location_sharing && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+              await axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+              setMyLocation(loc);
+              setLocationShared(true);
+            },
+            () => {}
+          );
+        }
+      } catch {}
+    };
+    if (isAssigned && !isOpen) checkLocationSharing();
+  }, [d.id]);
+
   const fetchCustomerLocation = async () => {
     if (!d.customer_id) return;
     try {

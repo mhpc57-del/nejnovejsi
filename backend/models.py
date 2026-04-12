@@ -94,6 +94,7 @@ class UserResponse(BaseModel):
     preferred_languages: List[str] = []
     branch_addresses: List[str] = []
     branches: List[str] = []
+    location_sharing: bool = False
 
 
 class TokenResponse(BaseModel):
