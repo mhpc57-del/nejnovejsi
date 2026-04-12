@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import axios from 'axios';
 import { API } from '../App';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
@@ -24,9 +24,18 @@ L.Icon.Default.mergeOptions({
 function MapUpdater({ center }) {
   const map = useMap();
   useEffect(() => {
-    if (center) map.setView(center, 14);
+    if (center) map.setView(center, 16);
   }, [center, map]);
   return null;
+}
+
+function ClickableMarker({ position, onPositionChange }) {
+  useMapEvents({
+    click(e) {
+      onPositionChange([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return position ? <Marker position={position} /> : null;
 }
 
 // Interactive map for selecting service areas during registration
@@ -925,12 +934,13 @@ const RegisterPage = () => {
                     </div>
                   )}
                   {permanentCoords && (
-                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-32" data-testid="permanent-address-map">
-                      <MapContainer center={permanentCoords} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false} zoomControl={false}>
+                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48" data-testid="permanent-address-map">
+                      <MapContainer center={permanentCoords} zoom={16} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true} zoomControl={true}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OSM" />
-                        <Marker position={permanentCoords} />
+                        <ClickableMarker position={permanentCoords} onPositionChange={(pos) => setPermanentCoords(pos)} />
                         <MapUpdater center={permanentCoords} />
                       </MapContainer>
+                      <p className="text-[10px] text-zinc-400 mt-1">Kliknutím na mapu přesunete špendlík na přesnou adresu.</p>
                     </div>
                   )}
                 </div>
@@ -960,12 +970,13 @@ const RegisterPage = () => {
                     </div>
                   )}
                   {actualCoords && (
-                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-32" data-testid="actual-address-map">
-                      <MapContainer center={actualCoords} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false} zoomControl={false}>
+                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48" data-testid="actual-address-map">
+                      <MapContainer center={actualCoords} zoom={16} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true} zoomControl={true}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OSM" />
-                        <Marker position={actualCoords} />
+                        <ClickableMarker position={actualCoords} onPositionChange={(pos) => setActualCoords(pos)} />
                         <MapUpdater center={actualCoords} />
                       </MapContainer>
+                      <p className="text-[10px] text-zinc-400 mt-1">Kliknutím na mapu přesunete špendlík na přesnou adresu.</p>
                     </div>
                   )}
                 </div>

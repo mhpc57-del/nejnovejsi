@@ -223,66 +223,110 @@ const PricingPage = () => {
             Jednoduchý a férový ceník
           </h1>
           <p className="text-zinc-600 text-lg mb-6">
-            Zákazníci vkládají poptávky zdarma. Dodavatelé si zvolí měsíční nebo roční přístup.
+            {isAuthenticated && (user?.role === 'supplier' || user?.role === 'customer_supplier')
+              ? 'Zvolte měsíční nebo roční přístup.'
+              : 'Zákazníci vkládají poptávky zdarma. Dodavatelé si zvolí měsíční nebo roční přístup.'}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Customer card */}
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200 shadow-lg flex flex-col" data-testid="plan-card-zakaznik">
-            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2">Zákazník</h3>
-            <p className="text-sm text-zinc-500 mb-3">Vkládání poptávek je</p>
-            <span className="text-5xl font-bold text-orange-500 mb-6" style={{ fontFamily: 'Outfit' }}>ZDARMA</span>
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mb-6 flex-1">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Volitelné ověření poptávky za <strong className="text-orange-500">49 Kč</strong> — dodavatelé uvidí, že to myslíte vážně.
-              </p>
-            </div>
-            <button onClick={() => navigate('/registrace?role=customer')}
-              className="w-full py-3 bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg font-semibold text-white text-sm transition-colors"
-              data-testid="plan-btn-zakaznik">
-              Registrace zákazníka
-            </button>
-          </div>
+        {/* Show only supplier card if logged in as supplier */}
+        {isAuthenticated && (user?.role === 'supplier' || user?.role === 'customer_supplier') ? (
+          <div className="max-w-md mx-auto">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 ring-2 ring-orange-500 shadow-xl flex flex-col relative" data-testid="plan-card-dodavatel">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">PRO ŘEMESLNÍKY</span>
+              </div>
+              <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4">Dodavatel</h3>
+              
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {supplierFeatures.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-zinc-600 text-sm">
+                    <CheckCircle weight="fill" className="text-green-500 flex-shrink-0 mt-0.5 w-4 h-4" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
 
-          {/* Supplier card */}
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 ring-2 ring-orange-500 shadow-xl flex flex-col relative" data-testid="plan-card-dodavatel">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <span className="bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">PRO ŘEMESLNÍKY</span>
-            </div>
-            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4">Dodavatel</h3>
-            
-            <ul className="space-y-2.5 mb-6 flex-1">
-              {supplierFeatures.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-zinc-600 text-sm">
-                  <CheckCircle weight="fill" className="text-green-500 flex-shrink-0 mt-0.5 w-4 h-4" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-
-            <div className="space-y-2">
-              <button onClick={() => handleSubscribe('monthly')} disabled={processingPlan !== null}
-                data-testid="subscribe-monthly-btn"
-                className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
-                {processingPlan === 'monthly' ? (
-                  <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
-                ) : (
-                  <><CreditCard weight="bold" /> 190 Kč / měsíc</>
-                )}
-              </button>
-              <button onClick={() => handleSubscribe('annual')} disabled={processingPlan !== null}
-                data-testid="subscribe-annual-btn"
-                className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 border-2 border-orange-500 text-orange-500 hover:bg-orange-500/5 disabled:opacity-50 disabled:cursor-not-allowed">
-                {processingPlan === 'annual' ? (
-                  <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
-                ) : (
-                  <><CreditCard weight="bold" /> 1 890 Kč / rok (ušetříte 390 Kč)</>
-                )}
-              </button>
+              <div className="space-y-2">
+                <button onClick={() => handleSubscribe('monthly')} disabled={processingPlan !== null}
+                  data-testid="subscribe-monthly-btn"
+                  className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                  {processingPlan === 'monthly' ? (
+                    <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
+                  ) : (
+                    <><CreditCard weight="bold" /> 190 Kč / měsíc</>
+                  )}
+                </button>
+                <button onClick={() => handleSubscribe('annual')} disabled={processingPlan !== null}
+                  data-testid="subscribe-annual-btn"
+                  className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 border-2 border-orange-500 text-orange-500 hover:bg-orange-500/5 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {processingPlan === 'annual' ? (
+                    <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
+                  ) : (
+                    <><CreditCard weight="bold" /> 1 890 Kč / rok (ušetříte 390 Kč)</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Customer card */}
+            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200 shadow-lg flex flex-col" data-testid="plan-card-zakaznik">
+              <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2">Zákazník</h3>
+              <p className="text-sm text-zinc-500 mb-3">Vkládání poptávek je</p>
+              <span className="text-5xl font-bold text-orange-500 mb-6" style={{ fontFamily: 'Outfit' }}>ZDARMA</span>
+              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mb-6 flex-1">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Volitelné ověření poptávky za <strong className="text-orange-500">49 Kč</strong> — dodavatelé uvidí, že to myslíte vážně.
+                </p>
+              </div>
+              <button onClick={() => navigate('/registrace?role=customer')}
+                className="w-full py-3 bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg font-semibold text-white text-sm transition-colors"
+                data-testid="plan-btn-zakaznik">
+                Registrace zákazníka
+              </button>
+            </div>
+
+            {/* Supplier card */}
+            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 ring-2 ring-orange-500 shadow-xl flex flex-col relative" data-testid="plan-card-dodavatel">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">PRO ŘEMESLNÍKY</span>
+              </div>
+              <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4">Dodavatel</h3>
+              
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {supplierFeatures.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-zinc-600 text-sm">
+                    <CheckCircle weight="fill" className="text-green-500 flex-shrink-0 mt-0.5 w-4 h-4" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="space-y-2">
+                <button onClick={() => handleSubscribe('monthly')} disabled={processingPlan !== null}
+                  data-testid="subscribe-monthly-btn"
+                  className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                  {processingPlan === 'monthly' ? (
+                    <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
+                  ) : (
+                    <><CreditCard weight="bold" /> 190 Kč / měsíc</>
+                  )}
+                </button>
+                <button onClick={() => handleSubscribe('annual')} disabled={processingPlan !== null}
+                  data-testid="subscribe-annual-btn"
+                  className="w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 border-2 border-orange-500 text-orange-500 hover:bg-orange-500/5 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {processingPlan === 'annual' ? (
+                    <><Spinner className="w-5 h-5 animate-spin" /> Zpracování...</>
+                  ) : (
+                    <><CreditCard weight="bold" /> 1 890 Kč / rok (ušetříte 390 Kč)</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="text-center mt-10">
           <p className="text-zinc-600 text-sm bg-zinc-100 dark:bg-zinc-800 py-3 px-6 rounded-full inline-block">
