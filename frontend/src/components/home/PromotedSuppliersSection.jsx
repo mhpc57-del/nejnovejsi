@@ -25,17 +25,18 @@ const CountdownTimer = ({ paidUntil }) => {
   }, [paidUntil]);
 
   return (
-    <span className="flex items-center gap-1 text-[10px] text-orange-500 font-semibold">
+    <span className="flex items-center gap-1.5 text-[10px] text-orange-500 font-bold font-mono">
       <Clock weight="bold" className="w-3 h-3" /> {timeLeft}
     </span>
   );
 };
 
 export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm }) => (
-  <section className="py-24 px-6 md:px-12" data-testid="promoted-suppliers-section">
+  <section className="py-24 md:py-32 px-6 md:px-12 lg:px-24" data-testid="promoted-suppliers-section">
     <div className="max-w-7xl mx-auto">
-      <motion.div className="text-center mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-        <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-4xl font-bold tracking-tight text-orange-500 uppercase mt-4" style={{ fontFamily: 'Outfit' }}>
+      <motion.div className="text-center mb-14" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+        <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Sponzorovaní</motion.span>
+        <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
           Topovaní dodavatelé
         </motion.h2>
       </motion.div>
@@ -49,25 +50,25 @@ export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm })
               : null;
             return (
               <motion.div key={supplier.id} variants={fadeUp} custom={i}
-                className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+                className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
                 data-testid={`promo-card-${i}`}>
-                <div className="flex items-center gap-4 mb-3">
+                <div className="flex items-center gap-4 mb-4">
                   {logoUrl ? (
-                    <img src={logoUrl} alt={supplier.company_name} className="w-14 h-14 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700" />
+                    <img src={logoUrl} alt={supplier.company_name} className="w-14 h-14 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700" />
                   ) : (
-                    <div className="w-14 h-14 bg-orange-100 dark:bg-orange-500/15 rounded-lg flex items-center justify-center">
+                    <div className="w-14 h-14 bg-orange-50 dark:bg-orange-500/15 rounded-xl flex items-center justify-center">
                       <Briefcase weight="duotone" className="w-7 h-7 text-orange-500" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{supplier.company_name}</h3>
+                    <h3 className="font-bold text-zinc-900 dark:text-white text-sm truncate">{supplier.company_name}</h3>
                     {supplier.website && <a href={supplier.website.startsWith('http') ? supplier.website : `https://${supplier.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-500 hover:text-orange-600 truncate block">{supplier.website}</a>}
                   </div>
                 </div>
-                <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2 mb-2">{supplier.bio}</p>
-                {supplier.phone && <p className="text-xs text-zinc-400">{supplier.phone}</p>}
-                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">Sponzorovaný banner</span>
+                <p className="text-sm text-zinc-500 leading-relaxed line-clamp-2 mb-3">{supplier.bio}</p>
+                {supplier.phone && <p className="text-xs text-zinc-400 mb-3">{supplier.phone}</p>}
+                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                  <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold">Sponzor</span>
                   {supplier.paid_until && <CountdownTimer paidUntil={supplier.paid_until} />}
                 </div>
               </motion.div>
@@ -76,22 +77,22 @@ export const PromotedSuppliersSection = ({ promotedSuppliers, onShowPromoForm })
           return (
             <motion.button key={`empty-${i}`} variants={fadeUp} custom={i}
               onClick={onShowPromoForm}
-              className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-6 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all duration-200 text-center group cursor-pointer"
+              className="bg-white dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 p-6 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-lg transition-all duration-200 text-center group cursor-pointer"
               data-testid={`promo-empty-${i}`}>
-              <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/15 rounded-lg flex items-center justify-center mx-auto mb-3 transition-colors">
-                <Plus weight="bold" className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors" />
+              <div className="w-14 h-14 bg-zinc-50 dark:bg-zinc-800 group-hover:bg-orange-50 dark:group-hover:bg-orange-500/15 rounded-xl flex items-center justify-center mx-auto mb-4 transition-colors">
+                <Plus weight="bold" className="w-6 h-6 text-zinc-300 group-hover:text-orange-500 transition-colors" />
               </div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-1">Přejete si mít reklamu zde?</p>
-              <p className="text-xs font-bold text-orange-500">39 Kč/den</p>
+              <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-orange-500 transition-colors mb-1">Přejete si reklamu zde?</p>
+              <p className="text-xs font-bold text-orange-500">od 39 Kč/den</p>
             </motion.button>
           );
         })}
       </motion.div>
 
       {promotedSuppliers.length >= 8 && (
-        <div className="text-center mt-8">
+        <div className="text-center mt-10">
           <button onClick={onShowPromoForm}
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25"
+            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-200 text-sm hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/25 tracking-wide uppercase"
             data-testid="add-promo-banner-btn">
             <Plus weight="bold" className="w-4 h-4" />
             Přidat reklamní banner

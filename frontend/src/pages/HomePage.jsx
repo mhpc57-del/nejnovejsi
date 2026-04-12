@@ -157,25 +157,25 @@ const HomePage = () => {
 
       {/* Platform Stats */}
       {platformStats && (
-        <section className="border-y border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm" data-testid="platform-stats-section">
-          <div className="max-w-7xl mx-auto px-6 md:px-12 py-5">
-            <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap">
+        <section className="border-y border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-950" data-testid="platform-stats-section">
+          <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
+            <div className="grid grid-cols-3 divide-x divide-zinc-200/80 dark:divide-zinc-800">
               {[
-                { label: 'Zákazníci', value: platformStats.customers, color: 'bg-emerald-500', textColor: 'text-emerald-600', id: 'stat-customers' },
-                { label: 'Dodavatelé', value: platformStats.suppliers, color: 'bg-red-500', textColor: 'text-red-500', id: 'stat-suppliers' },
-                { label: 'Online', value: platformStats.online || 0, color: 'bg-emerald-500', textColor: 'text-emerald-500', id: 'stat-online', isOnline: true },
+                { label: 'Zákazníci', value: platformStats.customers, color: 'text-emerald-500', id: 'stat-customers' },
+                { label: 'Dodavatelé', value: platformStats.suppliers, color: 'text-orange-500', id: 'stat-suppliers' },
+                { label: 'Online', value: platformStats.online || 0, color: 'text-emerald-500', id: 'stat-online', isOnline: true },
               ].map((stat, i) => (
-                <div key={i} className="flex items-center gap-2.5" data-testid={stat.id}>
+                <div key={i} className="flex items-center justify-center gap-3 py-5" data-testid={stat.id}>
                   {stat.isOnline ? (
                     <span className="relative flex h-2.5 w-2.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                     </span>
                   ) : (
-                    <div className={`w-2.5 h-2.5 rounded-full ${stat.color}`} />
+                    <div className={`w-2 h-2 rounded-full ${stat.color === 'text-emerald-500' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
                   )}
-                  <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase tracking-wider font-medium">{stat.label}</span>
-                  <span className={`text-base font-bold ${stat.textColor}`}>{stat.value}</span>
+                  <span className="text-xs text-zinc-400 uppercase tracking-wider font-bold">{stat.label}</span>
+                  <span className={`text-lg font-black ${stat.color}`}>{stat.value}</span>
                 </div>
               ))}
             </div>
