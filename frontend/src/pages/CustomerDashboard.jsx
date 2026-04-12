@@ -5,7 +5,7 @@ import axios from 'axios';
 import WelcomeModal from '../components/WelcomeModal';
 import CraftBoltLogo from '../components/CraftBoltLogo';
 import { 
-  House, Plus, List, User, SignOut, Bell, MapPin, 
+  House, Plus, List, User, SignOut, Bell, MapPin, Camera,
   Calendar, Clock, ArrowRight, X, Check, Image as ImageIcon, Trash, Warning,
   ChatCircle, Envelope, Briefcase, Receipt, DotsThreeCircle, Moon, Sun, ChatCircleDots
 } from '@phosphor-icons/react';
@@ -55,6 +55,10 @@ const CustomerDashboard = () => {
   const [profileForm, setProfileForm] = useState({});
   const [savingProfile, setSavingProfile] = useState(false);
 
+  const [invoices, setInvoices] = useState([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
   const fetchDemands = async () => {
     try {
       const response = await axios.get(`${API}/demands/my`, {
@@ -95,11 +99,62 @@ const CustomerDashboard = () => {
         last_name: profileForm.last_name,
         phone: profileForm.phone,
         sms_notifications: profileForm.sms_notifications,
+        permanent_address: profileForm.permanent_address,
+        actual_address: profileForm.actual_address,
+        profile_image: profileForm.profile_image,
+        bio: profileForm.bio,
+        date_of_birth: profileForm.date_of_birth,
+        company_name: profileForm.company_name,
+        ico: profileForm.ico,
+        dic: profileForm.dic,
       }, { headers: { Authorization: `Bearer ${token}` } });
       setEditingProfile(false);
       fetchProfile();
     } catch (e) { console.error(e); }
     setSavingProfile(false);
+  };
+
+  const handleProfilePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      // Compress
+      const compressed = await new Promise((resolve) => {
+        if (!file.type.startsWith('image/')) { resolve(file); return; }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > 800) { h = (h * 800) / w; w = 800; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob((blob) => resolve(new File([blob], 'profile.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.85);
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      const fd = new FormData();
+      fd.append('file', compressed);
+      const res = await axios.post(`${API}/upload/public`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setProfileForm(p => ({ ...p, profile_image: res.data.url }));
+      // Auto-save photo
+      await axios.put(`${API}/users/profile`, { profile_image: res.data.url }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchProfile();
+    } catch (err) { console.error(err); }
+    setUploadingPhoto(false);
+  };
+
+  const fetchInvoices = async () => {
+    setInvoicesLoading(true);
+    try {
+      const res = await axios.get(`${API}/invoices/my`, { headers: { Authorization: `Bearer ${token}` } });
+      setInvoices(res.data || []);
+    } catch (e) { console.error(e); }
+    setInvoicesLoading(false);
   };
 
   // Demand counts
@@ -142,22 +197,41 @@ const CustomerDashboard = () => {
   const renderContent = () => {
     // Profile tab
     if (activeTab === 'profile') {
+      const photoUrl = (profileForm.profile_image || profile?.profile_image)
+        ? `${API.replace('/api', '')}${(profileForm.profile_image || profile?.profile_image).startsWith('/api') ? (profileForm.profile_image || profile?.profile_image) : '/api' + ((profileForm.profile_image || profile?.profile_image).startsWith('/') ? '' : '/') + (profileForm.profile_image || profile?.profile_image)}`
+        : null;
+
       return (
         <div className="space-y-6" data-testid="profile-content">
-          {/* Profile card */}
-          <div className="bg-zinc-800/50 dark:bg-zinc-800/50 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+          {/* Profile card + photo */}
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-full bg-zinc-700 dark:bg-zinc-700 bg-zinc-200 flex items-center justify-center text-2xl font-bold text-orange-500">
-                {(profile?.first_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+              <div className="relative group">
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Profil" className="w-20 h-20 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl font-bold text-orange-500 border-2 border-zinc-200 dark:border-zinc-700">
+                    {(profile?.first_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                  </div>
+                )}
+                <label className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                  {uploadingPhoto ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Camera weight="bold" className="w-6 h-6 text-white" />
+                  )}
+                  <input type="file" accept="image/*" onChange={handleProfilePhotoUpload} className="hidden" disabled={uploadingPhoto} />
+                </label>
               </div>
               <div>
                 <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{profile?.first_name} {profile?.last_name}</h2>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Zákazník</span>
-                  {profile?.account_type && (
-                    <span className="px-2 py-0.5 bg-orange-500/15 text-orange-500 text-xs font-semibold rounded-full">
-                      {profile.account_type === 'individual' ? 'Nepodnikatel' : 'Podnikatel'}
-                    </span>
+                  <span className="text-sm text-zinc-500">Zákazník</span>
+                  {profile?.account_type === 'individual' && (
+                    <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium rounded-full">Nepodnikatel</span>
+                  )}
+                  {profile?.account_type === 'business' && (
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">Podnikatel</span>
                   )}
                   {profile?.is_verified && (
                     <span className="flex items-center gap-1 text-emerald-500 text-xs font-semibold">
@@ -170,13 +244,16 @@ const CustomerDashboard = () => {
           </div>
 
           {/* Personal data */}
-          <div className="bg-zinc-800/50 dark:bg-zinc-800/50 bg-white border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-zinc-900 dark:text-white">Osobní údaje</h3>
               {editingProfile ? (
-                <button onClick={handleSaveProfile} disabled={savingProfile} className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50" data-testid="save-profile-btn">
-                  {savingProfile ? 'Ukládám...' : 'Uložit'}
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => { setEditingProfile(false); setProfileForm(profile); }} className="px-4 py-1.5 border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 text-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Zrušit</button>
+                  <button onClick={handleSaveProfile} disabled={savingProfile} className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50" data-testid="save-profile-btn">
+                    {savingProfile ? 'Ukládám...' : 'Uložit změny'}
+                  </button>
+                </div>
               ) : (
                 <button onClick={() => setEditingProfile(true)} className="px-4 py-1.5 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="edit-profile-btn">
                   Upravit
@@ -184,56 +261,83 @@ const CustomerDashboard = () => {
               )}
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Jméno</label>
-                {editingProfile ? (
-                  <input value={profileForm.first_name || ''} onChange={e => setProfileForm(p => ({...p, first_name: e.target.value}))}
-                    className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-first-name" />
-                ) : (
-                  <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.first_name || '—'}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Příjmení</label>
-                {editingProfile ? (
-                  <input value={profileForm.last_name || ''} onChange={e => setProfileForm(p => ({...p, last_name: e.target.value}))}
-                    className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-last-name" />
-                ) : (
-                  <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.last_name || '—'}</p>
-                )}
-              </div>
+              {[
+                { key: 'first_name', label: 'Jméno' },
+                { key: 'last_name', label: 'Příjmení' },
+                { key: 'phone', label: 'Telefon' },
+                { key: 'email', label: 'E-mail', readonly: true },
+                { key: 'permanent_address', label: 'Adresa trvalého pobytu' },
+                { key: 'actual_address', label: 'Adresa skutečného bydliště' },
+                { key: 'date_of_birth', label: 'Datum narození' },
+              ].map(f => (
+                <div key={f.key} className={f.key.includes('address') ? 'sm:col-span-2' : ''}>
+                  <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{f.label}</label>
+                  {editingProfile && !f.readonly ? (
+                    <input value={profileForm[f.key] || ''} onChange={e => setProfileForm(p => ({...p, [f.key]: e.target.value}))}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                      data-testid={`profile-${f.key}`} />
+                  ) : (
+                    <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm min-h-[42px]">{profile?.[f.key] || '—'}</p>
+                  )}
+                </div>
+              ))}
             </div>
+            {/* Bio */}
             <div className="mt-4">
-              <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Telefon</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">O mně</label>
               {editingProfile ? (
-                <input value={profileForm.phone || ''} onChange={e => setProfileForm(p => ({...p, phone: e.target.value}))}
-                  className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm" data-testid="profile-phone" />
+                <textarea value={profileForm.bio || ''} onChange={e => setProfileForm(p => ({...p, bio: e.target.value}))} rows={3}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="profile-bio" />
               ) : (
-                <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">{profile?.phone || '—'}</p>
+                <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm min-h-[42px]">{profile?.bio || '—'}</p>
               )}
             </div>
-            <div className="mt-4 flex items-center gap-3">
-              <button onClick={() => { const v = !profileForm.sms_notifications; setProfileForm(p => ({...p, sms_notifications: v})); }}
-                className={`w-11 h-6 rounded-full transition-colors relative ${profileForm.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} data-testid="sms-toggle">
+            {/* SMS toggle */}
+            <div className="mt-5 flex items-center gap-3">
+              <button onClick={() => { if (editingProfile) setProfileForm(p => ({...p, sms_notifications: !p.sms_notifications})); }}
+                className={`w-11 h-6 rounded-full transition-colors relative ${profileForm.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'} ${!editingProfile ? 'opacity-60' : ''}`} data-testid="sms-toggle">
                 <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${profileForm.sms_notifications ? 'left-5.5' : 'left-0.5'}`} />
               </button>
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">Chci dostávat notifikační SMS</span>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">E-mail</label>
-              <p className="px-3 py-2.5 bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-500 text-sm">{profile?.email || '—'}</p>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">SMS notifikace</span>
             </div>
           </div>
         </div>
       );
     }
 
-    // Invoices tab
+    // Invoices tab — show actual invoices inline
     if (activeTab === 'invoices') {
+      if (!invoices.length && !invoicesLoading) fetchInvoices();
       return (
         <div data-testid="invoices-content">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">Faktury</h2>
-          <p className="text-zinc-500 text-sm">Faktury naleznete v sekci <Link to="/faktury" className="text-orange-500 hover:underline">Faktury</Link>.</p>
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Faktury</h2>
+          {invoicesLoading ? (
+            <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div></div>
+          ) : invoices.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+              <p className="text-zinc-500">Zatím nemáte žádné faktury.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {invoices.map(inv => (
+                <div key={inv.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between" data-testid={`invoice-${inv.id}`}>
+                  <div>
+                    <p className="font-semibold text-zinc-900 dark:text-white text-sm">{inv.invoice_number}</p>
+                    <p className="text-xs text-zinc-500">{inv.description || inv.plan_name || 'Platba CraftBolt'}</p>
+                    <p className="text-xs text-zinc-400 mt-1">{new Date(inv.created_at).toLocaleDateString('cs-CZ')}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-zinc-900 dark:text-white text-sm">{inv.total_amount?.toLocaleString('cs-CZ')} Kč</span>
+                    <a href={`${API}/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium rounded-lg transition-colors" data-testid={`download-invoice-${inv.id}`}>
+                      PDF
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -388,7 +492,7 @@ const CustomerDashboard = () => {
             data-testid="sidebar-profile">
             <User className="w-4 h-4" /> Profil
           </button>
-          <button onClick={() => { setActiveTab('invoices'); setSelectedDemand(null); }}
+          <button onClick={() => { setActiveTab('invoices'); setSelectedDemand(null); fetchInvoices(); }}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'invoices' ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
             data-testid="sidebar-invoices">
             <Receipt className="w-4 h-4" /> Faktury
