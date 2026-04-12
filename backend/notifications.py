@@ -157,7 +157,10 @@ class SMSService:
             }
             
             logger.info(f"SMS: BulkGate request to {to_phone}, app_id={self.app_id}, sender={self.sender_id}/{self.sender_id_value}")
-            response = requests.post(self.BULKGATE_URL, json=payload, timeout=15)
+            response = requests.post(self.BULKGATE_URL, json=payload, timeout=15, headers={
+                "Content-Type": "application/json",
+                "User-Agent": "CraftBolt/2.0",
+            })
             
             logger.info(f"SMS: BulkGate response status={response.status_code}, body={response.text[:200]}")
             

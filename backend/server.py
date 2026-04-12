@@ -60,36 +60,35 @@ app.include_router(api_router)
 async def debug_sms_test():
     """Diagnostic endpoint — tests BulkGate SMS config without sending"""
     import os
-    import requests as req
+    from notifications import notification_service
     
-    app_id = os.environ.get('BULKGATE_APP_ID', '')
-    app_token = os.environ.get('BULKGATE_APP_TOKEN', '')
-    sender_id = os.environ.get('BULKGATE_SENDER_ID', '')
-    sender_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', '')
-    
-    # Mask token for security (show first 6 and last 4 chars)
-    token_masked = f"{app_token[:6]}...{app_token[-4:]}" if len(app_token) > 10 else "TOO_SHORT"
+    sms = notification_service.sms_service
+    token_masked = f"{sms.app_token[:6]}...{sms.app_token[-4:]}" if len(sms.app_token) > 10 else "TOO_SHORT"
     
     result = {
-        "app_id": app_id,
+        "app_id": sms.app_id,
         "token_masked": token_masked,
-        "token_length": len(app_token),
-        "sender_id": sender_id,
-        "sender_value": sender_value,
-        "env_loaded": bool(app_id and app_token),
+        "token_length": len(sms.app_token),
+        "sender_id": sms.sender_id,
+        "sender_value": sms.sender_id_value,
+        "env_loaded": bool(sms.app_id and sms.app_token),
     }
     
-    # Actually test the API with a dummy number (won't deliver but will auth-check)
+    # Test auth with dummy number
     try:
+        import requests
         payload = {
-            "application_id": app_id,
-            "application_token": app_token,
+            "application_id": sms.app_id,
+            "application_token": sms.app_token,
             "number": "420000000000",
-            "text": "diagnostic_test",
-            "sender_id": sender_id or "gSystem",
-            "sender_id_value": sender_value or "",
+            "text": "diag",
+            "sender_id": sms.sender_id or "gSystem",
+            "sender_id_value": sms.sender_id_value or "",
         }
-        resp = req.post("https://portal.bulkgate.com/api/1.0/simple/transactional", json=payload, timeout=10)
+        resp = requests.post("https://portal.bulkgate.com/api/1.0/simple/transactional", json=payload, timeout=10, headers={
+            "Content-Type": "application/json",
+            "User-Agent": "CraftBolt/2.0",
+        })
         result["bulkgate_status"] = resp.status_code
         result["bulkgate_response"] = resp.text[:300]
     except Exception as e:
