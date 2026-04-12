@@ -109,18 +109,18 @@ class SMSService:
     BULKGATE_URL = "https://portal.bulkgate.com/api/1.0/simple/transactional"
     
     def __init__(self):
-        self.app_id = os.environ.get('BULKGATE_APP_ID', '')
-        self.app_token = os.environ.get('BULKGATE_APP_TOKEN', '')
-        self.sender_id = os.environ.get('BULKGATE_SENDER_ID', 'gProfile')
-        self.sender_id_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', '18254')
+        self.app_id = os.environ.get('BULKGATE_APP_ID') or '37417'
+        self.app_token = os.environ.get('BULKGATE_APP_TOKEN') or 'XW12fNMBMO4XafB5Up411xtAcKvrRyWvN0pVxFulmTkASmp6IS'
+        self.sender_id = os.environ.get('BULKGATE_SENDER_ID') or 'gText'
+        self.sender_id_value = os.environ.get('BULKGATE_SENDER_ID_VALUE') or 'CraftBolt'
         
         if self.app_id and self.app_token:
-            logger.info(f"BulkGate SMS initialized (App ID: {self.app_id[:8]}...)")
+            logger.info(f"BulkGate SMS initialized (App ID: {self.app_id})")
         else:
             logger.warning("BulkGate credentials not configured - SMS will be skipped")
     
     def send_sms(self, to_phone: str, message: str) -> bool:
-        """Send an SMS using BulkGate API"""
+        """Send an SMS using BulkGate API via curl (WEDOS WAF blocks Python requests)"""
         if not self.app_id or not self.app_token:
             logger.warning("BulkGate not configured - SMS skipped")
             return False
@@ -147,40 +147,43 @@ class SMSService:
         logger.info(f"SMS: sending to {to_phone} (original: {original_phone})")
         
         try:
-            payload = {
+            import subprocess, json
+            payload = json.dumps({
                 "application_id": self.app_id,
                 "application_token": self.app_token,
                 "number": to_phone,
                 "text": message,
                 "sender_id": self.sender_id,
                 "sender_id_value": self.sender_id_value,
-            }
-            
-            logger.info(f"SMS: BulkGate request to {to_phone}, app_id={self.app_id}, sender={self.sender_id}/{self.sender_id_value}")
-            response = requests.post(self.BULKGATE_URL, json=payload, timeout=15, headers={
-                "Content-Type": "application/json",
-                "User-Agent": "CraftBolt/2.0",
             })
             
-            logger.info(f"SMS: BulkGate response status={response.status_code}, body={response.text[:200]}")
+            logger.info(f"SMS: BulkGate request to {to_phone}, app_id={self.app_id}, sender={self.sender_id}/{self.sender_id_value}")
             
-            if response.status_code != 200:
-                logger.error(f"SMS FAILED to {to_phone}: HTTP {response.status_code}")
-                return False
+            result = subprocess.run(
+                ["curl", "-s", "-X", "POST", self.BULKGATE_URL,
+                 "-H", "Content-Type: application/json",
+                 "-d", payload],
+                capture_output=True, text=True, timeout=15
+            )
+            
+            response_text = result.stdout.strip()
+            logger.info(f"SMS: BulkGate response: {response_text[:200]}")
             
             try:
-                data = response.json()
+                data = json.loads(response_text)
             except Exception:
-                logger.error(f"SMS FAILED to {to_phone}: Non-JSON response from BulkGate")
+                logger.error(f"SMS FAILED to {to_phone}: Non-JSON response: {response_text[:100]}")
                 return False
             
             if data.get("data", {}).get("status") == "accepted" or data.get("data"):
                 msg_id = data.get("data", {}).get("sms_id", "unknown")
                 logger.info(f"SMS sent to {to_phone}: ID={msg_id} Status=accepted")
                 return True
+            elif data.get("error"):
+                logger.error(f"SMS FAILED to {to_phone}: {data.get('error')}")
+                return False
             else:
-                error = data.get("error", data)
-                logger.error(f"SMS FAILED to {to_phone}: {error}")
+                logger.error(f"SMS FAILED to {to_phone}: {response_text[:200]}")
                 return False
                 
         except Exception as e:

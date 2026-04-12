@@ -76,21 +76,22 @@ async def debug_sms_test():
     
     # Test auth with dummy number
     try:
-        import requests
-        payload = {
+        import subprocess, json as jjson
+        payload = jjson.dumps({
             "application_id": sms.app_id,
             "application_token": sms.app_token,
             "number": "420000000000",
             "text": "diag",
             "sender_id": sms.sender_id or "gSystem",
             "sender_id_value": sms.sender_id_value or "",
-        }
-        resp = requests.post("https://portal.bulkgate.com/api/1.0/simple/transactional", json=payload, timeout=10, headers={
-            "Content-Type": "application/json",
-            "User-Agent": "CraftBolt/2.0",
         })
-        result["bulkgate_status"] = resp.status_code
-        result["bulkgate_response"] = resp.text[:300]
+        proc = subprocess.run(
+            ["curl", "-s", "-X", "POST", "https://portal.bulkgate.com/api/1.0/simple/transactional",
+             "-H", "Content-Type: application/json", "-d", payload],
+            capture_output=True, text=True, timeout=10
+        )
+        result["bulkgate_status"] = "curl_ok"
+        result["bulkgate_response"] = proc.stdout.strip()[:300]
     except Exception as e:
         result["bulkgate_error"] = str(e)
     
