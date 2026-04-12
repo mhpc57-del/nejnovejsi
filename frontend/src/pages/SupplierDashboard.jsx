@@ -75,6 +75,7 @@ const SupplierDashboard = () => {
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [showCustomCategoryForm, setShowCustomCategoryForm] = useState(false);
   const [submittingCustomCategory, setSubmittingCustomCategory] = useState(false);
+  const [editingServiceAreas, setEditingServiceAreas] = useState(false);
   const [viewedDemands, setViewedDemands] = useState([]);
 
   const fetchViewedDemands = async () => {
@@ -165,6 +166,17 @@ const SupplierDashboard = () => {
     } catch (e) { console.error(e); }
     setSavingProfile(false);
   };
+
+  const handleSaveServiceAreas = async () => {
+    try {
+      await axios.put(`${API}/users/profile`, {
+        service_areas: profileForm.service_areas || [],
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setEditingServiceAreas(false);
+      fetchProfile();
+    } catch (e) { console.error(e); alert('Nepodařilo se uložit místa působení'); }
+  };
+
 
   const handleProfilePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -467,21 +479,31 @@ const SupplierDashboard = () => {
             
             {/* Service areas with map */}
             <div className="mt-5">
-              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Místa působení</label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Místa působení</label>
+                {!editingServiceAreas && !editingProfile ? (
+                  <button onClick={() => { setEditingServiceAreas(true); setProfileForm(p => ({...p, service_areas: profile?.service_areas || []})); }} className="text-xs text-orange-500 hover:text-orange-600 font-medium">Upravit místa</button>
+                ) : !editingProfile && (
+                  <div className="flex gap-2">
+                    <button onClick={() => { setEditingServiceAreas(false); setProfileForm(p => ({...p, service_areas: profile?.service_areas || []})); }} className="text-xs text-zinc-400 hover:text-zinc-600">Zrušit</button>
+                    <button onClick={handleSaveServiceAreas} className="text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg font-medium">Uložit místa</button>
+                  </div>
+                )}
+              </div>
               {/* List of service areas */}
               <div className="space-y-3 mb-3">
-                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
+                {((editingServiceAreas || editingProfile) ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
                   const area = typeof a === 'object' ? a : { name: a, lat: null, lng: null, radius: 25 };
                   return (
                     <div key={i} className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-3 border border-blue-200 dark:border-blue-800">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <span className="text-sm text-blue-700 dark:text-blue-300 font-medium flex-1 truncate">{area.name || 'Neznámé místo'}</span>
-                        {editingProfile && (
+                        {(editingServiceAreas || editingProfile) && (
                           <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
                         )}
                       </div>
-                      {editingProfile ? (
+                      {(editingServiceAreas || editingProfile) ? (
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-zinc-500 w-16">Poloměr:</span>
                           <input type="range" min="1" max="150" step="1" value={area.radius || 25} onChange={e => {
@@ -497,11 +519,11 @@ const SupplierDashboard = () => {
                     </div>
                   );
                 })}
-                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).length === 0 && (
-                  <p className="text-sm text-zinc-400">Žádná místa působení. {editingProfile ? 'Klikněte na mapu nebo zadejte adresu.' : ''}</p>
+                {((editingServiceAreas || editingProfile) ? (profileForm.service_areas || []) : (profile?.service_areas || [])).length === 0 && (
+                  <p className="text-sm text-zinc-400">{(editingServiceAreas || editingProfile) ? 'Zadejte město nebo klikněte na mapu.' : 'Žádná místa působení.'}</p>
                 )}
               </div>
-              {editingProfile && (
+              {(editingServiceAreas || editingProfile) && (
                 <div className="space-y-2 mb-3">
                   <div className="flex gap-2 items-center">
                     <input id="manual-area-input" placeholder="Zadejte město nebo adresu..." className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
@@ -545,7 +567,7 @@ const SupplierDashboard = () => {
               <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
                 <MapContainer center={[49.8, 15.5]} zoom={7} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                  {editingProfile && <MapClickHandler onAdd={async (latlng) => {
+                  {(editingServiceAreas || editingProfile) && <MapClickHandler onAdd={async (latlng) => {
                     let name = `${latlng.lat.toFixed(2)}, ${latlng.lng.toFixed(2)}`;
                     try {
                       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`);
@@ -555,7 +577,7 @@ const SupplierDashboard = () => {
                     setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name, lat: latlng.lat, lng: latlng.lng, radius: 25 }]}));
                   }} />}
                   {/* Service area markers + circles */}
-                  {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
+                  {((editingServiceAreas || editingProfile) ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
                     const area = typeof a === 'object' ? a : null;
                     if (!area || !area.lat || !area.lng) return null;
                     const radius = (area.radius || 25) * 1000;
