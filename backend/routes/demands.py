@@ -684,48 +684,17 @@ async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = 
     if current_user["id"] != demand["customer_id"] and current_user["id"] != demand.get("assigned_supplier_id"):
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    if demand["status"] not in ("in_progress", "pending_completion"):
+        raise HTTPException(status_code=400, detail="Zakázku nelze dokončit v tomto stavu")
+    
     now = datetime.now(timezone.utc)
     completion_type = data.get("completion_type", "standard")
+    is_supplier = current_user["id"] == demand.get("assigned_supplier_id")
+    is_customer = current_user["id"] == demand["customer_id"]
     
-    update_fields = {
-        "status": "completed",
-        "completed_at": now.isoformat(),
-        "completion_type": completion_type,
-        "agreed_price": data.get("agreed_price", 0),
-        "final_price": data.get("final_price", 0),
-        "invoiced_amount": data.get("final_price", 0),
-        "completion_photos": data.get("completion_photos", []),
-    }
-    
-    # Handle price increase
-    if completion_type == "price_increase":
-        price_increase = data.get("price_increase", 0)
-        update_fields["price_increase"] = price_increase
-        # Add to supplier's total earnings
-        if demand.get("assigned_supplier_id"):
-            await db.users.update_one(
-                {"id": demand["assigned_supplier_id"]},
-                {"$inc": {"total_earnings_extra": price_increase}}
-            )
-    
-    # Handle blacklist
-    if completion_type == "blacklist":
-        blacklist_reason = data.get("blacklist_reason", "")
-        update_fields["blacklist_reason"] = blacklist_reason
-        # Add customer to supplier's blacklist
-        if demand.get("assigned_supplier_id") and demand.get("customer_id"):
-            await db.users.update_one(
-                {"id": demand["assigned_supplier_id"]},
-                {"$addToSet": {"blacklisted_customers": {
-                    "customer_id": demand["customer_id"],
-                    "reason": blacklist_reason,
-                    "demand_id": demand_id,
-                    "created_at": now.isoformat()
-                }}}
-            )
-    
-    # Handle completion photos from the modal
+    # Build photo entries
     completion_photos = data.get("completion_photos", [])
+    photo_entries = []
     if completion_photos:
         photo_entries = [{
             "url": p.get("url") if isinstance(p, dict) else p,
@@ -734,28 +703,129 @@ async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = 
             "uploaded_by_role": current_user["role"],
             "uploaded_at": now.isoformat()
         } for p in completion_photos]
+    
+    # If demand is already pending_completion — this is the CONFIRMATION from the other party
+    if demand.get("status") == "pending_completion":
+        pending_by = demand.get("completion_initiated_by")
+        # Other party confirms
+        if (pending_by == "supplier" and is_customer) or (pending_by == "customer" and is_supplier):
+            # Merge photos from both parties
+            existing_photos = demand.get("completion_photos", [])
+            all_photos = existing_photos + photo_entries
+            
+            update_fields = {
+                "status": "completed",
+                "completed_at": now.isoformat(),
+                "completion_confirmed_by": current_user["id"],
+                "completion_confirmed_at": now.isoformat(),
+                "customer_rating": data.get("customer_rating"),
+                "customer_review": data.get("customer_review"),
+            }
+            if photo_entries:
+                update_fields["completion_photos"] = all_photos
+            if data.get("final_price"):
+                update_fields["final_price"] = data.get("final_price")
+                update_fields["invoiced_amount"] = data.get("final_price")
+            
+            await db.demands.update_one({"id": demand_id}, {"$set": update_fields})
+            
+            # Notify initiator that other party confirmed
+            try:
+                other_id = demand.get("assigned_supplier_id") if is_customer else demand["customer_id"]
+                other_user = await db.users.find_one({"id": other_id}, {"_id": 0, "email": 1, "phone": 1})
+                if other_user:
+                    await notification_service.notify_status_change(
+                        user_email=other_user["email"], user_phone=other_user.get("phone"),
+                        demand_title=demand["title"], old_status="pending_completion", new_status="completed"
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send completion confirmation notification: {str(e)}")
+            
+            return {"message": "Zakázka byla dokončena", "status": "completed"}
+        else:
+            raise HTTPException(status_code=400, detail="Čeká se na potvrzení druhou stranou")
+    
+    # First party initiates completion → pending_completion
+    update_fields = {
+        "status": "pending_completion",
+        "completion_initiated_by": "supplier" if is_supplier else "customer",
+        "completion_initiated_at": now.isoformat(),
+        "completion_type": completion_type,
+        "agreed_price": data.get("agreed_price", 0),
+        "final_price": data.get("final_price", 0),
+        "invoiced_amount": data.get("final_price", 0),
+    }
+    if photo_entries:
         update_fields["completion_photos"] = photo_entries
+    
+    # Handle price increase
+    if completion_type == "price_increase":
+        update_fields["price_increase"] = data.get("price_increase", 0)
+    
+    # Handle blacklist
+    if completion_type == "blacklist":
+        update_fields["blacklist_reason"] = data.get("blacklist_reason", "")
+        if demand.get("assigned_supplier_id") and demand.get("customer_id"):
+            await db.users.update_one(
+                {"id": demand["assigned_supplier_id"]},
+                {"$addToSet": {"blacklisted_customers": {
+                    "customer_id": demand["customer_id"],
+                    "reason": data.get("blacklist_reason", ""),
+                    "demand_id": demand_id,
+                    "created_at": now.isoformat()
+                }}}
+            )
     
     await db.demands.update_one({"id": demand_id}, {"$set": update_fields})
     
+    # Notify the other party
     try:
-        customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
-        supplier = await db.users.find_one({"id": demand.get("assigned_supplier_id")}, {"_id": 0, "email": 1, "phone": 1}) if demand.get("assigned_supplier_id") else None
-        
-        if customer:
-            await notification_service.notify_status_change(
-                user_email=customer["email"], user_phone=customer.get("phone"),
-                demand_title=demand["title"], old_status="in_progress", new_status="completed"
-            )
-        if supplier:
-            await notification_service.notify_status_change(
-                user_email=supplier["email"], user_phone=supplier.get("phone"),
-                demand_title=demand["title"], old_status="in_progress", new_status="completed"
-            )
+        if is_supplier:
+            customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1})
+            if customer:
+                initiator_name = current_user.get("company_name") or f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip()
+                subject = f"Dodavatel označil zakázku jako dokončenou: {demand['title']}"
+                content = f"""
+                    <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel dokončil zakázku</h2>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                        Dodavatel <strong>{initiator_name}</strong> označil zakázku „<strong>{demand['title']}</strong>" jako dokončenou.
+                    </p>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                        Přihlaste se a zkontrolujte fotodokumentaci, cenu a potvrďte dokončení.
+                    </p>
+                    <a href="https://craftbolt.cz/zakaznik" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700;">
+                        Zkontrolovat a potvrdit
+                    </a>
+                """
+                from notifications import NotificationTemplates
+                html = NotificationTemplates.email_base(content, subject)
+                await notification_service.email_service.send_email(customer["email"], subject, html)
+                if customer.get("phone"):
+                    notification_service.sms_service.send_sms(customer["phone"], f"CraftBolt: Dodavatel {initiator_name} dokoncil zakazku '{demand['title'][:25]}'. Potvrdte dokonceni v aplikaci.")
+        else:
+            supplier = await db.users.find_one({"id": demand.get("assigned_supplier_id")}, {"_id": 0, "email": 1, "phone": 1})
+            if supplier:
+                initiator_name = f'{current_user.get("first_name", "")} {current_user.get("last_name", "")}'.strip() or current_user["email"]
+                subject = f"Zákazník označil zakázku jako dokončenou: {demand['title']}"
+                content = f"""
+                    <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Zákazník potvrdil dokončení</h2>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                        Zákazník <strong>{initiator_name}</strong> označil zakázku „<strong>{demand['title']}</strong>" jako dokončenou.
+                    </p>
+                    <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                        Přihlaste se a potvrďte dokončení zakázky.
+                    </p>
+                    <a href="https://craftbolt.cz/dodavatel" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700;">
+                        Zkontrolovat a potvrdit
+                    </a>
+                """
+                from notifications import NotificationTemplates
+                html = NotificationTemplates.email_base(content, subject)
+                await notification_service.email_service.send_email(supplier["email"], subject, html)
     except Exception as e:
         logger.error(f"Failed to send completion notification: {str(e)}")
     
-    return {"message": "Demand completed"}
+    return {"message": "Zakázka čeká na potvrzení druhou stranou", "status": "pending_completion"}
 
 
 @router.post("/demands/{demand_id}/cancel")

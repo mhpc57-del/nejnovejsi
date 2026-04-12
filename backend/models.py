@@ -179,6 +179,10 @@ class DemandResponse(BaseModel):
     customer_rating: Optional[int] = None
     customer_review: Optional[str] = None
     verification_requests: List[dict] = []
+    completion_initiated_by: Optional[str] = None
+    completion_initiated_at: Optional[str] = None
+    completion_confirmed_by: Optional[str] = None
+    completion_confirmed_at: Optional[str] = None
 
 
 class MessageCreate(BaseModel):

@@ -36,16 +36,17 @@ class CustomerDisputeResponse(BaseModel):
 
 @router.post("/demands/{demand_id}/dispute")
 async def create_dispute(demand_id: str, data: CreateDisputeRequest, current_user: dict = Depends(get_current_user)):
-    """Supplier creates a dispute / cannot-complete report"""
-    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
-        raise HTTPException(status_code=403, detail="Pouze dodavatel může vytvořit spor")
-
+    """Supplier or customer creates a dispute / cannot-complete report"""
     demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
     if not demand:
         raise HTTPException(status_code=404, detail="Zakázka nenalezena")
-    if demand.get("assigned_supplier_id") != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Nejste přiřazený dodavatel")
-    if demand["status"] != "in_progress":
+    
+    is_supplier = current_user["id"] == demand.get("assigned_supplier_id")
+    is_customer = current_user["id"] == demand.get("customer_id")
+    
+    if not is_supplier and not is_customer:
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    if demand["status"] not in ("in_progress", "pending_completion"):
         raise HTTPException(status_code=400, detail="Zakázka není v probíhajícím stavu")
     if data.reason_type not in DISPUTE_REASONS:
         raise HTTPException(status_code=400, detail="Neplatný typ důvodu")

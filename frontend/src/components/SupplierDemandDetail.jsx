@@ -46,6 +46,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const isVerified = d.verified;
   const isOpen = d.status === 'open';
   const isInProgress = d.status === 'in_progress';
+  const isPendingCompletion = d.status === 'pending_completion';
   const isDispute = d.status === 'dispute';
   const isAssigned = d.assigned_supplier_id === userId;
   const canChat = isAssigned && !isOpen;
@@ -269,7 +270,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   };
 
   const getStatusBadge = (status) => {
-    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], pending_completion: ['K potvrzení', 'bg-purple-100 text-purple-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
     const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
     return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
   };
@@ -514,6 +515,40 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 </button>
               )}
             </>
+          )}
+          {/* Pending completion states */}
+          {isPendingCompletion && isAssigned && d.completion_initiated_by === 'supplier' && (
+            <div className="w-full bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-800 rounded-xl p-4" data-testid="pending-completion-waiting-supplier">
+              <p className="font-bold text-purple-700 dark:text-purple-400 mb-1">Čeká se na potvrzení od zákazníka</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400/80">Označili jste zakázku jako dokončenou. Zákazník musí dokončení potvrdit nebo odmítnout.</p>
+              {d.completion_photos?.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold text-purple-500 mb-1">Vaše fotky:</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {d.completion_photos.map((p, i) => (
+                      <img key={i} src={((p.url || p).startsWith('http') ? (p.url || p) : `${API.replace('/api', '')}${p.url || p}`)} alt="" className="w-16 h-16 object-cover rounded-lg border border-purple-200" />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {isPendingCompletion && isAssigned && d.completion_initiated_by === 'customer' && (
+            <div className="w-full bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-800 rounded-xl p-5 space-y-4" data-testid="pending-completion-confirm-supplier">
+              <p className="font-bold text-purple-700 dark:text-purple-400">Zákazník označil zakázku jako dokončenou</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400/80">Potvrďte, že souhlasíte s dokončením.</p>
+              <div className="flex gap-3">
+                <button onClick={async () => {
+                  try {
+                    await axios.post(`${API}/demands/${d.id}/complete`, { completion_type: 'standard', final_price: d.final_price || 0 }, { headers: { Authorization: `Bearer ${token}` } });
+                    alert('Dokončení potvrzeno!');
+                    onBack(); onRefresh();
+                  } catch (err) { alert(err.response?.data?.detail || 'Chyba'); }
+                }} className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-colors" data-testid="confirm-completion-supplier-btn">
+                  <Check weight="bold" className="w-4 h-4 inline mr-1" /> Souhlasím s dokončením
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

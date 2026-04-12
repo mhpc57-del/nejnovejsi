@@ -36,6 +36,7 @@ const haversineKm = (lat1, lon1, lat2, lon2) => {
 const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, userId }) => {
   const isDispute = d.status === 'dispute';
   const isCompleted = d.status === 'completed';
+  const isPendingCompletion = d.status === 'pending_completion';
   const canChat = hasSupplier && !isOpen;
 
   const [messages, setMessages] = useState([]);
@@ -49,6 +50,9 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(!!d.customer_rating);
   const [responding, setResponding] = useState(false);
+  const [confirmingCompletion, setConfirmingCompletion] = useState(false);
+  const [customerPhotos, setCustomerPhotos] = useState([]);
+  const [uploadingCustomerPhoto, setUploadingCustomerPhoto] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [requestingLocation, setRequestingLocation] = useState(false);
   const [locationRequested, setLocationRequested] = useState(false);
@@ -208,8 +212,57 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
     setResponding(false);
   };
 
+  const handleConfirmCompletion = async () => {
+    if (!window.confirm('Potvrzujete, že zakázka byla dokončena?')) return;
+    setConfirmingCompletion(true);
+    try {
+      await axios.post(`${API}/demands/${d.id}/complete`, {
+        completion_photos: customerPhotos,
+        customer_rating: rating || undefined,
+        customer_review: reviewText.trim() || undefined,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      alert('Dokončení zakázky bylo potvrzeno!');
+      onBack();
+      onRefresh();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se potvrdit dokončení');
+    }
+    setConfirmingCompletion(false);
+  };
+
+  const handleRejectCompletion = async () => {
+    if (!window.confirm('Odmítnout dokončení? Zakázka bude vrácena zpět do řešení.')) return;
+    setConfirmingCompletion(true);
+    try {
+      await axios.post(`${API}/demands/${d.id}/dispute`, {
+        reason_type: 'f',
+        description: 'Zákazník odmítl dokončení zakázky — práce nebyla provedena podle dohody.',
+        photos: customerPhotos,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      alert('Dokončení bylo odmítnuto. Zakázka přesunuta do sporů.');
+      onBack();
+      onRefresh();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se odmítnout dokončení');
+    }
+    setConfirmingCompletion(false);
+  };
+
+  const handleUploadCustomerPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCustomerPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/upload`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+      setCustomerPhotos(prev => [...prev, res.data.url]);
+    } catch { alert('Nepodařilo se nahrát fotku'); }
+    setUploadingCustomerPhoto(false);
+  };
+
   const getStatusBadge = (status) => {
-    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], pending_completion: ['K potvrzení', 'bg-purple-100 text-purple-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
     const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
     return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
   };
@@ -255,6 +308,72 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
           <div className="bg-blue-50 dark:bg-blue-500/10 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Přiřazený dodavatel</p>
             <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5"><Briefcase className="w-4 h-4 text-blue-500" /> {d.assigned_supplier_name}</p>
+          </div>
+        )}
+
+        {/* Pending completion — waiting for customer confirmation */}
+        {isPendingCompletion && d.completion_initiated_by === 'supplier' && (
+          <div className="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-800 rounded-xl p-5 space-y-4" data-testid="pending-completion">
+            <p className="font-bold text-purple-700 dark:text-purple-400">Dodavatel označil zakázku jako dokončenou</p>
+            {d.final_price > 0 && <p className="text-sm text-purple-600"><strong>Cena:</strong> {Number(d.final_price).toLocaleString('cs-CZ')} Kč</p>}
+            {d.completion_type === 'price_increase' && d.price_increase > 0 && <p className="text-sm text-purple-600"><strong>Navýšení:</strong> +{Number(d.price_increase).toLocaleString('cs-CZ')} Kč</p>}
+            {d.completion_photos?.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-purple-700 dark:text-purple-400 mb-2">Fotodokumentace od dodavatele:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {d.completion_photos.map((p, i) => (
+                    <a key={i} href={(p.url || p).startsWith('http') ? (p.url || p) : `${API.replace('/api', '')}${p.url || p}`} target="_blank" rel="noopener noreferrer">
+                      <img src={(p.url || p).startsWith('http') ? (p.url || p) : `${API.replace('/api', '')}${p.url || p}`} alt="" className="w-24 h-24 object-cover rounded-lg border border-purple-200 hover:opacity-80 transition" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            <hr className="border-purple-200 dark:border-purple-800" />
+            <div className="space-y-3">
+              <p className="font-semibold text-sm text-zinc-700 dark:text-zinc-300">Vaše fotky (volitelné):</p>
+              <div className="flex gap-2 flex-wrap">
+                {customerPhotos.map((url, i) => (
+                  <div key={i} className="relative">
+                    <img src={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} alt="" className="w-20 h-20 object-cover rounded-lg border" />
+                    <button onClick={() => setCustomerPhotos(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">x</button>
+                  </div>
+                ))}
+                <label className="w-20 h-20 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-purple-50 transition">
+                  <span className="text-purple-400 text-xl">{uploadingCustomerPhoto ? '...' : '+'}</span>
+                  <input type="file" accept="image/*" onChange={handleUploadCustomerPhoto} className="hidden" disabled={uploadingCustomerPhoto} />
+                </label>
+              </div>
+              <p className="font-semibold text-sm text-zinc-700 dark:text-zinc-300 mt-3">Ohodnoťte dodavatele (volitelné):</p>
+              <div className="flex gap-1">
+                {[1,2,3,4,5].map(s => (
+                  <button key={s} onClick={() => setRating(s)} className="p-0.5">
+                    <Star weight={s <= rating ? 'fill' : 'regular'} className={`w-7 h-7 ${s <= rating ? 'text-orange-400' : 'text-zinc-300'}`} />
+                  </button>
+                ))}
+              </div>
+              {rating > 0 && (
+                <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} placeholder="Napište recenzi (volitelné)..."
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm resize-none" rows={2} />
+              )}
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <button onClick={handleConfirmCompletion} disabled={confirmingCompletion}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50" data-testid="confirm-completion-btn">
+                <Check weight="bold" className="w-4 h-4 inline mr-1" /> Potvrdit dokončení
+              </button>
+              <button onClick={handleRejectCompletion} disabled={confirmingCompletion}
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50" data-testid="reject-completion-btn">
+                Odmítnout — práce není hotová
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isPendingCompletion && d.completion_initiated_by === 'customer' && (
+          <div className="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-800 rounded-xl p-4" data-testid="pending-completion-waiting">
+            <p className="font-bold text-purple-700 dark:text-purple-400 mb-1">Čeká se na potvrzení od dodavatele</p>
+            <p className="text-sm text-purple-600 dark:text-purple-400/80">Označili jste zakázku jako dokončenou. Čeká se na potvrzení od dodavatele.</p>
           </div>
         )}
 

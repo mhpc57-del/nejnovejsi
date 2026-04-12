@@ -189,6 +189,7 @@ const CustomerDashboard = () => {
   const verified = demands.filter(d => d.verified && d.status === 'open');
   const unverified = demands.filter(d => !d.verified && d.status === 'open');
   const inProgress = demands.filter(d => d.status === 'in_progress');
+  const pendingCompletion = demands.filter(d => d.status === 'pending_completion');
   const inDispute = demands.filter(d => d.status === 'dispute');
   const completed = demands.filter(d => d.status === 'completed');
   const cancelled = demands.filter(d => d.status === 'cancelled');
@@ -197,6 +198,7 @@ const CustomerDashboard = () => {
     { key: 'verified', label: 'Ověřené', count: verified.length, color: 'text-emerald-500' },
     { key: 'unverified', label: 'Neověřené', count: unverified.length, color: 'text-orange-500' },
     { key: 'in_progress', label: 'Probíhající', count: inProgress.length, color: 'text-blue-500' },
+    { key: 'pending_completion', label: 'K potvrzení', count: pendingCompletion.length, color: 'text-purple-500' },
     { key: 'dispute', label: 'V řešení', count: inDispute.length, color: 'text-amber-500' },
     { key: 'completed', label: 'Dokončené', count: completed.length, color: 'text-zinc-500' },
     { key: 'cancelled', label: 'Nedokončené', count: cancelled.length, color: 'text-red-500' },
@@ -207,6 +209,7 @@ const CustomerDashboard = () => {
       case 'verified': return verified;
       case 'unverified': return unverified;
       case 'in_progress': return inProgress;
+      case 'pending_completion': return pendingCompletion;
       case 'dispute': return inDispute;
       case 'completed': return completed;
       case 'cancelled': return cancelled;
@@ -219,7 +222,7 @@ const CustomerDashboard = () => {
     .reduce((sum, d) => sum + d.invoiced_amount, 0);
 
   const getStatusBadge = (status) => {
-    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], pending_completion: ['K potvrzení', 'bg-purple-100 text-purple-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
     const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
     return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
   };
