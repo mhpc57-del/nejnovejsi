@@ -49,7 +49,9 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const isDispute = d.status === 'dispute';
   const isAssigned = d.assigned_supplier_id === userId;
   const canChat = isAssigned && !isOpen;
-  const [verificationRequested, setVerificationRequested] = useState(false);
+  const [verificationRequested, setVerificationRequested] = useState(
+    () => Array.isArray(d.verification_requests) && d.verification_requests.some(r => r.supplier_id === userId)
+  );
 
   const [messages, setMessages] = useState([]);
   const [chatMessage, setChatMessage] = useState('');

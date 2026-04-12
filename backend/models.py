@@ -178,6 +178,7 @@ class DemandResponse(BaseModel):
     final_price: Optional[float] = None
     customer_rating: Optional[int] = None
     customer_review: Optional[str] = None
+    verification_requests: List[dict] = []
 
 
 class MessageCreate(BaseModel):
