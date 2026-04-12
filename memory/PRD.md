@@ -16,7 +16,19 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 - Vsechny ceny vcetne 21% DPH, 14denni trial ZRUSEN
 - Registrace pouze 2 role: Zakaznik, Dodavatel (mesicni/rocni)
 
-## Posledni zmeny (11. duben 2026)
+## Posledni zmeny (12. duben 2026)
+- P0 FIX: Overene poptavky (49 Kc) se nyni spravne zobrazuji v zalozce "Overene" v Supplier Dashboard
+  - Pricina: DemandResponse model nemel pole `verified` a `verified_at`, ConfigDict(extra="ignore") je tichy odstranil
+  - Oprava: Pridano `verified: bool = False` a `verified_at: Optional[str] = None` do DemandResponse v models.py
+- FIX: Light/Dark mode — opraveny hardcodovane tmave pozadi (bg-zinc-900) v 5 komponentach HomePage:
+  - AdvantagesSection (sekce "Pro dodavatele")
+  - HowItWorksSection (sekce "Jak to cele funguje" + "Dulezite upozorneni")
+  - PricingSection (karta dodavatele)
+  - CTASection (sekce "Pripraveni zacit?")
+  - MobileAppBanner (sekce "Mobilni aplikace")
+  - Vsechny nyni pouzivaji `dark:` varianty pro spravne zobrazeni v obou rezimech
+
+## Dokonceno drive (11. duben 2026)
 - Prepis ceniku: zakaznik zdarma, dodavatel 190/1890 Kc, promo 39/990 Kc
 - Odstraneni 14denni trial periody kompletne
 - Registrace: 3 moznosti (zakaznik, dodavatel mesicni, dodavatel rocni)
@@ -41,8 +53,9 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 - "Nejlevnejsi platforma" popis zmenen na "Nepotrebujeme zbohatnout. Pomahame lidem."
 
 ## Backlog
-- Overit SMS na produkci (BulkGate za WEDOS WAF)
-- Overit upload fotek na produkci
-- Overit promo platbu na produkci
-- Dalsi vylepseni dle pozadavku uzivatele
-- React Native mobilni app (PAUSED)
+- P1: QR kody na fakturach a platebnych obrazovkach (vyzaduje navstevu banky pro API klic)
+- P1: Nove platebni moznosti pro zakazniky (ceka na ucetni)
+- P2: Overit SMS na produkci (BulkGate za WEDOS WAF)
+- P2: Overit upload fotek na produkci
+- P2: Overit promo platbu na produkci
+- P3: React Native mobilni app (PAUSED)

@@ -19,22 +19,16 @@ const supplierAdvantages = [
   { icon: ChatCircle, title: "Online CHAT", desc: "Diskrétní chat přímo v aplikaci." },
 ];
 
-const AdvantageCard = ({ adv, index, prefix, dark }) => (
+const AdvantageCard = ({ adv, index, prefix }) => (
   <motion.div variants={fadeUp} custom={index}
-    className={`group rounded-2xl p-6 border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
-      dark
-        ? 'bg-zinc-800 border-zinc-700/50 hover:border-orange-500/40 hover:shadow-orange-500/5'
-        : 'bg-white border-zinc-200/80 hover:border-orange-500/30 hover:shadow-zinc-900/5'
-    }`}
+    className="group rounded-2xl p-6 border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg bg-white dark:bg-zinc-800 border-zinc-200/80 dark:border-zinc-700/50 hover:border-orange-500/30 dark:hover:border-orange-500/40 hover:shadow-zinc-900/5 dark:hover:shadow-orange-500/5"
     data-testid={`${prefix}-adv-${index}`}
   >
-    <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors ${
-      dark ? 'bg-orange-500/15 group-hover:bg-orange-500/25' : 'bg-orange-50 group-hover:bg-orange-100'
-    }`}>
+    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors bg-orange-50 dark:bg-orange-500/15 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/25">
       <adv.icon weight="duotone" className="w-5 h-5 text-orange-500" />
     </div>
-    <h3 className={`font-bold text-sm mb-2 ${dark ? 'text-white' : 'text-zinc-900'}`}>{adv.title}</h3>
-    <p className={`text-sm leading-relaxed ${dark ? 'text-zinc-400' : 'text-zinc-500'}`}>{adv.desc}</p>
+    <h3 className="font-bold text-sm mb-2 text-zinc-900 dark:text-white">{adv.title}</h3>
+    <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">{adv.desc}</p>
   </motion.div>
 );
 
@@ -52,22 +46,22 @@ export const AdvantagesSection = () => (
         </motion.div>
         <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
           {customerAdvantages.map((adv, index) => (
-            <AdvantageCard key={index} adv={adv} index={index} prefix="customer" dark={false} />
+            <AdvantageCard key={index} adv={adv} index={index} prefix="customer" />
           ))}
         </motion.div>
       </div>
 
       {/* Supplier Advantages — dark bg */}
-      <div className="bg-zinc-900 rounded-3xl p-8 md:p-12" data-testid="supplier-advantages">
+      <div className="bg-zinc-100 dark:bg-zinc-900 rounded-3xl p-8 md:p-12" data-testid="supplier-advantages">
         <motion.div className="mb-12" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={staggerContainer}>
           <motion.span variants={fadeUp} className="text-xs font-bold text-orange-500 tracking-[0.2em] uppercase">Pro dodavatele</motion.span>
-          <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mt-4" style={{ fontFamily: 'Outfit' }}>
+          <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mt-4" style={{ fontFamily: 'Outfit' }}>
             Výhody pro dodavatele
           </motion.h2>
         </motion.div>
         <motion.div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={staggerContainer}>
           {supplierAdvantages.map((adv, index) => (
-            <AdvantageCard key={index} adv={adv} index={index} prefix="supplier" dark={true} />
+            <AdvantageCard key={index} adv={adv} index={index} prefix="supplier" />
           ))}
         </motion.div>
       </div>
