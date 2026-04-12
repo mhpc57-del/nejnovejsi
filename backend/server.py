@@ -74,6 +74,24 @@ async def startup():
     # Clean stale online users on startup
     await db.online_users.delete_many({})
 
+    # Fix invalid service_areas entries (migration)
+    try:
+        async for user in db.users.find({"service_areas": {"$ne": []}}, {"_id": 0, "id": 1, "service_areas": 1}):
+            areas = user.get("service_areas", [])
+            cleaned = []
+            for a in areas:
+                if isinstance(a, dict) and a.get("lat") and a.get("lng"):
+                    if not a.get("name") or a["name"].startswith("Bod "):
+                        a["name"] = f"{a['lat']:.2f}, {a['lng']:.2f}"
+                    cleaned.append(a)
+                elif isinstance(a, str) and a.strip():
+                    cleaned.append({"name": a, "lat": None, "lng": None, "radius": 25})
+            if cleaned != areas:
+                await db.users.update_one({"id": user["id"]}, {"$set": {"service_areas": cleaned}})
+                logger.info(f"Migrated service_areas for user {user['id']}")
+    except Exception as e:
+        logger.error(f"Service areas migration error: {e}")
+
     # Background task: clean stale online users every 60s
     async def cleanup_stale_online():
         while True:
