@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from database import db
 from auth import get_current_user
 from models import DemandCreate, DemandResponse, UserRole
@@ -373,6 +373,53 @@ async def accept_demand(demand_id: str, current_user: dict = Depends(get_current
         logger.error(f"Failed to send accept notification: {str(e)}")
     
     return {"message": "Demand accepted"}
+
+
+@router.post("/demands/{demand_id}/request-verification")
+async def request_demand_verification(demand_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """Supplier requests that customer verifies their demand (sends email+SMS with payment link)"""
+    if current_user["role"] not in [UserRole.SUPPLIER, UserRole.CUSTOMER_SUPPLIER]:
+        raise HTTPException(status_code=403, detail="Pouze dodavatel může vyžádat ověření")
+    
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Poptávka nenalezena")
+    if demand.get("verified"):
+        raise HTTPException(status_code=400, detail="Poptávka je již ověřená")
+    
+    customer = await db.users.find_one({"id": demand["customer_id"]}, {"_id": 0, "email": 1, "phone": 1, "first_name": 1})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Zákazník nenalezen")
+    
+    supplier_name = current_user.get("company_name") or f"{current_user.get('first_name', '')} {current_user.get('last_name', '')}".strip() or current_user["email"]
+    
+    # Build verification URL that takes customer directly to Stripe checkout
+    origin = request.headers.get("origin", "https://craftbolt.cz")
+    verification_url = f"{origin}/dashboard?verify_demand={demand_id}"
+    
+    try:
+        await notification_service.notify_request_verification(
+            customer_email=customer["email"],
+            customer_phone=customer.get("phone"),
+            supplier_name=supplier_name,
+            demand_title=demand.get("title", ""),
+            demand_id=demand_id,
+            verification_url=verification_url
+        )
+    except Exception as e:
+        logger.error(f"Failed to send verification request notification: {str(e)}")
+    
+    # Track the request in the demand
+    await db.demands.update_one(
+        {"id": demand_id},
+        {"$push": {"verification_requests": {
+            "supplier_id": current_user["id"],
+            "supplier_name": supplier_name,
+            "requested_at": datetime.now(timezone.utc).isoformat()
+        }}}
+    )
+    
+    return {"message": "Žádost o ověření byla odeslána zákazníkovi"}
 
 
 @router.post("/demands/{demand_id}/cannot-complete")

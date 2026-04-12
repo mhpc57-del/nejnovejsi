@@ -488,6 +488,40 @@ class NotificationTemplates:
         subject = "Platba úspěšně přijata"
         return subject, NotificationTemplates.email_base(content, subject)
 
+    @staticmethod
+    def request_verification_email(supplier_name: str, demand_title: str, verification_url: str) -> tuple:
+        """Email template when supplier requests demand verification from customer"""
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Dodavatel vyžaduje ověření poptávky</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dobrý den,
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Dodavatel <strong>{supplier_name}</strong> projevil o Vaši poptávku zájem, ale vyžaduje ověření poptávky.
+            </p>
+            <div style="background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 0 8px 8px 0; padding: 16px; margin: 0 0 24px 0;">
+                <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a;">Poptávka:</p>
+                <p style="margin: 0; color: #4b5563;">{demand_title}</p>
+            </div>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Ověřením poptávky za <strong>49 Kč</strong> dáváte dodavatelům najevo, že poptávku myslíte vážně.
+                Po ověření bude dodavatel moci zobrazit kompletní detail a přijmout zakázku.
+            </p>
+            <a href="{verification_url}" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px;">
+                Ověřit poptávku za 49 Kč
+            </a>
+            <p style="color: #9ca3af; font-size: 12px; margin: 16px 0 0 0;">
+                Platba proběhne přes zabezpečenou platební bránu Stripe.
+            </p>
+        """
+        subject = f"Dodavatel {supplier_name} vyžaduje ověření Vaší poptávky"
+        return subject, NotificationTemplates.email_base(content, subject)
+
+    @staticmethod
+    def request_verification_sms(supplier_name: str) -> str:
+        """SMS template when supplier requests demand verification"""
+        return f"CraftBolt: Dodavatel {supplier_name} projevil o Vasi poptavku zajem, ale vyzaduje overeni. Overeni provedte v aplikaci."
+
 
 # ============ NOTIFICATION SERVICE ============
 
@@ -741,6 +775,22 @@ class NotificationService:
         await self.email_service.send_email(email, subject, html)
         if phone:
             self.sms_service.send_sms(phone, f"CraftBolt: Dodavatel {supplier_name} reagoval na vaši poptávku. Zaregistrujte se na craftbolt.cz pro zobrazeni detailu.")
+
+    async def notify_request_verification(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, demand_id: str, verification_url: str):
+        """Notify customer that a supplier wants them to verify their demand"""
+        subject, html = self.templates.request_verification_email(supplier_name, demand_title, verification_url)
+        await self.email_service.send_email(customer_email, subject, html)
+        
+        # Always send SMS for verification requests (important monetization trigger)
+        if customer_phone:
+            sms_text = self.templates.request_verification_sms(supplier_name)
+            logger.info(f"Sending verification request SMS to {customer_email} at {customer_phone}")
+            self.sms_service.send_sms(customer_phone, sms_text)
+        
+        # Push notification
+        user = await db.users.find_one({"email": customer_email}, {"_id": 0, "push_token": 1})
+        if user and user.get("push_token"):
+            await send_expo_push([user["push_token"]], "Ověřte poptávku", f"{supplier_name} vyžaduje ověření vaší poptávky '{demand_title}'", {"type": "request_verification", "demand_id": demand_id})
 
 
 # Global notification service instance

@@ -87,6 +87,27 @@ const CustomerDashboard = () => {
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) fetchDemands(); })
       .catch(() => {});
+    
+    // Handle verify_demand query param (from email link)
+    const params = new URLSearchParams(window.location.search);
+    const verifyDemandId = params.get('verify_demand');
+    if (verifyDemandId) {
+      // Redirect to Stripe checkout for demand verification
+      axios.post(`${API}/payments/demands/${verifyDemandId}/verify-checkout`, {}, {
+        headers: { Authorization: `Bearer ${token}`, 'Origin': window.location.origin }
+      }).then(res => {
+        if (res.data.url) window.location.href = res.data.url;
+      }).catch(err => {
+        const detail = err.response?.data?.detail;
+        if (detail === 'Poptávka je již ověřena') {
+          alert('Tato poptávka je již ověřená.');
+        } else {
+          alert(detail || 'Nepodařilo se zahájit ověření poptávky.');
+        }
+      });
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };

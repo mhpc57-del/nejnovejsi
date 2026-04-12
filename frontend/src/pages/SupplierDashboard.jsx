@@ -411,6 +411,18 @@ const SupplierDashboard = () => {
     // Demand detail
     if (selectedDemand) {
       const d = selectedDemand;
+      const isVerified = d.verified;
+      const isOpen = d.status === 'open';
+      
+      const handleRequestVerification = async () => {
+        try {
+          await axios.post(`${API}/demands/${d.id}/request-verification`, {}, { headers: { Authorization: `Bearer ${token}` } });
+          alert('Žádost o ověření byla odeslána zákazníkovi emailem i SMS.');
+        } catch (error) {
+          alert(error.response?.data?.detail || 'Nepodařilo se odeslat žádost');
+        }
+      };
+      
       return (
         <div data-testid="supplier-demand-detail">
           <button onClick={() => setSelectedDemand(null)} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors">
@@ -421,32 +433,87 @@ const SupplierDashboard = () => {
             <div className="flex items-center gap-2 flex-wrap">
               {getStatusBadge(d.status)}
               <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium">{d.category}</span>
-              {d.verified && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span>}
+              {isVerified ? (
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span>
+              ) : (
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold">Neověřená</span>
+              )}
             </div>
+            
             <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
+            
             <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
               <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" /> {d.address}</span>
               <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" /> {new Date(d.created_at).toLocaleDateString('cs-CZ')}</span>
             </div>
+            
             {d.deadline && (
               <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
                 {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
               </p>
             )}
+
+            {/* Customer info - ONLY for verified demands */}
+            {isVerified && d.customer_name && (
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Zákazník</p>
+                <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-zinc-400" /> {d.customer_name}
+                </p>
+              </div>
+            )}
+
+            {/* Unverified demand restriction notice */}
+            {!isVerified && isOpen && (
+              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-800 rounded-xl p-5" data-testid="unverified-notice">
+                <div className="flex items-start gap-3">
+                  <Warning weight="bold" className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold text-orange-700 dark:text-orange-400 text-sm mb-1">Neověřená poptávka</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-400/80 leading-relaxed">
+                      Informace o zákazníkovi, online poloha a možnost nahrání rozpočtu jsou skryté.
+                      Zákazník musí nejprve ověřit poptávku, abyste mohli zakázku přijmout.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <hr className="border-zinc-200 dark:border-zinc-700" />
+            
             <div className="flex gap-3 flex-wrap">
-              {d.status === 'open' && (
-                <button onClick={() => handleAcceptDemand(d.id)} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="accept-demand-btn">
-                  <Check weight="bold" className="w-4 h-4 inline mr-1" /> Přijmout zakázku
+              {/* Verified + open: full action buttons */}
+              {isVerified && isOpen && (
+                <>
+                  <button onClick={() => handleAcceptDemand(d.id)} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="accept-demand-btn">
+                    <Check weight="bold" className="w-4 h-4 inline mr-1" /> Přijmout zakázku
+                  </button>
+                  <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="open-detail-btn">
+                    Otevřít detail
+                  </Link>
+                </>
+              )}
+              
+              {/* Unverified + open: request verification button */}
+              {!isVerified && isOpen && (
+                <button onClick={handleRequestVerification} className="w-full px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn">
+                  <Warning weight="bold" className="w-4 h-4 inline mr-1.5" />
+                  Zakázku bych přijmul, ale poptávka není ověřena
                 </button>
               )}
-              <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
-                Otevřít detail
-              </Link>
+              
+              {/* In progress or other statuses: show detail link */}
+              {!isOpen && (
+                <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
+                  Otevřít detail
+                </Link>
+              )}
             </div>
           </div>
-          {d.latitude && d.longitude && (
+          
+          {/* Map - only for verified demands */}
+          {isVerified && d.latitude && d.longitude && (
             <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
               <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
