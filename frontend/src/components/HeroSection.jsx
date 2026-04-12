@@ -174,7 +174,7 @@ const HeroSection = () => {
   return (
     <section className="relative bg-stone-50 dark:bg-zinc-900 overflow-hidden" data-testid="hero-section">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-10 md:pt-36 md:pb-14 relative">
-        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
           {/* === Block 1: Title (always first) === */}
           <div className="lg:col-span-5 order-1">
@@ -195,13 +195,13 @@ const HeroSection = () => {
             </div>
 
             {/* Desktop only: categories + CTA inline */}
-            <div className="hidden lg:flex lg:flex-col lg:h-full">
-              <div className="grid grid-cols-4 gap-2 flex-1" data-testid="hero-categories-desktop">
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-4 gap-2" data-testid="hero-categories-desktop">
                 {categories.map((cat, i) => {
                   const isActive = i === activeIndex;
                   return (
                     <button key={i} onClick={() => handleSelect(i)}
-                      className={`relative flex flex-col items-center justify-center gap-3 py-6 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      className={`relative flex flex-col items-center justify-center gap-3 py-7 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
                         isActive
                           ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
                           : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
