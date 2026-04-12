@@ -174,10 +174,10 @@ const HeroSection = () => {
   return (
     <section className="relative bg-stone-50 dark:bg-zinc-900 overflow-hidden" data-testid="hero-section">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-10 md:pt-36 md:pb-14 relative">
-        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-end">
 
           {/* === Block 1: Title (always first) === */}
-          <div className="lg:col-span-5 order-1">
+          <div className="lg:col-span-5 order-1 flex flex-col">
             <div className="mb-2 lg:mb-8">
               <h1
                 className="hidden lg:block text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
@@ -194,14 +194,14 @@ const HeroSection = () => {
               </p>
             </div>
 
-            {/* Desktop only: categories + CTA inline */}
-            <div className="hidden lg:block">
+            {/* Desktop only: categories */}
+            <div className="hidden lg:flex flex-col mt-auto">
               <div className="grid grid-cols-4 gap-3" data-testid="hero-categories-desktop">
                 {categories.map((cat, i) => {
                   const isActive = i === activeIndex;
                   return (
                     <button key={i} onClick={() => handleSelect(i)}
-                      className={`relative flex flex-col items-center justify-center gap-2 py-6 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      className={`relative flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all duration-300 cursor-pointer group aspect-square ${
                         isActive
                           ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
                           : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
@@ -217,15 +217,6 @@ const HeroSection = () => {
                   );
                 })}
               </div>
-              <div className="mt-6">
-                <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="hero-register-btn">
-                  Přidat poptávku
-                  <ArrowRight weight="bold" className="w-4 h-4" />
-                </Link>
-              </div>
-              <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
-                Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
-              </p>
             </div>
           </div>
 
@@ -313,6 +304,17 @@ const HeroSection = () => {
             </p>
           </div>
 
+        </div>
+
+        {/* Desktop CTA - below the grid */}
+        <div className="hidden lg:block mt-6">
+          <Link to="/registrace" className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-orange-500/25 text-sm" data-testid="hero-register-btn">
+            Přidat poptávku
+            <ArrowRight weight="bold" className="w-4 h-4" />
+          </Link>
+          <p className="text-orange-400 dark:text-orange-400 text-sm mt-4 leading-relaxed max-w-md" style={{ fontFamily: 'Outfit' }}>
+            Jednoduše přidejte poptávku ... počkejte na nabídku a napřímo se dohodněte s dodavatelem.
+          </p>
         </div>
 
         {/* Micro features */}
