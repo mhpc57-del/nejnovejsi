@@ -552,7 +552,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           )}
         </div>
       </div>
-          {isVerified && d.latitude && d.longitude && (() => {
+          {(isVerified || isInProgress || isPendingCompletion || isAssigned) && d.latitude && d.longitude && (() => {
             const points = [];
             if (d.latitude && d.longitude) points.push({ lat: d.latitude, lng: d.longitude, type: 'work' });
             if (myLocation?.latitude) points.push({ lat: myLocation.latitude, lng: myLocation.longitude, type: 'supplier' });
