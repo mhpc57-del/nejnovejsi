@@ -163,7 +163,8 @@ const SupplierDashboard = () => {
       }, { headers: { Authorization: `Bearer ${token}` } });
       setEditingProfile(false);
       fetchProfile();
-    } catch (e) { console.error(e); }
+      alert('Změny byly úspěšně uloženy.');
+    } catch (e) { console.error(e); alert('Nepodařilo se uložit změny.'); }
     setSavingProfile(false);
   };
 
@@ -368,12 +369,14 @@ const SupplierDashboard = () => {
                     <div key={i} className="flex gap-2 items-center">
                       {editingProfile ? (
                         <>
-                          <input value={branch} onChange={e => {
-                            const b = [...(profileForm.branches || [])];
-                            b[i] = e.target.value;
-                            setProfileForm(p => ({...p, branches: b}));
-                          }} placeholder={`Pobočka ${i+1}`}
-                            className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                          <div className="flex-1 relative">
+                            <input value={branch} onChange={async (e) => {
+                              const b = [...(profileForm.branches || [])];
+                              b[i] = e.target.value;
+                              setProfileForm(p => ({...p, branches: b}));
+                            }} placeholder={`Adresa pobočky ${i+1}`}
+                              className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                          </div>
                           <button onClick={() => setProfileForm(p => ({...p, branches: (p.branches || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
                         </>
                       ) : (
@@ -385,7 +388,16 @@ const SupplierDashboard = () => {
                     <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">—</p>
                   )}
                   {editingProfile && (
-                    <button onClick={() => setProfileForm(p => ({...p, branches: [...(p.branches || []), '']}))} className="text-sm text-orange-500 hover:text-orange-600 font-medium">+ Přidat pobočku</button>
+                    <div className="flex gap-2 items-center">
+                      <input id="new-branch-input" placeholder="Zadejte adresu nové pobočky..."
+                        className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const val = e.target.value.trim(); if (val) { setProfileForm(p => ({...p, branches: [...(p.branches || []), val]})); e.target.value = ''; } } }} />
+                      <button type="button" onClick={() => {
+                        const input = document.getElementById('new-branch-input');
+                        const val = input?.value?.trim();
+                        if (val) { setProfileForm(p => ({...p, branches: [...(p.branches || []), val]})); input.value = ''; }
+                      }} className="px-3 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
+                    </div>
                   )}
                 </div>
               </div>
