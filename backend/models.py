@@ -225,8 +225,8 @@ class ReviewResponse(BaseModel):
 
 
 class LocationUpdate(BaseModel):
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class ProfileUpdate(BaseModel):
