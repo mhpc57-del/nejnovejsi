@@ -34,11 +34,14 @@ const LoginPage = () => {
       else navigate('/zakaznik');
     } catch (err) {
       const detail = err.response?.data?.detail || '';
+      const status = err.response?.status;
       if (detail === 'EMAIL_NOT_VERIFIED') {
         setShowVerificationMessage(true);
         setError('');
       } else if (detail === 'Invalid credentials') {
         setError('Neplatný email nebo heslo');
+      } else if (!err.response || status >= 500 || status === 0) {
+        setError('Server dočasně neodpovídá. Zkuste to prosím znovu za chvíli.');
       } else {
         setError(detail || 'Přihlášení se nezdařilo');
       }
