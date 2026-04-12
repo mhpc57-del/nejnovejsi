@@ -201,7 +201,7 @@ const HeroSection = () => {
                   const isActive = i === activeIndex;
                   return (
                     <button key={i} onClick={() => handleSelect(i)}
-                      className={`relative flex flex-col items-center justify-center gap-2 py-5 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      className={`relative flex flex-col items-center justify-center gap-2 py-6 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
                         isActive
                           ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
                           : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
