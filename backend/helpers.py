@@ -44,5 +44,6 @@ def user_to_response(user: dict) -> UserResponse:
         punctuality_score=user.get("punctuality_score"),
         avg_arrival_minutes=user.get("avg_arrival_minutes"),
         preferred_languages=user.get("preferred_languages", []),
-        branch_addresses=user.get("branch_addresses", [])
+        branch_addresses=user.get("branch_addresses", []),
+        branches=user.get("branches", [])
     )

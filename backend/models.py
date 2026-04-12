@@ -93,6 +93,7 @@ class UserResponse(BaseModel):
     avg_arrival_minutes: Optional[float] = None
     preferred_languages: List[str] = []
     branch_addresses: List[str] = []
+    branches: List[str] = []
 
 
 class TokenResponse(BaseModel):
@@ -238,6 +239,7 @@ class ProfileUpdate(BaseModel):
     reference_photos: Optional[List[str]] = None
     service_areas: Optional[List[dict]] = None
     account_type: Optional[str] = None
+    branches: Optional[List[str]] = None
 
 
 class CertificationUpload(BaseModel):
