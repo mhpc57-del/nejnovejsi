@@ -509,7 +509,7 @@ const CustomerDashboard = () => {
           </button>
 
           <div className="pt-4">
-            <p className="px-3 text-xs font-semibold text-zinc-500 dark:text-zinc-500 mb-2 italic">Poptávky:</p>
+            <p className="px-3 text-xs font-semibold text-zinc-500 dark:text-zinc-500 mb-2 italic">Moje poptávky:</p>
             {demandTabs.map(tab => (
               <button key={tab.key} onClick={() => { setActiveTab(tab.key); setSelectedDemand(null); }}
                 className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab.key ? 'bg-orange-500 text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
