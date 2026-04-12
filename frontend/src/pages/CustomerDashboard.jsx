@@ -558,7 +558,20 @@ const CustomerDashboard = () => {
         </header>
 
         {/* Content */}
-        <div className="p-6 max-w-5xl">
+        <div className="p-3 sm:p-6 pb-20 lg:pb-6 max-w-5xl">
+          {/* Mobile tab bar for demands */}
+          {demandTabs.some(t => t.key === activeTab) && (
+            <div className="lg:hidden overflow-x-auto -mx-3 px-3 mb-4 scrollbar-hide">
+              <div className="flex gap-2 min-w-max">
+                {demandTabs.map(tab => (
+                  <button key={tab.key} onClick={() => { setActiveTab(tab.key); setSelectedDemand(null); }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === tab.key ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                    {tab.label} <span className={activeTab === tab.key ? 'text-white/80' : tab.color}>{tab.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {renderContent()}
         </div>
       </main>

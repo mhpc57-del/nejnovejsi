@@ -385,10 +385,10 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   return (
     <div data-testid="supplier-demand-detail">
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors"><X className="w-4 h-4" /> Zpět na seznam</button>
-      <div className="flex gap-4 items-start">
-        {/* Left column - demand detail (fixed width) */}
-        <div className="space-y-4 w-full" style={{ maxWidth: canChat && showChat ? '55%' : '100%' }}>
-          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-4">
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        {/* Left column - demand detail */}
+        <div className={`space-y-4 w-full ${canChat && showChat ? 'lg:max-w-[55%]' : ''}`}>
+          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 sm:p-6 space-y-4">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{d.title}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {getStatusBadge(d.status)}
@@ -610,12 +610,12 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         </div>
         {/* Right column - chat */}
         {canChat && showChat && (
-          <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden sticky top-4" data-testid="inline-chat">
+          <div className="w-full lg:w-auto lg:min-w-[380px] bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden lg:sticky lg:top-4" data-testid="inline-chat">
             <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
               <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
               {messages.length > 0 && <span className="text-xs text-zinc-400">({messages.length} zpráv)</span>}
             </div>
-            <div className="h-[400px] overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
+            <div className="h-[300px] lg:h-[400px] overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
               {messages.length === 0 ? (
                 <p className="text-center text-zinc-400 text-sm py-8">Zatím žádné zprávy. Napište zákazníkovi.</p>
               ) : messages.map((msg, i) => {
