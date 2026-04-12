@@ -63,6 +63,11 @@ const SupplierDashboard = () => {
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [showCustomCategoryForm, setShowCustomCategoryForm] = useState(false);
+  const [submittingCustomCategory, setSubmittingCustomCategory] = useState(false);
   const [viewedDemands, setViewedDemands] = useState([]);
 
   const fetchViewedDemands = async () => {
@@ -356,59 +361,122 @@ const SupplierDashboard = () => {
             {/* Categories */}
             <div className="mt-5">
               <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Kategorie služeb</label>
-              {editingProfile ? (
-                <div className="flex flex-wrap gap-2">
-                  {allCategories.map(c => {
-                    const selected = (profileForm.categories || []).includes(c);
-                    return (
-                      <button key={c} type="button" onClick={() => {
-                        const cats = profileForm.categories || [];
-                        setProfileForm(p => ({...p, categories: selected ? cats.filter(x => x !== c) : [...cats, c]}));
-                      }}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${selected ? 'bg-orange-500 text-white border-orange-500' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600 hover:border-orange-400'}`}>
-                        {c}
+              {/* Selected categories chips */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(editingProfile ? (profileForm.categories || []) : (profile?.categories || [])).map(c => (
+                  <span key={c} className="px-3 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-medium rounded-full flex items-center gap-1.5">
+                    {c}
+                    {editingProfile && (
+                      <button onClick={() => setProfileForm(p => ({...p, categories: (p.categories || []).filter(x => x !== c)}))} className="hover:text-red-500"><X className="w-3 h-3" /></button>
+                    )}
+                  </span>
+                ))}
+                {(editingProfile ? (profileForm.categories || []) : (profile?.categories || [])).length === 0 && (
+                  <span className="text-sm text-zinc-400">Žádné kategorie</span>
+                )}
+              </div>
+              {editingProfile && (
+                <div className="space-y-2">
+                  {/* Search dropdown */}
+                  <div className="relative" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setTimeout(() => setShowCategoryDropdown(false), 200); }}>
+                    <input value={categorySearch} onChange={e => { setCategorySearch(e.target.value); setShowCategoryDropdown(true); }}
+                      onFocus={() => setShowCategoryDropdown(true)} placeholder="Vyhledat kategorii..."
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                    {showCategoryDropdown && (
+                      <div className="absolute z-20 w-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {allCategories
+                          .filter(c => !(profileForm.categories || []).includes(c) && c.toLowerCase().includes(categorySearch.toLowerCase()))
+                          .slice(0, 10)
+                          .map(c => (
+                            <button key={c} onClick={() => {
+                              setProfileForm(p => ({...p, categories: [...(p.categories || []), c]}));
+                              setCategorySearch('');
+                              setShowCategoryDropdown(false);
+                            }} className="w-full text-left px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors">
+                              {c}
+                            </button>
+                          ))}
+                        {allCategories.filter(c => !(profileForm.categories || []).includes(c) && c.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                          <p className="px-3 py-2 text-sm text-zinc-400">Žádné výsledky</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Custom category */}
+                  {showCustomCategoryForm ? (
+                    <div className="flex gap-2 items-center">
+                      <input value={customCategoryInput} onChange={e => setCustomCategoryInput(e.target.value)} placeholder="Název nové kategorie..."
+                        className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white" />
+                      <button disabled={!customCategoryInput.trim() || submittingCustomCategory} onClick={async () => {
+                        setSubmittingCustomCategory(true);
+                        try {
+                          await axios.post(`${API}/categories/suggest`, { name: customCategoryInput.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+                          setProfileForm(p => ({...p, custom_categories: [...(p.custom_categories || []), customCategoryInput.trim()]}));
+                          alert('Kategorie byla odeslána ke schválení administrátorovi.');
+                          setCustomCategoryInput('');
+                          setShowCustomCategoryForm(false);
+                        } catch (e) { alert(e.response?.data?.detail || 'Nepodařilo se odeslat'); }
+                        setSubmittingCustomCategory(false);
+                      }} className="px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors">
+                        {submittingCustomCategory ? '...' : 'Odeslat'}
                       </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {(profile?.categories?.length > 0) ? profile.categories.map(c => (
-                    <span key={c} className="px-3 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-medium rounded-full">{c}</span>
-                  )) : <span className="text-sm text-zinc-400">Žádné kategorie</span>}
+                      <button onClick={() => { setShowCustomCategoryForm(false); setCustomCategoryInput(''); }} className="text-zinc-400 hover:text-zinc-600"><X className="w-4 h-4" /></button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowCustomCategoryForm(true)} className="text-sm text-orange-500 hover:text-orange-600 font-medium">+ Přidat manuálně</button>
+                  )}
                 </div>
               )}
             </div>
             
-            {/* Service areas */}
+            {/* Service areas with map */}
             <div className="mt-5">
               <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Místa působení</label>
-              {editingProfile ? (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => (
+                  <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full flex items-center gap-1.5">
+                    {typeof a === 'object' ? a.name : a}
+                    {editingProfile && (
+                      <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="hover:text-red-500"><X className="w-3 h-3" /></button>
+                    )}
+                  </span>
+                ))}
+                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).length === 0 && (
+                  <span className="text-sm text-zinc-400">Žádná místa působení</span>
+                )}
+              </div>
+              {editingProfile && (
                 <div className="space-y-2">
-                  {(profileForm.service_areas || []).map((area, i) => (
-                    <div key={i} className="flex gap-2 items-center">
-                      <input value={area.name || area} onChange={e => {
-                        const areas = [...(profileForm.service_areas || [])];
-                        areas[i] = typeof area === 'object' ? {...area, name: e.target.value} : e.target.value;
-                        setProfileForm(p => ({...p, service_areas: areas}));
-                      }} placeholder="Např. Praha, Brno, Olomoucký kraj..."
-                        className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white" />
-                      <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))}
-                        className="text-red-500 hover:text-red-600"><X className="w-4 h-4" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), '']}))}
-                    className="text-sm text-orange-500 hover:text-orange-600 font-medium">+ Přidat místo působení</button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {(profile?.service_areas?.length > 0) ? profile.service_areas.map((a, i) => (
-                    <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
-                      {typeof a === 'object' ? a.name : a}
-                    </span>
-                  )) : <span className="text-sm text-zinc-400">Žádná místa působení</span>}
+                  <div className="flex gap-2 items-center">
+                    <input id="new-area-input" placeholder="Napište město nebo kraj..." className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = e.target.value.trim();
+                          if (val) { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), val]})); e.target.value = ''; }
+                        }
+                      }} />
+                    <button type="button" onClick={() => {
+                      const input = document.getElementById('new-area-input');
+                      const val = input?.value?.trim();
+                      if (val) { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), val]})); input.value = ''; }
+                    }} className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
+                  </div>
                 </div>
               )}
+              {/* Map */}
+              <div className="mt-3 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
+                <MapContainer center={[49.8, 15.5]} zoom={7} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                  {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
+                    const name = typeof a === 'object' ? a.name : a;
+                    const lat = typeof a === 'object' ? a.lat : null;
+                    const lng = typeof a === 'object' ? a.lng : null;
+                    if (lat && lng) return <Marker key={i} position={[lat, lng]}><Popup>{name}</Popup></Marker>;
+                    return null;
+                  })}
+                </MapContainer>
+              </div>
             </div>
           </div>
         </div>
