@@ -26,18 +26,28 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 2. Zakaznik vidi duvod + popis + fotky v zalozce "V reseni"
 3. Zakaznik reaguje: potvrdit rozpocet / zamitnout / nechci pokracovat / znovu vystavit
 
-## Zmeny 12. duben 2026
-- FIX: BulkGate SMS token (1m → lm na pozici 39-40)
-- FIX: BulkGate sender_id z gProfile/18254 na gText/CraftBolt
-- FIX: Tlacitko "Zrusit zakazku" — chybel onClick handler
-- FIX: verification_requests se nyni uklada a nacita z DB
-- FIX: Auto-refresh dashboardu (polling 15s) pro synchronizaci
-- FIX: Status polling v detailu (10s) pro real-time aktualizace
+## Zmeny 12. duben 2026 - Odpoledni relace
+- FIX: BulkGate SMS — prepsan na http.client (WEDOS WAF blokuje Python requests)
+- FIX: BulkGate credentials hardcoded jako fallback (produkce necte .env)
+- FIX: Kategorie sjednoceny (Elektrikari → Elektromontazni prace)
+- FIX: Migrace kategorii pri startu serveru
+- FIX: Tlacitko "Zrusit zakazku" — pridany onClick handler
+- FIX: SMS notifikace prepinac — funguje okamzite bez nutnosti ulozit profil
+- FIX: SMS prepinac vizualni chyba (left-5.5 → left-[22px])
+- FIX: Mapa v detailu zakazky — zobrazuje se i pro neoverene prijate zakazky
+- FIX: Sdileni polohy — uklada se do DB, automaticky se zapne pri navratu
 - NOVY: Dvoufazove potvrzeni dokonceni (pending_completion stav)
 - NOVY: Zalozka "K potvrzeni" v obou dashboardech
 - NOVY: Favicon — sestihran s oranzovou helmou
+- NOVY: Mobilni responzivita — kompletni audit a opravy
+  - Flex-col lg:flex-row pro chat layout
+  - Horizontalne scrollovatelne zalozky na mobilu
+  - Responzivni padding (p-3 sm:p-6)
+  - Spodni navigace s pb-20 clearance
+  - Chat panel plna sirka na mobilu
+- NOVY: Auto-refresh dashboardu (15s) + status polling v detailu (10s)
+- NOVY: verification_requests se uklada a nacita z DB
 - NOVY: Zakaznik muze pridat fotky a hodnoceni pri potvrzovani
-- NOVY: Email notifikace pro pending_completion
 
 ## Stare zmeny
 - DemandResponse model — pridano verified + verified_at
@@ -58,7 +68,6 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 ## Backlog
 - P1: QR kody (ceka na banku)
 - P1: Platebni moznosti zakazniku (ceka na ucetni)
-- P1: Mobilni responzivita dashboardu
 - P2: Admin sekce pro spory (UI)
 - P2: Bezpecnostni zpevneni (Rate limiting, CSRF, XSS)
 - P3: React Native app (pozastaveno)
