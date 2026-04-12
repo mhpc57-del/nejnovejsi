@@ -469,27 +469,30 @@ const SupplierDashboard = () => {
             <div className="mt-5">
               <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Místa působení</label>
               {/* List of service areas */}
-              <div className="space-y-2 mb-3">
+              <div className="space-y-3 mb-3">
                 {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
                   const area = typeof a === 'object' ? a : { name: a, lat: null, lng: null, radius: 25 };
                   return (
-                    <div key={i} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg p-2.5 border border-blue-200 dark:border-blue-800">
-                      <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <span className="text-sm text-blue-700 dark:text-blue-300 font-medium flex-1 truncate">{area.name || `Bod ${i+1}`}</span>
-                      <span className="text-[10px] text-blue-400">{area.radius || 25} km</span>
-                      {editingProfile && (
-                        <div className="flex items-center gap-1.5">
-                          <select value={area.radius || 25} onChange={e => {
+                    <div key={i} className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-3 border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-sm text-blue-700 dark:text-blue-300 font-medium flex-1 truncate">{area.name || 'Neznámé místo'}</span>
+                        {editingProfile && (
+                          <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                        )}
+                      </div>
+                      {editingProfile ? (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-zinc-500 w-16">Poloměr:</span>
+                          <input type="range" min="1" max="150" step="1" value={area.radius || 25} onChange={e => {
                             const areas = [...(profileForm.service_areas || [])];
                             areas[i] = { ...area, radius: parseInt(e.target.value) };
                             setProfileForm(p => ({...p, service_areas: areas}));
-                          }} className="px-1.5 py-1 bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700 rounded text-xs text-zinc-700 dark:text-zinc-300">
-                            {[1,5,10,15,20,25,30,40,50,75,100,150].map(r => (
-                              <option key={r} value={r}>{r} km</option>
-                            ))}
-                          </select>
-                          <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                          }} className="flex-1 accent-orange-500" />
+                          <span className="text-sm font-bold text-orange-500 w-14 text-right">{area.radius || 25} km</span>
                         </div>
+                      ) : (
+                        <p className="text-xs text-blue-400 ml-6">Poloměr: {area.radius || 25} km</p>
                       )}
                     </div>
                   );
@@ -501,7 +504,7 @@ const SupplierDashboard = () => {
               {editingProfile && (
                 <div className="space-y-2 mb-3">
                   <div className="flex gap-2 items-center">
-                    <input id="manual-area-input" placeholder="Zadejte adresu nebo město..." className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
+                    <input id="manual-area-input" placeholder="Zadejte město nebo adresu..." className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
                       onKeyDown={async (e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
@@ -511,12 +514,12 @@ const SupplierDashboard = () => {
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=1&countrycodes=cz`);
                             const data = await res.json();
                             if (data.length > 0) {
-                              setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',')[0] + ', ' + (data[0].display_name.split(',')[1] || '').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
+                              setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',').slice(0,2).join(',').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
                             } else {
-                              setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]}));
+                              alert('Adresa nebyla nalezena. Zkuste jiný výraz nebo klikněte na mapu.');
                             }
                             e.target.value = '';
-                          } catch { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]})); e.target.value = ''; }
+                          } catch { alert('Chyba při hledání adresy.'); }
                         }
                       }} />
                     <button type="button" onClick={async () => {
@@ -527,13 +530,13 @@ const SupplierDashboard = () => {
                         const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=1&countrycodes=cz`);
                         const data = await res.json();
                         if (data.length > 0) {
-                          setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',')[0] + ', ' + (data[0].display_name.split(',')[1] || '').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
+                          setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',').slice(0,2).join(',').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
                         } else {
-                          setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]}));
+                          alert('Adresa nebyla nalezena.');
                         }
                         input.value = '';
-                      } catch { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]})); input.value = ''; }
-                    }} className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
+                      } catch { alert('Chyba při hledání adresy.'); }
+                    }} className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
                   </div>
                   <p className="text-xs text-zinc-400">Nebo klikněte přímo na mapu.</p>
                 </div>
@@ -542,10 +545,14 @@ const SupplierDashboard = () => {
               <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
                 <MapContainer center={[49.8, 15.5]} zoom={7} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                  {editingProfile && <MapClickHandler onAdd={(latlng) => {
-                    const name = prompt('Název místa (např. Praha, Brno, Olomouc):');
-                    if (!name || !name.trim()) return;
-                    setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: name.trim(), lat: latlng.lat, lng: latlng.lng, radius: 25 }]}));
+                  {editingProfile && <MapClickHandler onAdd={async (latlng) => {
+                    let name = `${latlng.lat.toFixed(2)}, ${latlng.lng.toFixed(2)}`;
+                    try {
+                      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`);
+                      const data = await res.json();
+                      if (data.display_name) name = data.display_name.split(',').slice(0,2).join(',').trim();
+                    } catch {}
+                    setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name, lat: latlng.lat, lng: latlng.lng, radius: 25 }]}));
                   }} />}
                   {/* Service area markers + circles */}
                   {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
@@ -553,11 +560,8 @@ const SupplierDashboard = () => {
                     if (!area || !area.lat || !area.lng) return null;
                     const radius = (area.radius || 25) * 1000;
                     return (
-                      <React.Fragment key={i}>
-                        <Circle center={[area.lat, area.lng]} radius={radius} pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.1, weight: 2 }} />
-                        <Marker position={[area.lat, area.lng]}>
-                          <Popup><strong>{area.name}</strong><br/><small>Poloměr: {area.radius || 25} km</small></Popup>
-                        </Marker>
+                      <React.Fragment key={`${i}-${area.radius}`}>
+                        <Circle center={[area.lat, area.lng]} radius={radius} pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.12, weight: 2 }} />
                       </React.Fragment>
                     );
                   })}
