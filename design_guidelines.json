@@ -1,127 +1,164 @@
 {
-  "theme_and_archetype": {
-    "domain": "Service Marketplace Platform",
-    "theme": "Dual (Light & Dark Mode)",
-    "archetype": "Archetype 4: Swiss & High-Contrast",
-    "vibe": "Authority, Clarity, Professional, Reliable, and Premium"
+  "theme": "light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast)",
+  "brand_identity": {
+    "name": "CraftBolt",
+    "emotional_tone": "Reliable, efficient, professional, no-nonsense, high-quality, authoritative.",
+    "visual_mood": "Brutalist yet polished. High contrast, sharp edges, structured grid (Swiss design), monochromatic with bursts of high-visibility Orange."
+  },
+  "colors": {
+    "light": {
+      "background": "#FFFFFF",
+      "foreground": "#0A0A0A",
+      "primary": "#F97316",
+      "primary_foreground": "#FFFFFF",
+      "muted": "#F4F4F5",
+      "muted_foreground": "#71717A",
+      "border": "#E4E4E7",
+      "card": "#FFFFFF",
+      "card_foreground": "#0A0A0A"
+    },
+    "dark": {
+      "background": "#09090B",
+      "foreground": "#FAFAFA",
+      "primary": "#F97316",
+      "primary_foreground": "#FFFFFF",
+      "muted": "#27272A",
+      "muted_foreground": "#A1A1AA",
+      "border": "#27272A",
+      "card": "#09090B",
+      "card_foreground": "#FAFAFA"
+    },
+    "rules": [
+      "No full-screen gradients. Color is for function and guidance only.",
+      "The primary color (Orange) should be used sparingly for primary CTAs, active states, and important highlights to create maximum contrast.",
+      "Use 'Tinted Grey' rule: Even the #09090B has a slight tint to feel grounded, not just pure #000000.",
+      "Ensure text contrast meets APCA/WCAG standards. Do not use fully transparent backgrounds behind text."
+    ]
   },
   "typography": {
-    "heading_font": "Outfit",
-    "body_font": "Manrope",
-    "banned_fonts": ["Inter", "Roboto", "Open Sans", "Syne"],
-    "scale": {
-      "h1": "text-5xl md:text-6xl tracking-tighter font-semibold leading-tight",
-      "h2": "text-3xl md:text-4xl tracking-tight font-medium leading-snug",
-      "h3": "text-xl md:text-2xl font-medium",
-      "body": "text-base leading-relaxed",
-      "labels": "text-xs tracking-[0.2em] uppercase font-bold"
+    "headings": {
+      "family": "Cabinet Grotesk, Chivo, or Outfit",
+      "weights": ["font-black", "font-bold", "font-light"],
+      "tracking": "tracking-tighter",
+      "rules": "Never use Inter or generic sans. Use extreme weight contrast. H1 max text-5xl to text-6xl."
     },
-    "rules": [
-      "No jump greater than 2 tailwind steps between headings and subheadings.",
-      "Always use tight tracking on large headers to create a premium feel.",
-      "Overlines and labels must be uppercase with wide tracking.",
-      "Must ensure robust latin-ext character support for Czech diacritics (ř, č, š, ž, etc.)."
-    ]
-  },
-  "color_palette": {
-    "primary": {
-      "base": "#f97316",
-      "hover": "#ea580c",
-      "focus": "#fdba74"
+    "body": {
+      "family": "Outfit, Manrope",
+      "weights": ["font-normal", "font-medium"],
+      "tracking": "tracking-normal",
+      "leading": "leading-relaxed"
     },
-    "light_mode": {
-      "background": "#fafaf9",
-      "surface": "#ffffff",
-      "text_primary": "#18181b",
-      "text_secondary": "#52525b",
-      "border": "#e4e4e7"
+    "labels": {
+      "transform": "uppercase",
+      "size": "text-xs",
+      "tracking": "tracking-[0.2em]",
+      "weight": "font-bold"
     },
-    "dark_mode": {
-      "background": "#09090b",
-      "surface": "#141418",
-      "text_primary": "#fafafa",
-      "text_secondary": "#a1a1aa",
-      "border": "#27272a"
-    },
-    "accents": {
-      "success": "#10b981",
-      "warning": "#f59e0b",
-      "danger": "#ef4444",
-      "info": "#3b82f6"
-    },
-    "rules": [
-      "Tinted neutrals only. Avoid pure #000 or #FFF where possible.",
-      "Ensure text meets APCA high-contrast standards.",
-      "Primary Orange is strictly reserved for primary CTAs, active states, and map markers. Do not overuse."
-    ]
-  },
-  "layout_spacing": {
-    "container": "max-w-7xl mx-auto px-6 md:px-12",
-    "padding_scale": ["p-6", "p-8", "p-12", "p-24"],
-    "grid_modes": {
-      "marketing": "Tetris Grid (grid-cols-1 md:grid-cols-12, wide gap-8 to gap-12). Focus on asymmetric overlaps.",
-      "dashboard": "Control Room Grid (grid-cols-1 lg:grid-cols-4, tight gap-4 or gap-6). High density, utilize full height for children."
-    },
-    "rules": [
-      "Containers with borders must have internal padding (p-6 or p-8) to prevent text collision.",
-      "Never center everything. Left-align dense content and paragraphs.",
-      "Use optical alignment for icons + text in buttons."
-    ]
-  },
-  "component_strategy": {
-    "global": "Shadcn UI base heavily customized. Use sharp or lightly rounded edges (max rounded-md or rounded-lg). Avoid deep soft shadows; prefer 1px solid borders.",
-    "buttons": "Flat colors, no gradients. Primary: bg-orange-500 text-white hover:bg-orange-600. Define explicit focus states.",
-    "cards": "Dashboard cards: Flat background, 1px subtle border. Hover: slight lift (-translate-y-1) and shadow-lg.",
-    "maps": "Leaflet map tiles MUST be styled contextually. Use CartoDB Positron for light mode, Dark Matter for dark mode. Use custom SVG pins colored in Primary Orange.",
-    "forms": "Strictly use Shadcn Forms. No native inputs. Use step-by-step wizard style for Demand Creation.",
-    "tables": "Dense padding for Admin/Invoice tables. Right-align numerical data (CZK prices)."
-  },
-  "visual_enhancers": {
-    "sticky_headers": "Glassmorphism: backdrop-blur-xl bg-white/70 or bg-zinc-950/60 with a 1px bottom border. Saturated backdrop.",
-    "dash_widgets": "Use 'Grid Borders' for technical data sections (border-r border-b border-border/40).",
-    "marketing_hero": "Hero Image Overlay must not exceed bg-zinc-950/50. If image isn't visible, use a gradient overlay instead.",
-    "icons": "Phosphor Icons. 'Regular' weight for dense UI/dashboards, 'Duotone' weight for marketing sections."
-  },
-  "motion_interaction": {
-    "hover_states": "ALWAYS explicitly set text color on hover. E.g. hover:bg-zinc-100 hover:text-zinc-900.",
-    "transitions": "Use specific properties: transition: transform 0.2s ease, opacity 0.2s ease. No 'transition-all'.",
-    "entry_animations": "Use Framer Motion for staggered fade-up lists (Demand feeds, steps).",
-    "loading": "Replace default spinners with a subtle orange tracing beam or progress bar across the top."
-  },
-  "domain_specific_rules": {
-    "marketplace_trust": "Use verified badges and user ratings prominently. Implement high-contrast pricing tiers highlighting the 'Most Popular' subscription.",
-    "service_area": "Display map service area with a semi-transparent orange circle overlay.",
-    "weather_nameday": "Integrate Weather and Nameday subtly into the Dashboard Header using small, clean typography (labels). It should provide utility without stealing focus from the main demand feed."
-  },
-  "media_assets": [
-    {
-      "category": "hero_background",
-      "url": "https://static.prod-images.emergentagent.com/jobs/75886f31-ebb4-4b11-a3f9-2070d0770858/images/423c4f0b767cdf49c3f8656ec121991d87a93418196e2a09539578ae09feca1d.png",
-      "description": "High-end, modern architectural interior under renovation. Use for Landing Page Hero section."
-    },
-    {
-      "category": "craftsman_working",
-      "url": "https://images.unsplash.com/photo-1610259998914-d1b9afe0dc55?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBjcmFmdHNtYW4lMjB3b3JraW5nfGVufDB8fHx8MTc3NTgzNjUyMXww&ixlib=rb-4.1.0&q=85",
-      "description": "Professional craftsman with power tool. Use for 'How it works' or Supplier feature cards."
-    },
-    {
-      "category": "carpenter",
-      "url": "https://images.unsplash.com/photo-1756736668479-140dfe2b0fe6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBjcmFmdHNtYW4lMjB3b3JraW5nfGVufDB8fHx8MTc3NTgzNjUyMXww&ixlib=rb-4.1.0&q=85",
-      "description": "Carpenter working at workbench. Use for Testimonials or Service Categories."
-    },
-    {
-      "category": "interior_renovation",
-      "url": "https://images.unsplash.com/photo-1768321902047-2296fd495fa4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob21lJTIwcmVwYWlyJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1ODM2NTIxfDA&ixlib=rb-4.1.0&q=85",
-      "description": "Exposed framing interior. Use for Customer Dashboard placeholder states or Demand creation background."
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter leading-none",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight",
+      "h3": "text-xl sm:text-2xl tracking-tight",
+      "body": "text-base sm:text-lg text-muted-foreground",
+      "small": "text-sm text-muted-foreground"
     }
-  ],
+  },
+  "layout_and_spacing": {
+    "philosophy": "Generous Spacing Philosophy with strict, structured Swiss grids.",
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_gap": "py-24 md:py-32",
+    "bento_grid": {
+      "hero": "grid-cols-1 md:grid-cols-12 gap-6 md:gap-8",
+      "categories": "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4",
+      "promoted_suppliers": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 rounded-none font-bold uppercase tracking-wider px-8 py-4 transition-all hover:-translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]",
+      "secondary": "bg-transparent border-2 border-foreground text-foreground hover:bg-foreground hover:text-background rounded-none font-bold uppercase tracking-wider px-8 py-4 transition-all"
+    },
+    "cards": {
+      "style": "Grid Borders (The 'Technical' Look). Flat background, 1px subtle border, no shadow. Hover: slight lift and shadow-lg.",
+      "radius": "rounded-none or rounded-sm max-w-[4px]"
+    },
+    "header": {
+      "style": "Solid Background or heavy Crystal Glass (backdrop-blur-xl bg-background/80). Must have 1px bottom border. z-50 fixed.",
+      "elements": "Logo, 3-5 navigation links visible on desktop, date/time/weather/nameday widget (compact), login/register CTA."
+    },
+    "badges": {
+      "style": "bg-primary/10 text-primary border border-primary/20 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
+    }
+  },
+  "sections": {
+    "hero": {
+      "layout": "Split Layout (Left: 7 cols, Right: 5 cols). Left: Massive H1, minimal subtext, Primary CTA, Stats bar. Right: Photo slider of craftsmen.",
+      "bottom": "8-category bento grid attaching directly below the hero content."
+    },
+    "stats_bar": {
+      "style": "Technical Grid style. Border-collapse layout with 1px borders separating metrics (Customers, Suppliers, Online)."
+    },
+    "advantages": {
+      "layout": "Two distinct columns or sections. High contrast vs Low contrast to separate Customer (White/Light gray bg) vs Supplier (Dark gray/Black bg).",
+      "items": "5 items each. Use sharp iconography (Phosphor Icons - Duotone or Bold)."
+    },
+    "how_it_works": {
+      "layout": "6-step hexagon SVG diagram. Interconnected lines. Clean, numbered steps with bold labels."
+    },
+    "pricing": {
+      "layout": "2-card focus. Customer (FREE): Minimal, subdued. Supplier (PAID): High emphasis, use 'Tracing Beam' or glowing border effect to draw attention."
+    },
+    "promoted_suppliers": {
+      "layout": "8 ad banner slots. Use bento-style structured grid so it feels like a native architectural component, not cheap ads. Include countdown timers using monospace font."
+    },
+    "cta_banner": {
+      "style": "Full width, high contrast. If light mode, use dark background (#09090B) with Orange button. Massive typography."
+    }
+  },
+  "motion": {
+    "hover": "Crisp, snappy transitions. transition-all duration-200 ease-out.",
+    "scroll": "Use Framer Motion for entrance animations (staggered lists, fade-up on scroll). Keep it subtle (y: 20 -> 0, opacity: 0 -> 1).",
+    "sliders": "Smooth, continuous momentum."
+  },
+  "media": {
+    "image_urls": {
+      "hero_slider_1": {
+        "url": "https://images.unsplash.com/photo-1611021061271-d13576f6bc34?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHxjYXJwZW50ZXIlMjB3b3JraW5nJTIwd29vZHxlbnwwfHx8fDE3NzU5NjgxODl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Carpenter working with tools. Use in hero slider."
+      },
+      "hero_slider_2": {
+        "url": "https://images.unsplash.com/photo-1676210134190-3f2c0d5cf58d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwyfHxwbHVtYmVyJTIwZml4aW5nJTIwcGlwZXN8ZW58MHx8fHwxNzc1OTY4MTg5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Plumber fixing water heater. Use in hero slider."
+      },
+      "hero_slider_3": {
+        "url": "https://images.unsplash.com/photo-1595831708961-1b13c0dd2422?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwxfHxlbGVjdHJpY2lhbiUyMHdpcmluZ3xlbnwwfHx8fDE3NzU5NjgxODl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Electrician with helmet. Use in hero slider."
+      },
+      "blueprint_background": {
+        "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHwzfHx3b3JrZXIlMjBoYW5kcyUyMGJsdWVwcmludCUyMHRvb2xzfGVufDB8fHx8MTc3NTk2ODIwNnww&ixlib=rb-4.1.0&q=85",
+        "description": "Architectural blueprint background. Use for Advantages or CTA section with heavy opacity overlay (bg-black/80)."
+      },
+      "mobile_app_banner": {
+        "url": "https://images.unsplash.com/photo-1764831138635-35873bdd671e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjB1c2luZyUyMHNtYXJ0cGhvbmUlMjBsaWZlc3R5bGV8ZW58MHx8fHwxNzc1OTY4MjE0fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Person holding smartphone. Use for the Mobile App Banner section."
+      }
+    },
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "style": "duotone or regular. Keep stroke width consistent."
+    }
+  },
+  "testing": {
+    "attributes": [
+      "Add data-testid to ALL interactive elements. e.g., data-testid='hero-register-button', data-testid='category-card-plumber', data-testid='supplier-pricing-cta'."
+    ]
+  },
   "instructions_to_main_agent": [
-    "Install and setup 'Outfit' and 'Manrope' fonts supporting latin-ext. Remove standard Inter/Roboto imports.",
-    "Refactor dashboard views (Supplier, Customer, Admin) to use the 'Control Room' grid layout.",
-    "Integrate Shadcn UI across all forms, tables, and dialogs. Set the CSS radius to 0.5rem (8px).",
-    "Update tailwind.config.js with the specified color_palette, enforcing the high-contrast light and dark themes.",
-    "Style the Leaflet map component (DraggableMap.jsx / LiveMap.jsx) to load CartoDB base maps dynamically based on the current theme.",
-    "Implement Framer Motion for the Demand Feed cards and Landing page 'How it works' steps.",
-    "Ensure all interactive elements (buttons, inputs, demand cards) have a 'data-testid' attribute in kebab-case."
+    "Install @phosphor-icons/react for iconography.",
+    "Do NOT use generic Shadcn cards for the main layout grid. Use raw divs with grid layout to maintain the Brutalist/Swiss technical look.",
+    "The Hero section MUST NOT use a blanket overlay that kills the slider images. If text contrast is needed, use a tight gradient overlay only behind the text.",
+    "For the 6-step hexagon diagram, use SVG paths to draw the hexagons and dashed connector lines, or arrange divs dynamically with clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%).",
+    "The site must be fully responsive, scaling typography cleanly without exceeding text-6xl on desktop.",
+    "Implement the 'neo-brutalist' button style for primary CTAs: sharp corners, high-contrast solid background, and a sharp solid drop-shadow."
   ]
 }
