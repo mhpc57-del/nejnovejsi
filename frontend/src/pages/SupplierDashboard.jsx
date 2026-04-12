@@ -174,7 +174,9 @@ const SupplierDashboard = () => {
   const handleAcceptDemand = async (demandId) => {
     try {
       await axios.post(`${API}/demands/${demandId}/accept`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      fetchData();
+      setSelectedDemand(null);
+      setActiveTab('in_progress');
+      await fetchData();
     } catch (error) {
       alert(error.response?.data?.detail || 'Nepodařilo se přijmout zakázku');
     }

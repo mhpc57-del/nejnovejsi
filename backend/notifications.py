@@ -552,13 +552,17 @@ class NotificationService:
         return bool(user and user.get("sms_notifications"))
 
     async def notify_new_offer(self, customer_email: str, customer_phone: Optional[str], supplier_name: str, demand_title: str, demand_id: str = ""):
-        """Notify customer about new offer"""
+        """Notify customer about new offer - always send SMS if phone exists"""
         subject, html = self.templates.new_offer_email(supplier_name, demand_title, demand_id)
         await self.email_service.send_email(customer_email, subject, html)
         
-        if await self._should_send_sms(customer_email, customer_phone):
+        # Customer always gets SMS when their demand is accepted (if they have a phone)
+        if customer_phone:
             sms_text = self.templates.new_offer_sms(supplier_name)
+            logger.info(f"Sending SMS to customer {customer_email} at {customer_phone} about offer from {supplier_name}")
             self.sms_service.send_sms(customer_phone, sms_text)
+        else:
+            logger.info(f"No phone number for customer {customer_email} - SMS skipped")
         
         # Push to customer
         user = await db.users.find_one({"email": customer_email}, {"_id": 0, "push_token": 1})
