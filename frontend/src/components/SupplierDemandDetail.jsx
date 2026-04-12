@@ -333,7 +333,6 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           )}
           {isInProgress && isAssigned && (
             <>
-              <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
               {showCompleteForm ? (
                 <div className="w-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800 rounded-xl p-5 space-y-4">
                   <p className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Dokončení zakázky</p>
@@ -371,6 +370,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                   <Check weight="bold" className="w-4 h-4 inline mr-1" /> Zakázku jsem dokončil
                 </button>
               )}
+              <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
               <button onClick={handleShareLocation} disabled={sharingLocation} className="px-4 py-2 border border-orange-300 dark:border-orange-700 text-orange-500 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50" data-testid="share-location-btn">
                 <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : 'Povolit sdílení polohy'}
               </button>
