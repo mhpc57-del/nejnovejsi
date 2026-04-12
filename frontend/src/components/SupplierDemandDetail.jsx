@@ -302,7 +302,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
               <Warning weight="bold" className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-bold text-orange-700 dark:text-orange-400 text-sm mb-1">Neověřená poptávka</p>
-                <p className="text-sm text-orange-600 dark:text-orange-400/80 leading-relaxed">Informace o zákazníkovi, online poloha a možnost nahrání rozpočtu jsou skryté. Zákazník musí nejprve ověřit poptávku, abyste mohli zakázku přijmout.</p>
+                <p className="text-sm text-orange-600 dark:text-orange-400/80 leading-relaxed">Informace o zákazníkovi, fotografie, online poloha a možnost nahrání rozpočtu jsou skryté. Zákazník musí nejprve ověřit poptávku.</p>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
             <p className="text-sm text-amber-600 dark:text-amber-400/80"><strong>Popis:</strong> {disputeData.description}</p>
           </div>
         )}
-        {d.images && d.images.length > 0 && (
+        {d.images && d.images.length > 0 && isVerified && (
           <div>
             <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Fotografie</p>
             <div className="flex gap-2 flex-wrap">
@@ -330,7 +330,14 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
             <button onClick={() => onAccept(d.id)} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="accept-demand-btn"><Check weight="bold" className="w-4 h-4 inline mr-1" /> Přijmout zakázku</button>
           )}
           {!isVerified && isOpen && (
-            <button onClick={handleRequestVerification} className="w-full px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn"><Warning weight="bold" className="w-4 h-4 inline mr-1.5" /> Zakázku bych přijmul, ale poptávka není ověřena</button>
+            <>
+              <button onClick={() => onAccept(d.id)} className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="accept-unverified-btn">
+                <Check weight="bold" className="w-4 h-4 inline mr-1" /> Risknu to a zakázku přijímám bez ověření
+              </button>
+              <button onClick={handleRequestVerification} className="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn">
+                <Warning weight="bold" className="w-4 h-4 inline mr-1.5" /> Zakázku bych přijmul, ale poptávka není ověřena
+              </button>
+            </>
           )}
           {isInProgress && isAssigned && (
             <>
@@ -384,7 +391,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           )}
         </div>
       </div>
-      {d.latitude && d.longitude && (
+      {isVerified && d.latitude && d.longitude && (
         <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
           <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />

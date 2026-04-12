@@ -115,7 +115,7 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
         <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
         {isUnverified && isOpen && (
           <p className="text-red-600 dark:text-red-400 text-sm font-semibold leading-relaxed" data-testid="unverified-warning">
-            U neověřených poptávek dodavatelé neuvidí Vaše iniciály a online mapu. Nemohou také přiložit rozpočet. DOPORUČUJEME POPTÁVKU OVĚŘIT.
+            U neověřených poptávek dodavatelé neuvidí Vaše iniciály, fotografie a online mapu. Nemohou také přiložit rozpočet. DOPORUČUJEME POPTÁVKU OVĚŘIT.
           </p>
         )}
         <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
