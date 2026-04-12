@@ -61,6 +61,16 @@ const SupplierDashboard = () => {
   const [invoices, setInvoices] = useState([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [viewedDemands, setViewedDemands] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(`viewed_demands_${user?.id}`) || '[]'); } catch { return []; }
+  });
+
+  const markDemandViewed = (demandId) => {
+    if (viewedDemands.includes(demandId)) return;
+    const updated = [...viewedDemands, demandId];
+    setViewedDemands(updated);
+    localStorage.setItem(`viewed_demands_${user?.id}`, JSON.stringify(updated));
+  };
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
   const completed = myDemands.filter(d => d.status === 'completed');
@@ -542,10 +552,15 @@ const SupplierDashboard = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {demandList.map(d => (
-                <button key={d.id} onClick={() => setSelectedDemand(d)}
-                  className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all"
+              {demandList.map(d => {
+                const isNew = !viewedDemands.includes(d.id);
+                return (
+                <button key={d.id} onClick={() => { markDemandViewed(d.id); setSelectedDemand(d); }}
+                  className="relative bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-left hover:border-orange-400 hover:shadow-md transition-all"
                   data-testid={`supplier-demand-card-${d.id}`}>
+                  {isNew && (
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-sm" data-testid="new-badge">Nová</span>
+                  )}
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-zinc-900 dark:text-white text-sm truncate flex-1">{d.title}</h3>
                     {d.verified && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded">Ověřená</span>}
@@ -558,7 +573,8 @@ const SupplierDashboard = () => {
                     </p>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
