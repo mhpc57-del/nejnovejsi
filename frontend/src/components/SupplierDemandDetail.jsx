@@ -120,6 +120,13 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   };
 
   const handleShareLocation = () => {
+    if (locationShared) {
+      // Stop sharing
+      setLocationShared(false);
+      axios.post(`${API}/users/location`, { latitude: null, longitude: null },
+        { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      return;
+    }
     if (!navigator.geolocation) { alert('Geolokace není podporována'); return; }
     setSharingLocation(true);
     navigator.geolocation.getCurrentPosition(
@@ -383,9 +390,14 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 </button>
               )}
               <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
-              <button onClick={handleShareLocation} disabled={sharingLocation} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${locationShared ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="share-location-btn">
-                <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : locationShared ? 'Poloha sdílena' : 'Povolit sdílení polohy'}
-              </button>
+              <label className="inline-flex items-center gap-2 cursor-pointer" data-testid="share-location-btn">
+                <MapPin className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">Sdílení polohy</span>
+                <button type="button" role="switch" aria-checked={locationShared} onClick={handleShareLocation} disabled={sharingLocation}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${locationShared ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'} ${sharingLocation ? 'opacity-50' : ''}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${locationShared ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </label>
               {canChat && (
                 <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
                   <ChatCircle className="w-4 h-4 inline mr-1" /> Online chat
