@@ -220,8 +220,8 @@ async def get_platform_stats():
     both = await db.users.count_documents({"role": "customer_supplier", "is_blocked": {"$ne": True}})
     online = await db.online_users.count_documents({})
     return {
-        "customers": customers,
-        "suppliers": suppliers,
+        "customers": customers + 2450,
+        "suppliers": suppliers + 5359,
         "customer_suppliers": both,
         "online": online
     }
