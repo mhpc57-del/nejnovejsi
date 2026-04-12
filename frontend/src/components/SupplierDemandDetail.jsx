@@ -71,6 +71,8 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [completeType, setCompleteType] = useState('');
   const [completionPrice, setCompletionPrice] = useState('');
+  const [completionPhotos, setCompletionPhotos] = useState([]);
+  const [uploadingCompletionPhoto, setUploadingCompletionPhoto] = useState(false);
   const [submittingComplete, setSubmittingComplete] = useState(false);
   const [sharingLocation, setSharingLocation] = useState(false);
   const [locationShared, setLocationShared] = useState(false);
@@ -148,6 +150,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
       await axios.post(`${API}/demands/${d.id}/complete`, {
         completion_type: completeType,
         final_price: price,
+        completion_photos: completionPhotos,
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Zakázka byla označena jako dokončená.');
       onBack();
@@ -156,6 +159,21 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
       alert(error.response?.data?.detail || 'Nepodařilo se dokončit zakázku');
     }
     setSubmittingComplete(false);
+  };
+
+  const handleUploadCompletionPhoto = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploadingCompletionPhoto(true);
+    for (const file of files) {
+      try {
+        const fd = new FormData(); fd.append('file', file);
+        const res = await axios.post(`${API}/upload/public`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        setCompletionPhotos(prev => [...prev, res.data.url]);
+      } catch { /* ignore */ }
+    }
+    setUploadingCompletionPhoto(false);
+    e.target.value = '';
   };
 
   const handleShareLocation = () => {
@@ -429,6 +447,23 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                         className="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white" />
                     </div>
                   )}
+                  {/* Completion photos */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Fotografie dokončené práce</label>
+                    <div className="flex gap-2 flex-wrap mb-2">
+                      {completionPhotos.map((url, i) => (
+                        <div key={i} className="relative">
+                          <img src={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} alt="" className="w-20 h-20 object-cover rounded-lg border border-zinc-200" />
+                          <button onClick={() => setCompletionPhotos(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"><X className="w-3 h-3" /></button>
+                        </div>
+                      ))}
+                    </div>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 border border-emerald-300 rounded-lg text-sm text-emerald-700 hover:bg-emerald-50 cursor-pointer transition-colors">
+                      {uploadingCompletionPhoto ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-emerald-500 border-t-transparent" /> : <Upload className="w-4 h-4" />}
+                      Nahrát fotografie
+                      <input type="file" accept="image/*" multiple onChange={handleUploadCompletionPhoto} className="hidden" disabled={uploadingCompletionPhoto} />
+                    </label>
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => setShowCompleteForm(false)} className="px-4 py-2 border border-zinc-300 text-zinc-600 rounded-lg text-sm">Zrušit</button>
                     <button onClick={handleCompleteDemand} disabled={submittingComplete || !completeType || !completionPrice}

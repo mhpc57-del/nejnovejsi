@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { API } from '../App';
 import axios from 'axios';
 import {
-  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText, NavigationArrow
+  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText, NavigationArrow, Star
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
@@ -35,6 +35,7 @@ const haversineKm = (lat1, lon1, lat2, lon2) => {
 
 const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, userId }) => {
   const isDispute = d.status === 'dispute';
+  const isCompleted = d.status === 'completed';
   const canChat = hasSupplier && !isOpen;
 
   const [messages, setMessages] = useState([]);
@@ -43,6 +44,10 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
   const [disputeData, setDisputeData] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(!!d.customer_rating);
   const [responding, setResponding] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [requestingLocation, setRequestingLocation] = useState(false);
@@ -113,6 +118,18 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
       fetchMessages();
     } catch (e) { console.error(e); }
     setSendingChat(false);
+  };
+
+  const handleSubmitReview = async () => {
+    if (rating === 0) { alert('Vyberte hodnocení (1-5 hvězd)'); return; }
+    setSubmittingReview(true);
+    try {
+      await axios.post(`${API}/demands/${d.id}/review`, {
+        rating, review: reviewText.trim()
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setReviewSubmitted(true);
+    } catch (e) { alert(e.response?.data?.detail || 'Nepodařilo se odeslat hodnocení'); }
+    setSubmittingReview(false);
   };
 
   const handleRequestLocation = async () => {
@@ -300,6 +317,54 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
             </div>
           </div>
         )}
+
+        {/* Completion photos */}
+        {isCompleted && d.completion_photos?.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Fotografie dokončené práce</p>
+            <div className="flex gap-2 flex-wrap">
+              {d.completion_photos.map((img, i) => (
+                <img key={i} src={img.startsWith('http') ? img : `${API.replace('/api', '')}${img}`} alt={`Dokončení ${i + 1}`}
+                  className="w-24 h-24 object-cover rounded-lg border border-zinc-200 dark:border-zinc-700" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Completed info */}
+        {isCompleted && d.final_price && (
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Dokončeno za {Number(d.final_price).toLocaleString('cs-CZ')} Kč
+              {d.completion_type === 'increased_price' && <span className="text-xs ml-2 text-orange-500">(s navýšením ceny)</span>}
+            </p>
+          </div>
+        )}
+
+        {/* Rating form for completed demands */}
+        {isCompleted && !reviewSubmitted && (
+          <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-5 border border-amber-200 dark:border-amber-800 space-y-3" data-testid="review-form">
+            <p className="font-bold text-amber-700 dark:text-amber-400 text-sm">Ohodnoťte dodavatele</p>
+            <div className="flex gap-1">
+              {[1,2,3,4,5].map(s => (
+                <button key={s} onClick={() => setRating(s)} className="p-1 transition-transform hover:scale-110">
+                  <Star weight={s <= rating ? 'fill' : 'regular'} className={`w-8 h-8 ${s <= rating ? 'text-amber-400' : 'text-zinc-300 dark:text-zinc-600'}`} />
+                </button>
+              ))}
+            </div>
+            <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} rows={2} placeholder="Napište recenzi (volitelné)..."
+              className="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white resize-none" />
+            <button onClick={handleSubmitReview} disabled={submittingReview || rating === 0}
+              className="px-5 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors" data-testid="submit-review-btn">
+              {submittingReview ? 'Odesílám...' : 'Odeslat hodnocení'}
+            </button>
+          </div>
+        )}
+        {isCompleted && reviewSubmitted && (
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400"><Check weight="bold" className="w-4 h-4 inline mr-1" /> Hodnocení odesláno. Děkujeme!</p>
+          </div>
+        )}
+
         <hr className="border-zinc-200 dark:border-zinc-700" />
         <div className="flex gap-3 flex-wrap">
           {isOpen && (

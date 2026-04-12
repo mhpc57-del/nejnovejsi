@@ -634,6 +634,47 @@ async def supplier_arrived(demand_id: str, current_user: dict = Depends(get_curr
     }
 
 
+@router.post("/demands/{demand_id}/review")
+async def review_demand(demand_id: str, data: dict = {}, current_user: dict = Depends(get_current_user)):
+    """Customer reviews the supplier after completing a demand"""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("customer_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    if demand.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Zakázka není dokončená")
+    if demand.get("customer_rating"):
+        raise HTTPException(status_code=400, detail="Zakázka již byla ohodnocena")
+
+    rating = data.get("rating", 0)
+    if not rating or rating < 1 or rating > 5:
+        raise HTTPException(status_code=400, detail="Hodnocení musí být 1-5")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.demands.update_one({"id": demand_id}, {"$set": {
+        "customer_rating": rating,
+        "customer_review": data.get("review", ""),
+        "reviewed_at": now
+    }})
+
+    # Update supplier's average rating
+    supplier_id = demand.get("assigned_supplier_id")
+    if supplier_id:
+        all_ratings = await db.demands.find(
+            {"assigned_supplier_id": supplier_id, "customer_rating": {"$exists": True, "$ne": None}},
+            {"_id": 0, "customer_rating": 1}
+        ).to_list(1000)
+        if all_ratings:
+            avg = sum(r["customer_rating"] for r in all_ratings) / len(all_ratings)
+            await db.users.update_one({"id": supplier_id}, {"$set": {
+                "average_rating": round(avg, 1),
+                "total_reviews": len(all_ratings)
+            }})
+
+    return {"message": "Hodnocení odesláno"}
+
+
 @router.post("/demands/{demand_id}/complete")
 async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = Depends(get_current_user)):
     demand = await db.demands.find_one({"id": demand_id})
@@ -653,6 +694,7 @@ async def complete_demand(demand_id: str, data: dict = {}, current_user: dict = 
         "agreed_price": data.get("agreed_price", 0),
         "final_price": data.get("final_price", 0),
         "invoiced_amount": data.get("final_price", 0),
+        "completion_photos": data.get("completion_photos", []),
     }
     
     # Handle price increase

@@ -173,6 +173,11 @@ class DemandResponse(BaseModel):
     verified_at: Optional[str] = None
     dispute_status: Optional[str] = None
     dispute: Optional[dict] = None
+    completion_photos: List[str] = []
+    completion_type: Optional[str] = None
+    final_price: Optional[float] = None
+    customer_rating: Optional[int] = None
+    customer_review: Optional[str] = None
 
 
 class MessageCreate(BaseModel):
