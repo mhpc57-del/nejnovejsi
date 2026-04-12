@@ -223,6 +223,8 @@ const AdminDashboard = () => {
         await axios.put(`${API}/admin/promoted/${supplierId}/deactivate`, {}, { headers });
       } else if (action === 'extend') {
         await axios.put(`${API}/admin/promoted/${supplierId}/extend`, {}, { headers });
+      } else if (action === 'activate') {
+        await axios.post(`${API}/promoted-suppliers/${supplierId}/activate`);
       }
       fetchPromoStats();
     } catch (error) {
@@ -682,7 +684,7 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Reklamní bannery</h2>
-            <p className="text-sm text-zinc-500">Přehled placených bannerů na hlavní stránce (300 Kč + DPH / den)</p>
+            <p className="text-sm text-zinc-500">Přehled placených bannerů (39 Kč/den nebo 990 Kč/měsíc)</p>
           </div>
           <button onClick={fetchPromoStats} disabled={promoLoading}
             className="px-4 py-2 text-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-xl text-sm font-medium transition-colors" data-testid="refresh-promo-stats">
@@ -757,6 +759,12 @@ const AdminDashboard = () => {
                           {status.label === 'Aktivní' && (
                             <button onClick={() => handlePromoAction('deactivate', s.id)}
                               className="p-1.5 text-zinc-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Deaktivovat" data-testid={`deactivate-promo-${s.id}`}>
+                              <Power className="w-4 h-4" />
+                            </button>
+                          )}
+                          {status.label !== 'Aktivní' && (
+                            <button onClick={() => handlePromoAction('activate', s.id)}
+                              className="p-1.5 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Aktivovat" data-testid={`activate-promo-${s.id}`}>
                               <Power className="w-4 h-4" />
                             </button>
                           )}
