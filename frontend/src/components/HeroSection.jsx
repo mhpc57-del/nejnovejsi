@@ -196,20 +196,20 @@ const HeroSection = () => {
 
             {/* Desktop only: categories + CTA inline */}
             <div className="hidden lg:block">
-              <div className="grid grid-cols-4 gap-2" data-testid="hero-categories-desktop">
+              <div className="grid grid-cols-4 gap-3" data-testid="hero-categories-desktop">
                 {categories.map((cat, i) => {
                   const isActive = i === activeIndex;
                   return (
                     <button key={i} onClick={() => handleSelect(i)}
-                      className={`relative flex flex-col items-center justify-center gap-3 py-7 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                      className={`relative flex flex-col items-center justify-center gap-2 py-5 px-2 rounded-xl border transition-all duration-300 cursor-pointer group ${
                         isActive
                           ? 'bg-white dark:bg-zinc-700 border-zinc-200 dark:border-zinc-500 shadow-lg shadow-zinc-200/50 dark:shadow-black/20 scale-105'
                           : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/50 hover:border-orange-300 dark:hover:border-zinc-500 hover:shadow-md'
                       }`}
                       data-testid={`hero-cat-${i}`}
                     >
-                      {renderIcon(cat, isActive, 'w-8 h-8')}
-                      <span className={`text-xs font-semibold text-center leading-tight transition-colors duration-300 ${isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'}`}>
+                      {renderIcon(cat, isActive, 'w-7 h-7')}
+                      <span className={`text-[11px] font-semibold text-center leading-tight transition-colors duration-300 ${isActive ? 'text-zinc-900 dark:text-white' : 'text-orange-500 dark:text-orange-400'}`}>
                         {cat.label}
                       </span>
                       {isActive && <motion.div layoutId="activeDot" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-orange-500" />}
