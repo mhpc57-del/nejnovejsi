@@ -180,7 +180,7 @@ const CustomerDashboard = () => {
   };
 
   // Demand counts
-  const verified = demands.filter(d => d.verified);
+  const verified = demands.filter(d => d.verified && d.status === 'open');
   const unverified = demands.filter(d => !d.verified && d.status === 'open');
   const inProgress = demands.filter(d => d.status === 'in_progress');
   const completed = demands.filter(d => d.status === 'completed');
