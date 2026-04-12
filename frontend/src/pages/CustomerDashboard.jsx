@@ -92,6 +92,7 @@ const CustomerDashboard = () => {
     const unreadInterval = setInterval(() => {
       axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
     }, 15000);
+    const demandsPoll = setInterval(fetchDemands, 15000);
     
     // Handle verify_demand query param (from email link)
     const params = new URLSearchParams(window.location.search);
@@ -113,7 +114,7 @@ const CustomerDashboard = () => {
       // Clean URL
       window.history.replaceState({}, '', '/dashboard');
     }
-    return () => clearInterval(unreadInterval);
+    return () => { clearInterval(unreadInterval); clearInterval(demandsPoll); };
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };

@@ -134,6 +134,7 @@ const SupplierDashboard = () => {
     const unreadInterval = setInterval(() => {
       axios.get(`${API}/messages/unread-summary`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setUnreadDemandIds((r.data || []).map(d => d.demand_id))).catch(() => {});
     }, 15000);
+    const dataPoll = setInterval(fetchData, 15000);
     // Sync pending payments (e.g. subscription that wasn't activated)
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })
@@ -146,7 +147,7 @@ const SupplierDashboard = () => {
         }, () => {}
       );
     }
-    return () => clearInterval(unreadInterval);
+    return () => { clearInterval(unreadInterval); clearInterval(dataPoll); };
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };

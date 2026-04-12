@@ -91,15 +91,31 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
       chatPollRef.current = setInterval(fetchMessages, 5000);
     }
     fetchDispute();
+
+    // Poll for demand status changes (every 10s)
+    const statusPoll = setInterval(async () => {
+      try {
+        const res = await axios.get(`${API}/demands/my`, { headers: { Authorization: `Bearer ${token}` } });
+        const updated = (res.data || []).find(x => x.id === d.id);
+        if (updated && updated.status !== d.status) {
+          // Status changed! Refresh parent and close detail
+          if (onRefresh) onRefresh();
+          if (onBack) onBack();
+        }
+      } catch { /* ignore */ }
+    }, 10000);
+
     if (hasSupplier && !isOpen) {
       fetchSupplierLocation();
       const locInterval = setInterval(fetchSupplierLocation, 15000);
       return () => {
-      if (chatPollRef.current) clearInterval(chatPollRef.current);
-      if (watchId) navigator.geolocation.clearWatch(watchId);
-    };
+        if (chatPollRef.current) clearInterval(chatPollRef.current);
+        clearInterval(statusPoll);
+        clearInterval(locInterval);
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+      };
     }
-    return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); };
+    return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); clearInterval(statusPoll); };
   }, [d.id, canChat]);
 
   useEffect(() => {
