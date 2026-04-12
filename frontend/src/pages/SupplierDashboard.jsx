@@ -92,6 +92,10 @@ const SupplierDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchProfile();
+    // Sync pending payments (e.g. subscription that wasn't activated)
+    axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })
+      .catch(() => {});
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {

@@ -73,7 +73,7 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
 
     # Header
     elements.append(Paragraph("FAKTURA", styles['InvoiceTitle']))
-    elements.append(Paragraph(f"\u010c\u00edslo: {invoice_data['invoice_number']}", styles['InvoiceSubtitle']))
+    elements.append(Paragraph(f"Číslo: {invoice_data['invoice_number']}", styles['InvoiceSubtitle']))
     elements.append(Spacer(1, 8*mm))
 
     # Supplier and Customer side by side
@@ -81,9 +81,9 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
     {COMPANY['name']}<br/>
     {COMPANY['address']}<br/>
     {COMPANY['zip']} {COMPANY['city']}<br/>
-    I\u010c: {COMPANY['ico']}<br/>
-    DI\u010c: {COMPANY['dic']}<br/>
-    \u00da\u010det: {COMPANY['bank_account']}<br/>
+    IČ: {COMPANY['ico']}<br/>
+    DIČ: {COMPANY['dic']}<br/>
+    Účet: {COMPANY['bank_account']}<br/>
     IBAN: {COMPANY['iban']}"""
 
     customer = invoice_data.get('customer', {})
@@ -113,9 +113,9 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
 
     # Dates
     dates_data = [
-        ['Datum vystaven\u00ed:', invoice_data.get('issue_date', '-'), 'Datum splatnosti:', invoice_data.get('due_date', '-')],
-        ['Datum zdaniteln\u00e9ho pln\u011bn\u00ed:', invoice_data.get('tax_date', '-'), 'Forma \u00fahrady:', invoice_data.get('payment_method', 'Platebn\u00ed karta')],
-        ['Variabiln\u00ed symbol:', invoice_data.get('variable_symbol', '-'), '', ''],
+        [Paragraph('<b>Datum vystavení:</b>', styles['InvoiceBold']), Paragraph(invoice_data.get('issue_date', '-'), styles['InvoiceNormal']), Paragraph('<b>Datum splatnosti:</b>', styles['InvoiceBold']), Paragraph(invoice_data.get('due_date', '-'), styles['InvoiceNormal'])],
+        [Paragraph('<b>Datum zdanitelného plnění:</b>', styles['InvoiceBold']), Paragraph(invoice_data.get('tax_date', '-'), styles['InvoiceNormal']), Paragraph('<b>Forma úhrady:</b>', styles['InvoiceBold']), Paragraph(invoice_data.get('payment_method', 'Platební karta'), styles['InvoiceNormal'])],
+        [Paragraph('<b>Variabilní symbol:</b>', styles['InvoiceBold']), Paragraph(invoice_data.get('variable_symbol', '-'), styles['InvoiceNormal']), '', ''],
     ]
     dates_table = Table(dates_data, colWidths=[50*mm, 40*mm, 45*mm, 35*mm])
     dates_table.setStyle(TableStyle([
@@ -132,16 +132,22 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
     elements.append(Spacer(1, 8*mm))
 
     # Items table
-    items_header = ['Popis', 'Mno\u017estv\u00ed', 'Cena/ks', 'DPH %', 'Celkem']
+    items_header = [
+        Paragraph('<b>Popis</b>', styles['InvoiceBold']),
+        Paragraph('<b>Množství</b>', styles['InvoiceBold']),
+        Paragraph('<b>Cena/ks</b>', styles['InvoiceBold']),
+        Paragraph('<b>DPH %</b>', styles['InvoiceBold']),
+        Paragraph('<b>Celkem</b>', styles['InvoiceBold']),
+    ]
     items_data = [items_header]
 
     for item in invoice_data.get('items', []):
         items_data.append([
-            item.get('description', '-'),
-            str(item.get('quantity', 1)),
-            f"{item.get('unit_price', 0):,.2f} K\u010d",
-            f"{item.get('vat_rate', 21)}%",
-            f"{item.get('total', 0):,.2f} K\u010d"
+            Paragraph(item.get('description', '-'), styles['InvoiceNormal']),
+            Paragraph(str(item.get('quantity', 1)), styles['InvoiceNormal']),
+            Paragraph(f"{item.get('unit_price', 0):,.2f} Kč", styles['InvoiceNormal']),
+            Paragraph(f"{item.get('vat_rate', 21)}%", styles['InvoiceNormal']),
+            Paragraph(f"{item.get('total', 0):,.2f} Kč", styles['InvoiceNormal']),
         ])
 
     items_table = Table(items_data, colWidths=[75*mm, 20*mm, 30*mm, 20*mm, 25*mm])
@@ -169,9 +175,9 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
     total = invoice_data.get('total', 0)
 
     totals_data = [
-        ['', '', 'Z\u00e1klad dan\u011b:', f"{subtotal:,.2f} K\u010d"],
-        ['', '', f"DPH {invoice_data.get('vat_rate', 21)}%:", f"{vat_amount:,.2f} K\u010d"],
-        ['', '', 'Celkem k \u00fahrad\u011b:', f"{total:,.2f} K\u010d"],
+        ['', '', Paragraph('<b>Základ daně:</b>', styles['InvoiceBold']), Paragraph(f"{subtotal:,.2f} Kč", styles['InvoiceNormal'])],
+        ['', '', Paragraph(f"<b>DPH {invoice_data.get('vat_rate', 21)}%:</b>", styles['InvoiceBold']), Paragraph(f"{vat_amount:,.2f} Kč", styles['InvoiceNormal'])],
+        ['', '', Paragraph('<b>Celkem k úhradě:</b>', styles['InvoiceBold']), Paragraph(f"<b>{total:,.2f} Kč</b>", styles['InvoiceBold'])],
     ]
     totals_table = Table(totals_data, colWidths=[75*mm, 20*mm, 45*mm, 30*mm])
     totals_table.setStyle(TableStyle([
@@ -193,8 +199,7 @@ def generate_invoice_pdf(invoice_data: dict) -> bytes:
 
     elements.append(Spacer(1, 10*mm))
 
-    # Footer
-    elements.append(Paragraph(f"{COMPANY['name']} | I\u010c: {COMPANY['ico']} | DI\u010c: {COMPANY['dic']} | {COMPANY['web']}", styles['InvoiceSmall']))
+    elements.append(Paragraph(f"{COMPANY['name']} | IČ: {COMPANY['ico']} | DIČ: {COMPANY['dic']} | {COMPANY['web']}", styles['InvoiceSmall']))
 
     doc.build(elements)
     return buffer.getvalue()

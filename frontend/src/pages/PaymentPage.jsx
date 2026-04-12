@@ -29,6 +29,8 @@ const PaymentSuccess = () => {
         if (response.data.payment_status === 'paid') {
           setStatus('success');
           setPaymentInfo(response.data);
+          // Trigger sync to activate subscription/verification immediately
+          axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
           return;
         } else if (response.data.status === 'expired') {
           setStatus('expired');
