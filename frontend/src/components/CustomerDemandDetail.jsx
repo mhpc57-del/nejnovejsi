@@ -242,7 +242,6 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
         <div className="mt-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden" data-testid="inline-chat">
           <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
             <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
-            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Chat s dodavatelem</h3>
             {messages.length > 0 && <span className="text-xs text-zinc-400">({messages.length} zpráv)</span>}
           </div>
           <div className="h-72 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">

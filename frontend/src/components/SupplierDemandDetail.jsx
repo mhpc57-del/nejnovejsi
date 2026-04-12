@@ -39,6 +39,11 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [uploadingDisputePhoto, setUploadingDisputePhoto] = useState(false);
   const [uploadingBudget, setUploadingBudget] = useState(false);
   const [disputeData, setDisputeData] = useState(null);
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [completeType, setCompleteType] = useState('');
+  const [completionPrice, setCompletionPrice] = useState('');
+  const [submittingComplete, setSubmittingComplete] = useState(false);
+  const [sharingLocation, setSharingLocation] = useState(false);
 
   const fetchMessages = async () => {
     if (!canChat) return;
@@ -91,6 +96,41 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
     } catch (error) {
       alert(error.response?.data?.detail || 'Nepodařilo se odeslat žádost');
     }
+  };
+
+  const handleCompleteDemand = async () => {
+    if (!completeType) { alert('Vyberte typ dokončení'); return; }
+    const price = parseFloat(completionPrice);
+    if (!price || price <= 0) { alert('Zadejte platnou cenu'); return; }
+    setSubmittingComplete(true);
+    try {
+      await axios.post(`${API}/demands/${d.id}/complete`, {
+        completion_type: completeType,
+        final_price: price,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      alert('Zakázka byla označena jako dokončená.');
+      onBack();
+      onRefresh();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se dokončit zakázku');
+    }
+    setSubmittingComplete(false);
+  };
+
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) { alert('Geolokace není podporována'); return; }
+    setSharingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await axios.post(`${API}/users/location`, { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
+            { headers: { Authorization: `Bearer ${token}` } });
+          alert('Poloha byla sdílena se zákazníkem.');
+        } catch { alert('Nepodařilo se sdílet polohu'); }
+        setSharingLocation(false);
+      },
+      () => { alert('Přístup k poloze byl zamítnut'); setSharingLocation(false); }
+    );
   };
 
   const handleUploadDisputePhoto = async (e) => {
@@ -292,7 +332,49 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
             <button onClick={handleRequestVerification} className="w-full px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors" data-testid="request-verification-btn"><Warning weight="bold" className="w-4 h-4 inline mr-1.5" /> Zakázku bych přijmul, ale poptávka není ověřena</button>
           )}
           {isInProgress && isAssigned && (
-            <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
+            <>
+              <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
+              {showCompleteForm ? (
+                <div className="w-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800 rounded-xl p-5 space-y-4">
+                  <p className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Dokončení zakázky</p>
+                  <div className="space-y-2">
+                    <label className={`block p-3 border rounded-lg cursor-pointer transition-all ${completeType === 'agreed_price' ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-500/20' : 'border-zinc-200 dark:border-zinc-700'}`}>
+                      <div className="flex items-center gap-2">
+                        <input type="radio" name="completeType" value="agreed_price" checked={completeType === 'agreed_price'} onChange={() => setCompleteType('agreed_price')} className="accent-emerald-500" />
+                        <span className="text-sm text-zinc-700 dark:text-zinc-300">Zakázku jsem dokončil za předem dohodnutou cenu</span>
+                      </div>
+                    </label>
+                    <label className={`block p-3 border rounded-lg cursor-pointer transition-all ${completeType === 'increased_price' ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-500/20' : 'border-zinc-200 dark:border-zinc-700'}`}>
+                      <div className="flex items-center gap-2">
+                        <input type="radio" name="completeType" value="increased_price" checked={completeType === 'increased_price'} onChange={() => setCompleteType('increased_price')} className="accent-emerald-500" />
+                        <span className="text-sm text-zinc-700 dark:text-zinc-300">Zakázku jsem dokončil s navýšením ceny</span>
+                      </div>
+                    </label>
+                  </div>
+                  {completeType && (
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Konečná cena (Kč) *</label>
+                      <input type="number" value={completionPrice} onChange={e => setCompletionPrice(e.target.value)} placeholder="Zadejte částku v Kč"
+                        className="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white" />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowCompleteForm(false)} className="px-4 py-2 border border-zinc-300 text-zinc-600 rounded-lg text-sm">Zrušit</button>
+                    <button onClick={handleCompleteDemand} disabled={submittingComplete || !completeType || !completionPrice}
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors" data-testid="submit-complete">
+                      {submittingComplete ? 'Odesílám...' : 'Potvrdit dokončení'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowCompleteForm(true)} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="complete-demand-btn">
+                  <Check weight="bold" className="w-4 h-4 inline mr-1" /> Zakázku jsem dokončil
+                </button>
+              )}
+              <button onClick={handleShareLocation} disabled={sharingLocation} className="px-4 py-2 border border-orange-300 dark:border-orange-700 text-orange-500 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50" data-testid="share-location-btn">
+                <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : 'Povolit sdílení polohy'}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -308,7 +390,6 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         <div className="mt-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden" data-testid="inline-chat">
           <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
             <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
-            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Chat se zákazníkem</h3>
             {messages.length > 0 && <span className="text-xs text-zinc-400">({messages.length} zpráv)</span>}
           </div>
           <div className="h-72 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
