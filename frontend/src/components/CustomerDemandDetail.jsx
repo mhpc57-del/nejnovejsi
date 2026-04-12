@@ -504,7 +504,15 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
         <div className="flex gap-3 flex-wrap">
           {isOpen && (
             <>
-              <button className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cancel-demand-action">
+              <button onClick={async () => {
+                if (!window.confirm('Opravdu chcete zrušit tuto zakázku?')) return;
+                try {
+                  await axios.post(`${API}/demands/${d.id}/cancel`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                  alert('Zakázka byla zrušena.');
+                  onBack();
+                  onRefresh();
+                } catch (err) { alert(err.response?.data?.detail || 'Nepodařilo se zrušit zakázku'); }
+              }} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cancel-demand-action">
                 <X className="w-4 h-4 inline mr-1" /> Zrušit zakázku
               </button>
               <Link to={`/zakazka/${d.id}`} className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="edit-demand-action">
