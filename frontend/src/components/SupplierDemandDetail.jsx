@@ -46,6 +46,15 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [submittingComplete, setSubmittingComplete] = useState(false);
   const [sharingLocation, setSharingLocation] = useState(false);
   const [locationShared, setLocationShared] = useState(false);
+  const [customerLocation, setCustomerLocation] = useState(null);
+
+  const fetchCustomerLocation = async () => {
+    if (!d.customer_id) return;
+    try {
+      const res = await axios.get(`${API}/users/${d.customer_id}/location`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.data.latitude && res.data.longitude) setCustomerLocation(res.data);
+    } catch { /* ignore */ }
+  };
 
   const fetchMessages = async () => {
     if (!canChat) return;
@@ -70,6 +79,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
       chatPollRef.current = setInterval(fetchMessages, 5000);
     }
     fetchDispute();
+    if (isAssigned && !isOpen) fetchCustomerLocation();
     return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); };
   }, [d.id, canChat]);
 
@@ -278,9 +288,9 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   return (
     <div data-testid="supplier-demand-detail">
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors"><X className="w-4 h-4" /> Zpět na seznam</button>
-      <div className={`${canChat && showChat ? 'grid lg:grid-cols-2 gap-4 items-start' : ''}`}>
-        {/* Left column - demand detail */}
-        <div className="space-y-4">
+      <div className="flex gap-4 items-start">
+        {/* Left column - demand detail (fixed width) */}
+        <div className="space-y-4 w-full" style={{ maxWidth: canChat && showChat ? '55%' : '100%' }}>
           <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6 space-y-4">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{d.title}</h2>
         <div className="flex items-center gap-2 flex-wrap">
@@ -415,6 +425,17 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
                 <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
               </MapContainer>
+            </div>
+          )}
+          {customerLocation && (
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Poloha zákazníka</p>
+              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-48">
+                <MapContainer center={[customerLocation.latitude, customerLocation.longitude]} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                  <Marker position={[customerLocation.latitude, customerLocation.longitude]}><Popup>Zákazník</Popup></Marker>
+                </MapContainer>
+              </div>
             </div>
           )}
         </div>

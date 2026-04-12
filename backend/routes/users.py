@@ -65,6 +65,16 @@ async def update_location(location: LocationUpdate, current_user: dict = Depends
     return {"message": "Location updated"}
 
 
+@router.get("/users/{user_id}/location")
+async def get_user_location(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get location of a user (for demand participants only)"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "location": 1})
+    if not user or not user.get("location"):
+        return {"latitude": None, "longitude": None}
+    loc = user["location"]
+    return {"latitude": loc.get("lat"), "longitude": loc.get("lng"), "updated_at": loc.get("updated_at")}
+
+
 from pydantic import BaseModel as PushTokenModel
 
 class PushTokenData(PushTokenModel):
