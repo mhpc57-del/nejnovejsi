@@ -45,6 +45,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [completionPrice, setCompletionPrice] = useState('');
   const [submittingComplete, setSubmittingComplete] = useState(false);
   const [sharingLocation, setSharingLocation] = useState(false);
+  const [locationShared, setLocationShared] = useState(false);
 
   const fetchMessages = async () => {
     if (!canChat) return;
@@ -126,7 +127,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         try {
           await axios.post(`${API}/users/location`, { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
             { headers: { Authorization: `Bearer ${token}` } });
-          alert('Poloha byla sdílena se zákazníkem.');
+          setLocationShared(true);
         } catch { alert('Nepodařilo se sdílet polohu'); }
         setSharingLocation(false);
       },
@@ -382,8 +383,8 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                 </button>
               )}
               <button onClick={() => setShowDisputeForm(true)} className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cannot-complete-btn"><X className="w-4 h-4 inline mr-1" /> Zakázku nelze dodělat</button>
-              <button onClick={handleShareLocation} disabled={sharingLocation} className="px-4 py-2 border border-orange-300 dark:border-orange-700 text-orange-500 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50" data-testid="share-location-btn">
-                <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : 'Povolit sdílení polohy'}
+              <button onClick={handleShareLocation} disabled={sharingLocation} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${locationShared ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="share-location-btn">
+                <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : locationShared ? 'Poloha sdílena' : 'Povolit sdílení polohy'}
               </button>
               {canChat && (
                 <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
