@@ -136,6 +136,32 @@ async def startup():
     except Exception as e:
         logger.error(f"Service areas migration error: {e}")
 
+    # Migrate renamed categories
+    CATEGORY_RENAMES = {
+        "Elektrikáři – silnoproud": "Elektromontážní práce – silnoproud",
+        "Elektrikáři – slaboproud": "Elektromontážní práce – slaboproud",
+        "Elektrikářské práce": "Elektromontážní práce – silnoproud",
+    }
+    try:
+        for old_name, new_name in CATEGORY_RENAMES.items():
+            # Update supplier/customer categories
+            res_users = await db.users.update_many(
+                {"categories": old_name},
+                {"$set": {"categories.$[elem]": new_name}},
+                array_filters=[{"elem": old_name}]
+            )
+            if res_users.modified_count:
+                logger.info(f"Migrated category '{old_name}' -> '{new_name}' in {res_users.modified_count} user(s)")
+            # Update demand categories
+            res_demands = await db.demands.update_many(
+                {"category": old_name},
+                {"$set": {"category": new_name}}
+            )
+            if res_demands.modified_count:
+                logger.info(f"Migrated category '{old_name}' -> '{new_name}' in {res_demands.modified_count} demand(s)")
+    except Exception as e:
+        logger.error(f"Category migration error: {e}")
+
     # Background task: clean stale online users every 60s
     async def cleanup_stale_online():
         while True:
