@@ -170,6 +170,8 @@ class DemandResponse(BaseModel):
     quotes: List[dict] = []
     verified: bool = False
     verified_at: Optional[str] = None
+    dispute_status: Optional[str] = None
+    dispute: Optional[dict] = None
 
 
 class MessageCreate(BaseModel):

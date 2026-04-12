@@ -6,34 +6,44 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v Ceske repub
 ## Tech Stack
 - **Frontend**: React, Tailwind CSS, Vite
 - **Backend**: FastAPI, MongoDB
-- **Mobile**: React Native (Expo), react-native-maps, expo-notifications
-- **Integrace**: OpenAI GPT-4o (Emergent LLM Key), BulkGate SMS, Stripe (LIVE), Wedos SMTP, Expo Push
+- **Mobile**: React Native (Expo)
+- **Integrace**: OpenAI GPT-4o, BulkGate SMS, Stripe (LIVE), Wedos SMTP
 
-## Cenovy model (duben 2026)
-- **Zakaznik**: ZDARMA, volitelne overeni poptavky za 49 Kc
-- **Dodavatel**: 190 Kc/mesic NEBO 1.890 Kc/rok (uspora 390 Kc)
-- **Reklamni banner**: 39 Kc/den NEBO 990 Kc/mesic
-- Vsechny ceny vcetne 21% DPH, 14denni trial ZRUSEN
-- Registrace pouze 2 role: Zakaznik, Dodavatel (mesicni/rocni)
+## Cenovy model
+- Zakaznik: ZDARMA, overeni poptavky 49 Kc
+- Dodavatel: 190 Kc/mesic nebo 1890 Kc/rok
+- Reklamni banner: 39 Kc/den nebo 990 Kc/mesic
 
-## Posledni zmeny (12. duben 2026)
-- FIX: BulkGate SMS credentials aktualizovany (App ID 37414 -> 37417, novy token)
-- FIX: SMS se nyni posila zakaznikovi VZDY kdyz ma telefon (ne jen pri sms_notifications=true)
-- FIX: Po prijeti zakazky dodavatelem se UI automaticky prepne na zalozku "Rozdelane"
-- FIX: DemandResponse model — pridano `verified` a `verified_at` pole
-- FIX: Light/Dark mode — opraveno 5 komponent HomePage (hardcodovane tmave pozadi)
-- FIX: Hero karty kategorii — vse stejne velke (aspect-square), grid "Dalsi kategorie" = aspect-[4/3]
-- NOVY: Detail neoverenych poptavek pro dodavatele:
-  - Skryte info o zakaznikovi, online poloha, mapa, rozpocet
-  - Tlacitko "Zakazku bych prijmul, ale poptavka neni overena"
-  - Backend endpoint POST /api/demands/{id}/request-verification
-  - Odesle zakaznikovi email + SMS s odkazem na Stripe checkout (49 Kc)
-  - CustomerDashboard: automaticky redirect na Stripe pri ?verify_demand=ID
-- NOVY: Detail overenych poptavek pro dodavatele:
-  - Plny detail vcetne info o zakaznikovi, mapy, chat, prijmout/nezavazne prijmout
+## Zmeny 12. duben 2026
+- FIX: DemandResponse model — pridano verified + verified_at
+- FIX: Light/Dark mode — 5 HomePage komponent
+- FIX: BulkGate SMS credentials (37414 -> 37417, novy token)
+- FIX: SMS zakaznikovi posila VZDY kdyz ma telefon
+- FIX: Po prijeti zakazky UI prepne na "Rozdelane"
+- FIX: Hero karty stejne velke (aspect-square), grid 4/3
+- FIX: Hero sloupce 6:6 (zmenseni obrazku)
+- FIX: Customer "Overene" filtruje jen open demands
+- FIX: "Hlavni menu" -> "Muj profil" s routou dle role
+- FIX: "Poptavky:" -> "Moje poptavky:" v customer sidebar
+- FIX: Lepsi chybova hlaska pri nedostupnem serveru
+- NOVY: Omezeni neoverenych poptavek pro dodavatele (skryte info, tlacitko vyzadat overeni)
+- NOVY: Tlacitko "Overit zakazku za 49 Kc" v customer detailu neoverenych
+- NOVY: Cervene upozorneni u neoverenych poptavek pro zakaznika
+- NOVY: Inline chat v CustomerDashboard i SupplierDashboard (bez nutnosti "Otevrit detail")
+- NOVY: CustomerDemandDetail a SupplierDemandDetail komponenty
+- NOVY: Zelena bublinka "Nova" na kartach pro dodavatele (ulozeno v DB, sync across devices)
+- NOVY: Backend GET/POST /api/demands/viewed — stav "videnno" v MongoDB
+- NOVY: Kompletni system sporu (disputes):
+  - Dodavatel: "Zakazku nelze dodelat" → 2-krokovy formular (popis+fotky, vyber duvodu a/b/c/d)
+  - Moznost a: upload rozpoctu na vice praci (Excel/PDF/foto)
+  - Backend: POST /api/demands/{id}/dispute, POST .../dispute/respond
+  - Zakaznik: odpoved (potvrdit rozpocet, zamitnout, nechci pokracovat, znovu vystavit)
+  - Zalozka "V reseni" v obou dashboardech
+  - Vse logovano v DB (disputes kolekce s history)
+  - Admin endpoint GET /api/admin/disputes
 
 ## Backlog
-- P1: QR kody na fakturach a platebnych obrazovkach (vyzaduje navstevu banky pro API klic)
-- P1: Nove platebni moznosti pro zakazniky (ceka na ucetni)
-- P2: Overit SMS na produkci (BulkGate za WEDOS WAF)
-- P3: React Native mobilni app (PAUSED)
+- P1: QR kody (ceka na banku)
+- P1: Platebni moznosti zakazniku (ceka na ucetni)
+- P2: Admin sekce pro spory (UI)
+- P3: React Native app (pozastaveno)

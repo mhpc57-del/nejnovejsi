@@ -12,6 +12,7 @@ from routes.payments import router as payments_router
 from routes.admin import router as admin_router
 from routes.misc import router as misc_router
 from routes.promoted import router as promoted_router
+from routes.disputes import router as disputes_router
 from routes.ai_chat import router as ai_chat_router
 from routes.invoices import router as invoices_router
 from models import ADMIN_EMAIL, UserRole, CATEGORIES
@@ -50,6 +51,7 @@ api_router.include_router(misc_router)
 api_router.include_router(ai_chat_router)
 api_router.include_router(invoices_router)
 api_router.include_router(promoted_router)
+api_router.include_router(disputes_router)
 
 app.include_router(api_router)
 

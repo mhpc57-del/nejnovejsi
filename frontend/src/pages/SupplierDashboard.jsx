@@ -80,6 +80,7 @@ const SupplierDashboard = () => {
   };
 
   const inProgress = myDemands.filter(d => d.status === 'in_progress');
+  const inDispute = myDemands.filter(d => d.status === 'dispute');
   const completed = myDemands.filter(d => d.status === 'completed');
   const cancelled = myDemands.filter(d => d.status === 'cancelled');
 
@@ -209,6 +210,7 @@ const SupplierDashboard = () => {
     { key: 'available_verified', label: 'Ověřené', count: availableVerified.length, color: 'text-emerald-500' },
     { key: 'available_unverified', label: 'Neověřené', count: availableUnverified.length, color: 'text-orange-500' },
     { key: 'in_progress', label: 'Rozdělané', count: inProgress.length, color: 'text-blue-500' },
+    { key: 'dispute', label: 'V řešení', count: inDispute.length, color: 'text-amber-500' },
     { key: 'completed', label: 'Dokončené', count: completed.length, color: 'text-zinc-500' },
     { key: 'cancelled', label: 'Nedokončené', count: cancelled.length, color: 'text-red-500' },
   ];
@@ -218,6 +220,7 @@ const SupplierDashboard = () => {
       case 'available_verified': return availableVerified;
       case 'available_unverified': return availableUnverified;
       case 'in_progress': return inProgress;
+      case 'dispute': return inDispute;
       case 'completed': return completed;
       case 'cancelled': return cancelled;
       default: return [];
@@ -225,7 +228,7 @@ const SupplierDashboard = () => {
   };
 
   const getStatusBadge = (status) => {
-    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
     const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
     return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
   };

@@ -3,26 +3,40 @@ import { Link } from 'react-router-dom';
 import { API } from '../App';
 import axios from 'axios';
 import {
-  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase
+  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, userId }) => {
+  const isDispute = d.status === 'dispute';
+  const canChat = hasSupplier && !isOpen;
+
   const [messages, setMessages] = useState([]);
   const [chatMessage, setChatMessage] = useState('');
   const [sendingChat, setSendingChat] = useState(false);
+  const [disputeData, setDisputeData] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [responding, setResponding] = useState(false);
   const messagesEndRef = useRef(null);
   const chatPollRef = useRef(null);
-
-  const canChat = hasSupplier && !isOpen;
 
   const fetchMessages = async () => {
     if (!canChat) return;
     try {
       const res = await axios.get(`${API}/messages/${d.id}`, { headers: { Authorization: `Bearer ${token}` } });
       setMessages(res.data || []);
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
+  };
+
+  const fetchDispute = async () => {
+    if (d.dispute_status || isDispute) {
+      try {
+        const res = await axios.get(`${API}/demands/${d.id}/dispute`, { headers: { Authorization: `Bearer ${token}` } });
+        setDisputeData(res.data.dispute);
+      } catch { /* ignore */ }
+    }
   };
 
   useEffect(() => {
@@ -30,6 +44,7 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
       fetchMessages();
       chatPollRef.current = setInterval(fetchMessages, 5000);
     }
+    fetchDispute();
     return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); };
   }, [d.id, canChat]);
 
@@ -51,8 +66,31 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
     setSendingChat(false);
   };
 
+  const handleDisputeResponse = async (action) => {
+    if (action === 'reject_budget' && !rejectReason.trim()) {
+      alert('Uveďte důvod zamítnutí rozpočtu');
+      return;
+    }
+    if (action === 'cancel' && !window.confirm('Opravdu chcete odmítnout dodavatele a ukončit zakázku?')) return;
+    if (action === 'reopen' && !window.confirm('Chcete poptávku znovu vystavit jako novou?')) return;
+
+    setResponding(true);
+    try {
+      const res = await axios.post(`${API}/demands/${d.id}/dispute/respond`, {
+        action,
+        reject_reason: action === 'reject_budget' ? rejectReason.trim() : null,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      alert(res.data.message);
+      onBack();
+      onRefresh();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Nepodařilo se provést akci');
+    }
+    setResponding(false);
+  };
+
   const getStatusBadge = (status) => {
-    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
+    const map = { open: ['Otevřená', 'bg-green-100 text-green-700'], in_progress: ['Probíhá', 'bg-blue-100 text-blue-700'], dispute: ['V řešení', 'bg-amber-100 text-amber-700'], completed: ['Dokončeno', 'bg-zinc-200 text-zinc-700'], cancelled: ['Zrušeno', 'bg-red-100 text-red-700'] };
     const [label, cls] = map[status] || ['—', 'bg-zinc-100 text-zinc-500'];
     return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
   };
@@ -74,41 +112,94 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
           )}
         </div>
         <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
-
-        {/* Warning for unverified demands */}
         {isUnverified && isOpen && (
           <p className="text-red-600 dark:text-red-400 text-sm font-semibold leading-relaxed" data-testid="unverified-warning">
             U neověřených poptávek dodavatelé neuvidí Vaše iniciály a online mapu. Nemohou také přiložit rozpočet. DOPORUČUJEME POPTÁVKU OVĚŘIT.
           </p>
         )}
-
         <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
           <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" /> {d.address}</span>
           <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" /> {new Date(d.created_at).toLocaleDateString('cs-CZ')}</span>
         </div>
         {(d.budget_min || d.budget_max) && (
-          <p className="text-orange-500 font-semibold text-sm">
-            Rozpočet: {d.budget_min ? `${Number(d.budget_min).toLocaleString('cs-CZ')} - ` : ''}{d.budget_max ? `${Number(d.budget_max).toLocaleString('cs-CZ')} Kč` : ''}
-          </p>
+          <p className="text-orange-500 font-semibold text-sm">Rozpočet: {d.budget_min ? `${Number(d.budget_min).toLocaleString('cs-CZ')} - ` : ''}{d.budget_max ? `${Number(d.budget_max).toLocaleString('cs-CZ')} Kč` : ''}</p>
         )}
         {d.deadline && (
-          <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5">
-            <Clock className="w-4 h-4" />
+          <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5"><Clock className="w-4 h-4" />
             {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Pokud možno, co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
           </p>
         )}
-
-        {/* Assigned supplier info */}
         {hasSupplier && d.assigned_supplier_name && (
           <div className="bg-blue-50 dark:bg-blue-500/10 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Přiřazený dodavatel</p>
-            <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5">
-              <Briefcase className="w-4 h-4 text-blue-500" /> {d.assigned_supplier_name}
-            </p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5"><Briefcase className="w-4 h-4 text-blue-500" /> {d.assigned_supplier_name}</p>
           </div>
         )}
 
-        {/* Images */}
+        {/* Dispute notification for customer */}
+        {isDispute && disputeData && disputeData.status === 'pending' && (
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800 rounded-xl p-5 space-y-4" data-testid="dispute-response">
+            <div>
+              <p className="font-bold text-amber-700 dark:text-amber-400 mb-2">Dodavatel nahlásil problém</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400/80 mb-1"><strong>Důvod:</strong> {disputeData.reason_label}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400/80"><strong>Popis:</strong> {disputeData.description}</p>
+            </div>
+            {disputeData.photos?.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {disputeData.photos.map((url, i) => (
+                  <img key={i} src={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} alt="" className="w-20 h-20 object-cover rounded-lg border border-amber-200" />
+                ))}
+              </div>
+            )}
+            {disputeData.budget_files?.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-amber-700 mb-2">Rozpočet na více práce:</p>
+                {disputeData.budget_files.map((url, i) => (
+                  <a key={i} href={url.startsWith('http') ? url : `${API.replace('/api', '')}${url}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 underline mb-1">
+                    <FileText className="w-4 h-4" /> Stáhnout rozpočet {i + 1}
+                  </a>
+                ))}
+              </div>
+            )}
+            <hr className="border-amber-200 dark:border-amber-800" />
+            <p className="text-sm font-bold text-zinc-900 dark:text-white">Jak chcete pokračovat?</p>
+            <div className="flex flex-col gap-2">
+              {disputeData.reason_type === 'a' && (
+                <>
+                  <button onClick={() => handleDisputeResponse('confirm_budget')} disabled={responding}
+                    className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors" data-testid="confirm-budget-btn">
+                    <Check weight="bold" className="w-4 h-4 inline mr-1" /> Rozpočet na více práce potvrzuji
+                  </button>
+                  {showRejectForm ? (
+                    <div className="space-y-2">
+                      <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} placeholder="Uveďte důvod zamítnutí rozpočtu..."
+                        className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm resize-none" />
+                      <button onClick={() => handleDisputeResponse('reject_budget')} disabled={responding}
+                        className="w-full py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors" data-testid="reject-budget-submit">
+                        Odeslat zamítnutí
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowRejectForm(true)}
+                      className="w-full py-2.5 border border-red-300 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors" data-testid="reject-budget-btn">
+                      <X className="w-4 h-4 inline mr-1" /> Rozpočet na více práce nepotvrzuji
+                    </button>
+                  )}
+                </>
+              )}
+              <button onClick={() => handleDisputeResponse('cancel')} disabled={responding}
+                className="w-full py-2.5 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="cancel-demand-btn">
+                Nechci pokračovat
+              </button>
+              <button onClick={() => handleDisputeResponse('reopen')} disabled={responding}
+                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors" data-testid="reopen-demand-btn">
+                Poptávku chci znovu vystavit
+              </button>
+            </div>
+          </div>
+        )}
+
         {d.images && d.images.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Fotografie</p>
@@ -120,7 +211,6 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
             </div>
           </div>
         )}
-
         <hr className="border-zinc-200 dark:border-zinc-700" />
         <div className="flex gap-3 flex-wrap">
           {isOpen && (
@@ -140,20 +230,14 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
           )}
         </div>
       </div>
-
-      {/* Map */}
       {d.latitude && d.longitude && (
         <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
           <MapContainer center={[d.latitude, d.longitude]} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-            <Marker position={[d.latitude, d.longitude]}>
-              <Popup>{d.title}<br /><small>{d.address}</small></Popup>
-            </Marker>
+            <Marker position={[d.latitude, d.longitude]}><Popup>{d.title}<br /><small>{d.address}</small></Popup></Marker>
           </MapContainer>
         </div>
       )}
-
-      {/* Inline Chat */}
       {canChat && (
         <div className="mt-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden" data-testid="inline-chat">
           <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
@@ -164,38 +248,25 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
           <div className="h-72 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-900/50">
             {messages.length === 0 ? (
               <p className="text-center text-zinc-400 text-sm py-8">Zatím žádné zprávy. Napište dodavateli.</p>
-            ) : (
-              messages.map((msg, i) => {
-                const isMine = msg.sender_id === userId;
-                return (
-                  <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm ${isMine
-                      ? 'bg-orange-500 text-white rounded-br-md'
-                      : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-bl-md'
-                      }`}>
-                      <p className="leading-relaxed">{msg.content}</p>
-                      <p className={`text-[10px] mt-1 ${isMine ? 'text-orange-200' : 'text-zinc-400'}`}>
-                        {new Date(msg.created_at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
+            ) : messages.map((msg, i) => {
+              const isMine = msg.sender_id === userId;
+              return (
+                <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm ${isMine ? 'bg-orange-500 text-white rounded-br-md' : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-bl-md'}`}>
+                    <p className="leading-relaxed">{msg.content}</p>
+                    <p className={`text-[10px] mt-1 ${isMine ? 'text-orange-200' : 'text-zinc-400'}`}>{new Date(msg.created_at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
-                );
-              })
-            )}
+                </div>
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
           <div className="p-3 border-t border-zinc-200 dark:border-zinc-700 flex gap-2">
-            <input
-              value={chatMessage}
-              onChange={e => setChatMessage(e.target.value)}
+            <input value={chatMessage} onChange={e => setChatMessage(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-              placeholder="Napište zprávu..."
-              className="flex-1 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-              data-testid="chat-input"
-            />
+              placeholder="Napište zprávu..." className="flex-1 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" data-testid="chat-input" />
             <button onClick={handleSendMessage} disabled={!chatMessage.trim() || sendingChat}
-              className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors"
-              data-testid="chat-send-btn">
+              className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors" data-testid="chat-send-btn">
               <PaperPlaneTilt weight="bold" className="w-5 h-5" />
             </button>
           </div>
