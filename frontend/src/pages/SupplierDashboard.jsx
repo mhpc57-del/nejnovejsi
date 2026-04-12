@@ -10,7 +10,7 @@ import {
   CaretDown, CaretUp, Plus, Trash, Eye, List, ChatCircle, Receipt,
   DotsThreeCircle, Moon, Sun, ChatCircleDots
 } from '@phosphor-icons/react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ThemeToggle from '../components/ThemeToggle';
@@ -42,6 +42,13 @@ const orangeIcon = new L.Icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
+
+const MapClickHandler = ({ onAdd }) => {
+  useMapEvents({
+    click(e) { onAdd(e.latlng); }
+  });
+  return null;
+};
 
 import HeaderWidget from '../components/HeaderWidget';
 import SupplierDemandDetail from '../components/SupplierDemandDetail';
@@ -432,48 +439,69 @@ const SupplierDashboard = () => {
             {/* Service areas with map */}
             <div className="mt-5">
               <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Místa působení</label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => (
-                  <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full flex items-center gap-1.5">
-                    {typeof a === 'object' ? a.name : a}
-                    {editingProfile && (
-                      <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="hover:text-red-500"><X className="w-3 h-3" /></button>
-                    )}
-                  </span>
-                ))}
+              {/* List of service areas */}
+              <div className="space-y-2 mb-3">
+                {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
+                  const area = typeof a === 'object' ? a : { name: a, lat: null, lng: null, radius: 25 };
+                  return (
+                    <div key={i} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg p-2.5 border border-blue-200 dark:border-blue-800">
+                      <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <span className="text-sm text-blue-700 dark:text-blue-300 font-medium flex-1 truncate">{area.name || `Bod ${i+1}`}</span>
+                      {area.lat && <span className="text-[10px] text-blue-400">{area.radius || 25} km</span>}
+                      {editingProfile && (
+                        <div className="flex items-center gap-1.5">
+                          {area.lat && (
+                            <select value={area.radius || 25} onChange={e => {
+                              const areas = [...(profileForm.service_areas || [])];
+                              areas[i] = { ...area, radius: parseInt(e.target.value) };
+                              setProfileForm(p => ({...p, service_areas: areas}));
+                            }} className="px-1.5 py-1 bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700 rounded text-xs text-zinc-700 dark:text-zinc-300">
+                              {[1,5,10,15,20,25,30,40,50,75,100,150].map(r => (
+                                <option key={r} value={r}>{r} km</option>
+                              ))}
+                            </select>
+                          )}
+                          <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).length === 0 && (
-                  <span className="text-sm text-zinc-400">Žádná místa působení</span>
+                  <p className="text-sm text-zinc-400">Žádná místa působení. {editingProfile ? 'Klikněte na mapu pro přidání.' : ''}</p>
                 )}
               </div>
               {editingProfile && (
-                <div className="space-y-2">
-                  <div className="flex gap-2 items-center">
-                    <input id="new-area-input" placeholder="Napište město nebo kraj..." className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          const val = e.target.value.trim();
-                          if (val) { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), val]})); e.target.value = ''; }
-                        }
-                      }} />
-                    <button type="button" onClick={() => {
-                      const input = document.getElementById('new-area-input');
-                      const val = input?.value?.trim();
-                      if (val) { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), val]})); input.value = ''; }
-                    }} className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
-                  </div>
-                </div>
+                <p className="text-xs text-zinc-400 mb-2">Klikněte na mapu pro přidání místa působení. Poté nastavte poloměr.</p>
               )}
               {/* Map */}
-              <div className="mt-3 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-64">
+              <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
                 <MapContainer center={[49.8, 15.5]} zoom={7} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                  {editingProfile && <MapClickHandler onAdd={(latlng) => {
+                    const name = prompt('Název místa (např. Praha, Brno, Olomouc):');
+                    if (!name || !name.trim()) return;
+                    setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: name.trim(), lat: latlng.lat, lng: latlng.lng, radius: 25 }]}));
+                  }} />}
+                  {/* HQ marker */}
+                  {profile?.permanent_address && profile?.location?.lat && (
+                    <Marker position={[profile.location.lat, profile.location.lng]}>
+                      <Popup><strong>Sídlo firmy</strong><br/><small>{profile.permanent_address}</small></Popup>
+                    </Marker>
+                  )}
+                  {/* Service area markers + circles */}
                   {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
-                    const name = typeof a === 'object' ? a.name : a;
-                    const lat = typeof a === 'object' ? a.lat : null;
-                    const lng = typeof a === 'object' ? a.lng : null;
-                    if (lat && lng) return <Marker key={i} position={[lat, lng]}><Popup>{name}</Popup></Marker>;
-                    return null;
+                    const area = typeof a === 'object' ? a : null;
+                    if (!area || !area.lat || !area.lng) return null;
+                    const radius = (area.radius || 25) * 1000;
+                    return (
+                      <React.Fragment key={i}>
+                        <Circle center={[area.lat, area.lng]} radius={radius} pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.1, weight: 2 }} />
+                        <Marker position={[area.lat, area.lng]}>
+                          <Popup><strong>{area.name}</strong><br/><small>Poloměr: {area.radius || 25} km</small></Popup>
+                        </Marker>
+                      </React.Fragment>
+                    );
                   })}
                 </MapContainer>
               </div>
