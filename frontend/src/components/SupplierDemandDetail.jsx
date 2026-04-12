@@ -26,6 +26,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [messages, setMessages] = useState([]);
   const [chatMessage, setChatMessage] = useState('');
   const [sendingChat, setSendingChat] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const messagesEndRef = useRef(null);
   const chatPollRef = useRef(null);
 
@@ -374,6 +375,11 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
               <button onClick={handleShareLocation} disabled={sharingLocation} className="px-4 py-2 border border-orange-300 dark:border-orange-700 text-orange-500 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50" data-testid="share-location-btn">
                 <MapPin className="w-4 h-4 inline mr-1" /> {sharingLocation ? 'Sdílím...' : 'Povolit sdílení polohy'}
               </button>
+              {canChat && (
+                <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
+                  <ChatCircle className="w-4 h-4 inline mr-1" /> Online chat
+                </button>
+              )}
             </>
           )}
         </div>
@@ -386,7 +392,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           </MapContainer>
         </div>
       )}
-      {canChat && (
+      {canChat && showChat && (
         <div className="mt-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden" data-testid="inline-chat">
           <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
             <ChatCircle weight="bold" className="w-5 h-5 text-orange-500" />
