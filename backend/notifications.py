@@ -156,7 +156,10 @@ class SMSService:
                 "sender_id_value": self.sender_id_value,
             }
             
+            logger.info(f"SMS: BulkGate request to {to_phone}, app_id={self.app_id}, sender={self.sender_id}/{self.sender_id_value}")
             response = requests.post(self.BULKGATE_URL, json=payload, timeout=15)
+            
+            logger.info(f"SMS: BulkGate response status={response.status_code}, body={response.text[:200]}")
             
             if response.status_code != 200:
                 logger.error(f"SMS FAILED to {to_phone}: HTTP {response.status_code}")
