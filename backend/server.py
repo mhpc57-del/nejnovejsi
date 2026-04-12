@@ -56,6 +56,48 @@ api_router.include_router(disputes_router)
 app.include_router(api_router)
 
 
+@app.get("/api/debug/sms-test")
+async def debug_sms_test():
+    """Diagnostic endpoint — tests BulkGate SMS config without sending"""
+    import os
+    import requests as req
+    
+    app_id = os.environ.get('BULKGATE_APP_ID', '')
+    app_token = os.environ.get('BULKGATE_APP_TOKEN', '')
+    sender_id = os.environ.get('BULKGATE_SENDER_ID', '')
+    sender_value = os.environ.get('BULKGATE_SENDER_ID_VALUE', '')
+    
+    # Mask token for security (show first 6 and last 4 chars)
+    token_masked = f"{app_token[:6]}...{app_token[-4:]}" if len(app_token) > 10 else "TOO_SHORT"
+    
+    result = {
+        "app_id": app_id,
+        "token_masked": token_masked,
+        "token_length": len(app_token),
+        "sender_id": sender_id,
+        "sender_value": sender_value,
+        "env_loaded": bool(app_id and app_token),
+    }
+    
+    # Actually test the API with a dummy number (won't deliver but will auth-check)
+    try:
+        payload = {
+            "application_id": app_id,
+            "application_token": app_token,
+            "number": "420000000000",
+            "text": "diagnostic_test",
+            "sender_id": sender_id or "gSystem",
+            "sender_id_value": sender_value or "",
+        }
+        resp = req.post("https://portal.bulkgate.com/api/1.0/simple/transactional", json=payload, timeout=10)
+        result["bulkgate_status"] = resp.status_code
+        result["bulkgate_response"] = resp.text[:300]
+    except Exception as e:
+        result["bulkgate_error"] = str(e)
+    
+    return result
+
+
 @app.on_event("startup")
 async def startup():
     logger.info("Starting CraftBolt API v2.0.0...")
