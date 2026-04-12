@@ -221,22 +221,22 @@ const HeroSection = () => {
           </div>
 
           {/* === Block 2: Photo/Grid (mobile: 2nd, desktop: right column) === */}
-          <div className="lg:col-span-7 order-2">
+          <div className="lg:col-span-7 order-2" data-testid="hero-media-container">
             <AnimatePresence mode="wait">
               {isExtraGrid ? (
                 <motion.div key="extra-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
-                  className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 flex flex-col justify-center"
+                  className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 flex flex-col justify-center aspect-[4/3]"
                   data-testid="extra-categories-grid"
                 >
-                  <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-5 text-center" style={{ fontFamily: 'Outfit' }}>
+                  <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-4 text-center" style={{ fontFamily: 'Outfit' }}>
                     Další náhodné kategorie
                   </h3>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 flex-1">
                     {extraCategories.map((cat, i) => {
                       const Icon = cat.icon;
                       return (
                         <div key={i}
-                          className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-orange-400 hover:shadow-md transition-all duration-200 cursor-default"
+                          className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-orange-400 hover:shadow-md transition-all duration-200 cursor-default"
                           data-testid={`extra-cat-${i}`}
                         >
                           <Icon className="w-6 h-6 text-orange-500" strokeWidth={2} />
@@ -250,7 +250,7 @@ const HeroSection = () => {
                 <motion.div key={activeIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}
                   className="relative rounded-2xl overflow-hidden"
                 >
-                  <img src={active.image} alt={active.label} className="w-full object-cover" data-testid="hero-active-image" />
+                  <img src={active.image} alt={active.label} className="w-full h-full object-cover aspect-[4/3]" data-testid="hero-active-image" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <div className="flex items-center gap-3">
