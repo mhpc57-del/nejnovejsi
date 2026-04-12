@@ -353,3 +353,55 @@ async def get_my_subscription(current_user: dict = Depends(get_current_user)):
         "subscription_current_period_end": user.get("subscription_current_period_end"),
         "subscription_status": user.get("subscription_status"),
     }
+
+
+@router.post("/payments/sync-pending")
+async def sync_pending_payments(current_user: dict = Depends(get_current_user)):
+    """Check and process any pending payments for the current user"""
+    stripe.api_key = os.environ.get('STRIPE_LIVE_KEY') or os.environ.get('STRIPE_API_KEY')
+    if not stripe.api_key:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    pending = await db.payment_transactions.find(
+        {"user_id": current_user["id"], "payment_status": "pending"}
+    ).to_list(50)
+    
+    synced = 0
+    for tx in pending:
+        try:
+            session = stripe.checkout.Session.retrieve(tx["session_id"])
+            if session.payment_status == "paid":
+                await db.payment_transactions.update_one(
+                    {"session_id": tx["session_id"]},
+                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                
+                if tx.get("payment_type") == "demand_verification":
+                    demand_id = tx.get("demand_id")
+                    if demand_id:
+                        await db.demands.update_one(
+                            {"id": demand_id},
+                            {"$set": {"verified": True, "verified_at": datetime.now(timezone.utc).isoformat()}}
+                        )
+                        logger.info(f"Demand {demand_id} verified via sync")
+                
+                elif tx.get("payment_type") == "supplier_access":
+                    period_days = tx.get("period_days", 30)
+                    access_until = datetime.now(timezone.utc) + timedelta(days=period_days)
+                    await db.users.update_one(
+                        {"id": tx["user_id"]},
+                        {"$set": {
+                            "subscription_active": True,
+                            "subscription_plan": tx.get("plan_id"),
+                            "subscription_status": "active",
+                            "subscription_current_period_end": access_until.isoformat(),
+                        }}
+                    )
+                    logger.info(f"Access activated via sync: {tx['user_email']}")
+                
+                synced += 1
+        except Exception as e:
+            logger.error(f"Sync error for {tx.get('session_id')}: {e}")
+    
+    return {"synced": synced, "total_pending": len(pending)}
+

@@ -79,6 +79,10 @@ const CustomerDashboard = () => {
   useEffect(() => {
     fetchDemands();
     fetchProfile();
+    // Sync any pending payments (e.g. demand verification that wasn't processed)
+    axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => { if (res.data.synced > 0) fetchDemands(); })
+      .catch(() => {});
   }, [token]);
 
   const handleLogout = () => { logout(); navigate('/'); };
