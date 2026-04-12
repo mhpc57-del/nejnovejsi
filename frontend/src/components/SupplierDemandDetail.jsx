@@ -287,6 +287,11 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           {getStatusBadge(d.status)}
           <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium">{d.category}</span>
           {isVerified ? <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span> : <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold">Neověřená</span>}
+          {isVerified && d.customer_name && (
+            <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium flex items-center gap-1">
+              <User className="w-3 h-3" /> {d.customer_name}
+            </span>
+          )}
         </div>
         <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
         <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
@@ -300,12 +305,6 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
           <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5"><Clock className="w-4 h-4" />
             {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
           </p>
-        )}
-        {isVerified && d.customer_name && (
-          <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Zákazník</p>
-            <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5"><User className="w-4 h-4 text-zinc-400" /> {d.customer_name}</p>
-          </div>
         )}
         {!isVerified && isOpen && (
           <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-800 rounded-xl p-5" data-testid="unverified-notice">
