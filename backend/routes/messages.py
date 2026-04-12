@@ -7,12 +7,24 @@ from typing import List
 from datetime import datetime, timezone
 import uuid
 import os
+import re
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://craftbolt.cz")
+
+
+def sanitize_contact_info(text: str) -> str:
+    """Replace phone numbers and email addresses with asterisks"""
+    # Email pattern
+    text = re.sub(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', '***kontakt skryt***', text)
+    # Phone patterns: +420 123 456 789, 123456789, +420123456789, 123 456 789, etc.
+    text = re.sub(r'(?:\+?\d{1,3}[\s\-]?)?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{3,4}', '***kontakt skryt***', text)
+    # Catch remaining digit sequences of 9+ digits (even without spaces)
+    text = re.sub(r'\b\d{9,}\b', '***kontakt skryt***', text)
+    return text
 
 
 @router.post("/messages", response_model=MessageResponse)
@@ -43,7 +55,7 @@ async def send_message(message_data: MessageCreate, current_user: dict = Depends
         "sender_id": current_user["id"],
         "sender_name": sender_display,
         "sender_role": current_user["role"],
-        "content": message_data.content,
+        "content": sanitize_contact_info(message_data.content),
         "created_at": now.isoformat()
     }
     
