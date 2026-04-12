@@ -158,6 +158,7 @@ const SupplierDashboard = () => {
         ico: profileForm.ico, dic: profileForm.dic,
         categories: profileForm.categories || [],
         service_areas: profileForm.service_areas || [],
+        branches: profileForm.branches || [],
       }, { headers: { Authorization: `Bearer ${token}` } });
       setEditingProfile(false);
       fetchProfile();
@@ -336,7 +337,6 @@ const SupplierDashboard = () => {
                 { key: 'ico', label: 'IČ' },
                 { key: 'dic', label: 'DIČ' },
                 { key: 'permanent_address', label: 'Adresa sídla', full: true },
-                { key: 'actual_address', label: 'Adresa pobočky', full: true },
               ].map(f => (
                 <div key={f.key} className={f.full ? 'sm:col-span-2' : ''}>
                   <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{f.label}</label>
@@ -348,6 +348,35 @@ const SupplierDashboard = () => {
                   )}
                 </div>
               ))}
+              {/* Branches (unlimited) */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Pobočky</label>
+                <div className="space-y-2">
+                  {(editingProfile ? (profileForm.branches || []) : (profile?.branches || [])).map((branch, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      {editingProfile ? (
+                        <>
+                          <input value={branch} onChange={e => {
+                            const b = [...(profileForm.branches || [])];
+                            b[i] = e.target.value;
+                            setProfileForm(p => ({...p, branches: b}));
+                          }} placeholder={`Pobočka ${i+1}`}
+                            className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                          <button onClick={() => setProfileForm(p => ({...p, branches: (p.branches || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                        </>
+                      ) : (
+                        <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm min-h-[42px] flex-1">{branch || '—'}</p>
+                      )}
+                    </div>
+                  ))}
+                  {(editingProfile ? (profileForm.branches || []) : (profile?.branches || [])).length === 0 && !editingProfile && (
+                    <p className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm">—</p>
+                  )}
+                  {editingProfile && (
+                    <button onClick={() => setProfileForm(p => ({...p, branches: [...(p.branches || []), '']}))} className="text-sm text-orange-500 hover:text-orange-600 font-medium">+ Přidat pobočku</button>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="mt-4">
               <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">O firmě</label>
@@ -447,20 +476,18 @@ const SupplierDashboard = () => {
                     <div key={i} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg p-2.5 border border-blue-200 dark:border-blue-800">
                       <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0" />
                       <span className="text-sm text-blue-700 dark:text-blue-300 font-medium flex-1 truncate">{area.name || `Bod ${i+1}`}</span>
-                      {area.lat && <span className="text-[10px] text-blue-400">{area.radius || 25} km</span>}
+                      <span className="text-[10px] text-blue-400">{area.radius || 25} km</span>
                       {editingProfile && (
                         <div className="flex items-center gap-1.5">
-                          {area.lat && (
-                            <select value={area.radius || 25} onChange={e => {
-                              const areas = [...(profileForm.service_areas || [])];
-                              areas[i] = { ...area, radius: parseInt(e.target.value) };
-                              setProfileForm(p => ({...p, service_areas: areas}));
-                            }} className="px-1.5 py-1 bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700 rounded text-xs text-zinc-700 dark:text-zinc-300">
-                              {[1,5,10,15,20,25,30,40,50,75,100,150].map(r => (
-                                <option key={r} value={r}>{r} km</option>
-                              ))}
-                            </select>
-                          )}
+                          <select value={area.radius || 25} onChange={e => {
+                            const areas = [...(profileForm.service_areas || [])];
+                            areas[i] = { ...area, radius: parseInt(e.target.value) };
+                            setProfileForm(p => ({...p, service_areas: areas}));
+                          }} className="px-1.5 py-1 bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700 rounded text-xs text-zinc-700 dark:text-zinc-300">
+                            {[1,5,10,15,20,25,30,40,50,75,100,150].map(r => (
+                              <option key={r} value={r}>{r} km</option>
+                            ))}
+                          </select>
                           <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
                         </div>
                       )}
@@ -468,11 +495,48 @@ const SupplierDashboard = () => {
                   );
                 })}
                 {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).length === 0 && (
-                  <p className="text-sm text-zinc-400">Žádná místa působení. {editingProfile ? 'Klikněte na mapu pro přidání.' : ''}</p>
+                  <p className="text-sm text-zinc-400">Žádná místa působení. {editingProfile ? 'Klikněte na mapu nebo zadejte adresu.' : ''}</p>
                 )}
               </div>
               {editingProfile && (
-                <p className="text-xs text-zinc-400 mb-2">Klikněte na mapu pro přidání místa působení. Poté nastavte poloměr.</p>
+                <div className="space-y-2 mb-3">
+                  <div className="flex gap-2 items-center">
+                    <input id="manual-area-input" placeholder="Zadejte adresu nebo město..." className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = e.target.value.trim();
+                          if (!val) return;
+                          try {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=1&countrycodes=cz`);
+                            const data = await res.json();
+                            if (data.length > 0) {
+                              setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',')[0] + ', ' + (data[0].display_name.split(',')[1] || '').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
+                            } else {
+                              setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]}));
+                            }
+                            e.target.value = '';
+                          } catch { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]})); e.target.value = ''; }
+                        }
+                      }} />
+                    <button type="button" onClick={async () => {
+                      const input = document.getElementById('manual-area-input');
+                      const val = input?.value?.trim();
+                      if (!val) return;
+                      try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=1&countrycodes=cz`);
+                        const data = await res.json();
+                        if (data.length > 0) {
+                          setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: data[0].display_name.split(',')[0] + ', ' + (data[0].display_name.split(',')[1] || '').trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), radius: 25 }]}));
+                        } else {
+                          setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]}));
+                        }
+                        input.value = '';
+                      } catch { setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: val, lat: null, lng: null, radius: 25 }]})); input.value = ''; }
+                    }} className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">Přidat</button>
+                  </div>
+                  <p className="text-xs text-zinc-400">Nebo klikněte přímo na mapu.</p>
+                </div>
               )}
               {/* Map */}
               <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-80">
@@ -483,12 +547,6 @@ const SupplierDashboard = () => {
                     if (!name || !name.trim()) return;
                     setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), { name: name.trim(), lat: latlng.lat, lng: latlng.lng, radius: 25 }]}));
                   }} />}
-                  {/* HQ marker */}
-                  {profile?.permanent_address && profile?.location?.lat && (
-                    <Marker position={[profile.location.lat, profile.location.lng]}>
-                      <Popup><strong>Sídlo firmy</strong><br/><small>{profile.permanent_address}</small></Popup>
-                    </Marker>
-                  )}
                   {/* Service area markers + circles */}
                   {(editingProfile ? (profileForm.service_areas || []) : (profile?.service_areas || [])).map((a, i) => {
                     const area = typeof a === 'object' ? a : null;

@@ -408,7 +408,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                     <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${locationShared ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </label>
-                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 leading-relaxed ml-6">Doporučujeme Vám povolené sdílení Vaší polohy pro vyšší důvěryhodnost zákazníků, kteří tak mají vždy přehled o vašem příjezdu.</p>
+                <p className="text-sm text-red-500 dark:text-red-400 font-semibold leading-relaxed ml-6">Doporučujeme Vám povolené sdílení Vaší polohy pro vyšší důvěryhodnost zákazníků, kteří tak mají vždy přehled o vašem příjezdu.</p>
               </div>
               {canChat && (
                 <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
