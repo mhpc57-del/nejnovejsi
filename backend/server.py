@@ -76,7 +76,7 @@ async def debug_sms_test():
     
     # Test auth with dummy number
     try:
-        import subprocess, json as jjson
+        import http.client, json as jjson
         payload = jjson.dumps({
             "application_id": sms.app_id,
             "application_token": sms.app_token,
@@ -85,13 +85,15 @@ async def debug_sms_test():
             "sender_id": sms.sender_id or "gSystem",
             "sender_id_value": sms.sender_id_value or "",
         })
-        proc = subprocess.run(
-            ["curl", "-s", "-X", "POST", "https://portal.bulkgate.com/api/1.0/simple/transactional",
-             "-H", "Content-Type: application/json", "-d", payload],
-            capture_output=True, text=True, timeout=10
-        )
-        result["bulkgate_status"] = "curl_ok"
-        result["bulkgate_response"] = proc.stdout.strip()[:300]
+        conn = http.client.HTTPSConnection("portal.bulkgate.com", timeout=10)
+        conn.request("POST", "/api/1.0/simple/transactional", body=payload, headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        })
+        resp = conn.getresponse()
+        result["bulkgate_status"] = resp.status
+        result["bulkgate_response"] = resp.read().decode("utf-8")[:300]
+        conn.close()
     except Exception as e:
         result["bulkgate_error"] = str(e)
     

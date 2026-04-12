@@ -120,7 +120,7 @@ class SMSService:
             logger.warning("BulkGate credentials not configured - SMS will be skipped")
     
     def send_sms(self, to_phone: str, message: str) -> bool:
-        """Send an SMS using BulkGate API via curl (WEDOS WAF blocks Python requests)"""
+        """Send an SMS using BulkGate API via raw HTTP (bypasses WEDOS WAF)"""
         if not self.app_id or not self.app_token:
             logger.warning("BulkGate not configured - SMS skipped")
             return False
@@ -139,15 +139,16 @@ class SMSService:
         if to_phone.startswith('00'):
             to_phone = to_phone[2:]
         elif len(to_phone) == 9:
-            # Czech local number (9 digits) -> prepend 420
             to_phone = '420' + to_phone
         elif to_phone.startswith('420'):
-            pass  # already correct
+            pass
         
         logger.info(f"SMS: sending to {to_phone} (original: {original_phone})")
         
         try:
-            import subprocess, json
+            import http.client
+            import json
+            
             payload = json.dumps({
                 "application_id": self.app_id,
                 "application_token": self.app_token,
@@ -159,31 +160,35 @@ class SMSService:
             
             logger.info(f"SMS: BulkGate request to {to_phone}, app_id={self.app_id}, sender={self.sender_id}/{self.sender_id_value}")
             
-            result = subprocess.run(
-                ["curl", "-s", "-X", "POST", self.BULKGATE_URL,
-                 "-H", "Content-Type: application/json",
-                 "-d", payload],
-                capture_output=True, text=True, timeout=15
-            )
+            conn = http.client.HTTPSConnection("portal.bulkgate.com", timeout=15)
+            conn.request("POST", "/api/1.0/simple/transactional", body=payload, headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            })
+            resp = conn.getresponse()
+            response_text = resp.read().decode("utf-8")
+            status_code = resp.status
+            conn.close()
             
-            response_text = result.stdout.strip()
-            logger.info(f"SMS: BulkGate response: {response_text[:200]}")
+            logger.info(f"SMS: BulkGate response status={status_code}, body={response_text[:200]}")
+            
+            if status_code != 200:
+                logger.error(f"SMS FAILED to {to_phone}: HTTP {status_code}")
+                return False
             
             try:
                 data = json.loads(response_text)
             except Exception:
-                logger.error(f"SMS FAILED to {to_phone}: Non-JSON response: {response_text[:100]}")
+                logger.error(f"SMS FAILED to {to_phone}: Non-JSON response")
                 return False
             
             if data.get("data", {}).get("status") == "accepted" or data.get("data"):
                 msg_id = data.get("data", {}).get("sms_id", "unknown")
                 logger.info(f"SMS sent to {to_phone}: ID={msg_id} Status=accepted")
                 return True
-            elif data.get("error"):
-                logger.error(f"SMS FAILED to {to_phone}: {data.get('error')}")
-                return False
             else:
-                logger.error(f"SMS FAILED to {to_phone}: {response_text[:200]}")
+                error = data.get("error", data)
+                logger.error(f"SMS FAILED to {to_phone}: {error}")
                 return False
                 
         except Exception as e:
