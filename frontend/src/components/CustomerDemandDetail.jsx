@@ -64,6 +64,29 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
   const messagesEndRef = useRef(null);
   const chatPollRef = useRef(null);
 
+  // Auto-enable location sharing if previously enabled
+  useEffect(() => {
+    const checkLocationSharing = async () => {
+      try {
+        const res = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.data.location_sharing && navigator.geolocation) {
+          const id = navigator.geolocation.watchPosition(
+            (pos) => {
+              const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+              setMyLocation(loc);
+              axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+            },
+            () => {},
+            { enableHighAccuracy: true, maximumAge: 10000 }
+          );
+          setWatchId(id);
+          setSharingMyLocation(true);
+        }
+      } catch {}
+    };
+    if (hasSupplier && !isOpen) checkLocationSharing();
+  }, [d.id]);
+
   const fetchMessages = async () => {
     if (!canChat) return;
     try {
