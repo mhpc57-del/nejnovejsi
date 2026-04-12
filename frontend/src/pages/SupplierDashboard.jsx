@@ -62,6 +62,7 @@ const SupplierDashboard = () => {
   const [invoices, setInvoices] = useState([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [allCategories, setAllCategories] = useState([]);
   const [viewedDemands, setViewedDemands] = useState([]);
 
   const fetchViewedDemands = async () => {
@@ -114,6 +115,7 @@ const SupplierDashboard = () => {
     fetchData();
     fetchProfile();
     fetchViewedDemands();
+    axios.get(`${API}/categories`).then(r => setAllCategories(r.data.categories || [])).catch(() => {});
     // Sync pending payments (e.g. subscription that wasn't activated)
     axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })
@@ -140,8 +142,10 @@ const SupplierDashboard = () => {
         permanent_address: profileForm.permanent_address,
         actual_address: profileForm.actual_address,
         profile_image: profileForm.profile_image,
-        bio: profileForm.bio, date_of_birth: profileForm.date_of_birth,
+        bio: profileForm.bio,
         ico: profileForm.ico, dic: profileForm.dic,
+        categories: profileForm.categories || [],
+        service_areas: profileForm.service_areas || [],
       }, { headers: { Authorization: `Bearer ${token}` } });
       setEditingProfile(false);
       fetchProfile();
@@ -349,16 +353,63 @@ const SupplierDashboard = () => {
               </button>
               <span className="text-sm text-zinc-600 dark:text-zinc-400">SMS notifikace</span>
             </div>
-            {profile?.categories?.length > 0 && (
-              <div className="mt-5">
-                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Kategorie služeb</label>
+            {/* Categories */}
+            <div className="mt-5">
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Kategorie služeb</label>
+              {editingProfile ? (
                 <div className="flex flex-wrap gap-2">
-                  {profile.categories.map(c => (
-                    <span key={c} className="px-3 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-medium rounded-full">{c}</span>
-                  ))}
+                  {allCategories.map(c => {
+                    const selected = (profileForm.categories || []).includes(c);
+                    return (
+                      <button key={c} type="button" onClick={() => {
+                        const cats = profileForm.categories || [];
+                        setProfileForm(p => ({...p, categories: selected ? cats.filter(x => x !== c) : [...cats, c]}));
+                      }}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${selected ? 'bg-orange-500 text-white border-orange-500' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600 hover:border-orange-400'}`}>
+                        {c}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {(profile?.categories?.length > 0) ? profile.categories.map(c => (
+                    <span key={c} className="px-3 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-medium rounded-full">{c}</span>
+                  )) : <span className="text-sm text-zinc-400">Žádné kategorie</span>}
+                </div>
+              )}
+            </div>
+            
+            {/* Service areas */}
+            <div className="mt-5">
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Místa působení</label>
+              {editingProfile ? (
+                <div className="space-y-2">
+                  {(profileForm.service_areas || []).map((area, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input value={area.name || area} onChange={e => {
+                        const areas = [...(profileForm.service_areas || [])];
+                        areas[i] = typeof area === 'object' ? {...area, name: e.target.value} : e.target.value;
+                        setProfileForm(p => ({...p, service_areas: areas}));
+                      }} placeholder="Např. Praha, Brno, Olomoucký kraj..."
+                        className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white" />
+                      <button onClick={() => setProfileForm(p => ({...p, service_areas: (p.service_areas || []).filter((_, j) => j !== i)}))}
+                        className="text-red-500 hover:text-red-600"><X className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => setProfileForm(p => ({...p, service_areas: [...(p.service_areas || []), '']}))}
+                    className="text-sm text-orange-500 hover:text-orange-600 font-medium">+ Přidat místo působení</button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {(profile?.service_areas?.length > 0) ? profile.service_areas.map((a, i) => (
+                    <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+                      {typeof a === 'object' ? a.name : a}
+                    </span>
+                  )) : <span className="text-sm text-zinc-400">Žádná místa působení</span>}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );
