@@ -296,7 +296,7 @@ const SupplierDashboard = () => {
           {/* Personal data */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-zinc-900 dark:text-white">Osobní údaje</h3>
+              <h3 className="font-bold text-zinc-900 dark:text-white">Firemní údaje</h3>
               {editingProfile ? (
                 <div className="flex gap-2">
                   <button onClick={() => { setEditingProfile(false); setProfileForm(profile); }} className="px-4 py-1.5 border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 text-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Zrušit</button>
@@ -312,16 +312,15 @@ const SupplierDashboard = () => {
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                { key: 'first_name', label: 'Jméno' },
-                { key: 'last_name', label: 'Příjmení' },
                 { key: 'company_name', label: 'Firma' },
+                { key: 'first_name', label: 'Kontaktní osoba — jméno' },
+                { key: 'last_name', label: 'Kontaktní osoba — příjmení' },
                 { key: 'phone', label: 'Telefon' },
                 { key: 'email', label: 'E-mail', readonly: true },
                 { key: 'ico', label: 'IČ' },
                 { key: 'dic', label: 'DIČ' },
-                { key: 'permanent_address', label: 'Adresa trvalého pobytu', full: true },
-                { key: 'actual_address', label: 'Adresa skutečného bydliště', full: true },
-                { key: 'date_of_birth', label: 'Datum narození' },
+                { key: 'permanent_address', label: 'Adresa sídla', full: true },
+                { key: 'actual_address', label: 'Adresa pobočky', full: true },
               ].map(f => (
                 <div key={f.key} className={f.full ? 'sm:col-span-2' : ''}>
                   <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{f.label}</label>
@@ -335,7 +334,7 @@ const SupplierDashboard = () => {
               ))}
             </div>
             <div className="mt-4">
-              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">O firmě / o mně</label>
+              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">O firmě</label>
               {editingProfile ? (
                 <textarea value={profileForm.bio || ''} onChange={e => setProfileForm(p => ({...p, bio: e.target.value}))} rows={3}
                   className="w-full px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
