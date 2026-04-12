@@ -394,6 +394,26 @@ const CustomerDashboard = () => {
     // Demand detail
     if (selectedDemand) {
       const d = selectedDemand;
+      const isOpen = d.status === 'open';
+      const isUnverified = !d.verified;
+      
+      const handleVerifyDemand = async () => {
+        try {
+          const res = await axios.post(`${API}/payments/demands/${d.id}/verify-checkout`, {}, {
+            headers: { Authorization: `Bearer ${token}`, 'Origin': window.location.origin }
+          });
+          if (res.data.url) window.location.href = res.data.url;
+        } catch (err) {
+          const detail = err.response?.data?.detail;
+          if (detail === 'Poptávka je již ověřena') {
+            alert('Tato poptávka je již ověřená.');
+            fetchDemands();
+          } else {
+            alert(detail || 'Nepodařilo se zahájit ověření.');
+          }
+        }
+      };
+      
       return (
         <div data-testid="demand-detail">
           <button onClick={() => setSelectedDemand(null)} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-orange-500 mb-4 transition-colors" data-testid="back-to-list">
@@ -404,22 +424,45 @@ const CustomerDashboard = () => {
             <div className="flex items-center gap-2 flex-wrap">
               {getStatusBadge(d.status)}
               <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium">{d.category}</span>
-              {d.verified && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span>}
+              {d.verified ? (
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Ověřená</span>
+              ) : (
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold">Neověřená</span>
+              )}
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{d.description}</p>
             <div className="flex items-center gap-4 text-sm text-zinc-500 flex-wrap">
               <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" /> {d.address}</span>
               <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" /> {new Date(d.created_at).toLocaleDateString('cs-CZ')}</span>
             </div>
+            {(d.budget_min || d.budget_max) && (
+              <p className="text-orange-500 font-semibold text-sm">
+                Rozpočet: {d.budget_min ? `${Number(d.budget_min).toLocaleString('cs-CZ')} - ` : ''}{d.budget_max ? `${Number(d.budget_max).toLocaleString('cs-CZ')} Kč` : ''}
+              </p>
+            )}
             {d.deadline && (
               <p className="text-orange-500 font-semibold text-sm flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
+                {d.deadline === 'URGENT' ? 'IHNED — zákazník si rád připlatí!' : d.deadline === 'ASAP' ? 'Pokud možno, co nejdříve' : `Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`}
               </p>
             )}
+            
+            {/* Images */}
+            {d.images && d.images.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Fotografie</p>
+                <div className="flex gap-2 flex-wrap">
+                  {d.images.map((img, i) => (
+                    <img key={i} src={img.startsWith('http') ? img : `${API.replace('/api', '')}${img.startsWith('/') ? '' : '/'}${img}`} alt={`Foto ${i+1}`} 
+                      className="w-24 h-24 object-cover rounded-lg border border-zinc-200 dark:border-zinc-700" />
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <hr className="border-zinc-200 dark:border-zinc-700" />
-            <div className="flex gap-3">
-              {d.status === 'open' && (
+            <div className="flex gap-3 flex-wrap">
+              {isOpen && (
                 <>
                   <button className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-500 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" data-testid="cancel-demand-action">
                     <X className="w-4 h-4 inline mr-1" /> Zrušit zakázku
@@ -427,11 +470,18 @@ const CustomerDashboard = () => {
                   <Link to={`/zakazka/${d.id}`} className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" data-testid="edit-demand-action">
                     Upravit zakázku
                   </Link>
+                  {isUnverified && (
+                    <button onClick={handleVerifyDemand} className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-colors" data-testid="verify-demand-btn">
+                      <Check weight="bold" className="w-4 h-4 inline mr-1" /> Ověřit zakázku za 49 Kč
+                    </button>
+                  )}
                 </>
               )}
-              <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="demand-detail-link">
-                Otevřít detail
-              </Link>
+              {!isOpen && (
+                <Link to={`/zakazka/${d.id}`} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors" data-testid="demand-detail-link">
+                  Otevřít chat a detail
+                </Link>
+              )}
             </div>
           </div>
           {/* Map */}
