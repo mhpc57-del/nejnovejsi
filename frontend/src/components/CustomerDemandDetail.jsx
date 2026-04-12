@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { API } from '../App';
 import axios from 'axios';
 import {
-  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText
+  X, Check, MapPin, Calendar, Clock, Warning, ChatCircle, PaperPlaneTilt, Briefcase, FileText, NavigationArrow
 } from '@phosphor-icons/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -20,6 +20,8 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [responding, setResponding] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [requestingLocation, setRequestingLocation] = useState(false);
+  const [locationRequested, setLocationRequested] = useState(false);
   const messagesEndRef = useRef(null);
   const chatPollRef = useRef(null);
 
@@ -65,6 +67,15 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
       fetchMessages();
     } catch (e) { console.error(e); }
     setSendingChat(false);
+  };
+
+  const handleRequestLocation = async () => {
+    setRequestingLocation(true);
+    try {
+      await axios.post(`${API}/demands/${d.id}/request-location`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setLocationRequested(true);
+    } catch (e) { alert(e.response?.data?.detail || 'Nepodařilo se odeslat žádost'); }
+    setRequestingLocation(false);
   };
 
   const handleDisputeResponse = async (action) => {
@@ -233,9 +244,15 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
             </>
           )}
           {canChat && (
-            <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
-              <ChatCircle className="w-4 h-4 inline mr-1" /> Online chat
-            </button>
+            <>
+              <button onClick={() => { setShowChat(v => !v); if (!showChat) fetchMessages(); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showChat ? 'bg-orange-500 text-white' : 'border border-orange-300 dark:border-orange-700 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'}`} data-testid="toggle-chat-btn">
+                <ChatCircle className="w-4 h-4 inline mr-1" /> Online chat
+              </button>
+              <button onClick={handleRequestLocation} disabled={requestingLocation || locationRequested}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${locationRequested ? 'bg-emerald-500 text-white' : 'border border-blue-300 dark:border-blue-700 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10'}`} data-testid="request-location-btn">
+                <NavigationArrow className="w-4 h-4 inline mr-1" /> {locationRequested ? 'Žádost odeslána' : 'Požádat o sdílení polohy'}
+              </button>
+            </>
           )}
         </div>
       </div>

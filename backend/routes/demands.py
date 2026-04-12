@@ -31,6 +31,65 @@ async def mark_demand_viewed(demand_id: str, current_user: dict = Depends(get_cu
     return {"status": "ok"}
 
 
+@router.post("/demands/{demand_id}/request-location")
+async def request_supplier_location(demand_id: str, current_user: dict = Depends(get_current_user)):
+    """Customer requests supplier to share their location"""
+    demand = await db.demands.find_one({"id": demand_id}, {"_id": 0})
+    if not demand:
+        raise HTTPException(status_code=404, detail="Zakázka nenalezena")
+    if demand.get("customer_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+    if not demand.get("assigned_supplier_id"):
+        raise HTTPException(status_code=400, detail="Zakázka nemá přiřazeného dodavatele")
+
+    supplier = await db.users.find_one({"id": demand["assigned_supplier_id"]}, {"_id": 0, "email": 1, "phone": 1, "push_token": 1})
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Dodavatel nenalezen")
+
+    customer_name = f"{current_user.get('first_name', '')} {current_user.get('last_name', '')}".strip() or current_user["email"]
+
+    # Send email
+    try:
+        from notifications import NotificationTemplates
+        content = f"""
+            <h2 style="color: #1a1a1a; margin: 0 0 16px 0;">Zákazník žádá o sdílení polohy</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 16px 0;">
+                Zákazník <strong>{customer_name}</strong> Vás žádá o povolení sdílení Vaší polohy u zakázky „<strong>{demand.get('title', '')}</strong>".
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
+                Sdílení polohy zvyšuje důvěryhodnost a zákazník tak bude mít přehled o Vašem příjezdu.
+            </p>
+            <a href="https://craftbolt.cz/dodavatel" style="display: inline-block; background-color: #f97316; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700;">
+                Přejít do profilu
+            </a>
+        """
+        subject = f"Žádost o sdílení polohy od zákazníka {customer_name}"
+        html = NotificationTemplates.email_base(content, subject)
+        await notification_service.email_service.send_email(supplier["email"], subject, html)
+    except Exception as e:
+        logger.error(f"Failed to send location request email: {e}")
+
+    # Send SMS
+    if supplier.get("phone"):
+        try:
+            notification_service.sms_service.send_sms(
+                supplier["phone"],
+                f"CraftBolt: Zakaznik {customer_name} Vas zada o sdileni polohy u zakazky '{demand.get('title', '')[:30]}'. Povolte ji v profilu."
+            )
+        except Exception as e:
+            logger.error(f"Failed to send location request SMS: {e}")
+
+    # Push notification
+    if supplier.get("push_token"):
+        try:
+            from notifications import send_expo_push
+            await send_expo_push([supplier["push_token"]], "Žádost o polohu", f"{customer_name} žádá o sdílení vaší polohy", {"type": "location_request", "demand_id": demand_id})
+        except Exception as e:
+            logger.error(f"Failed to send push: {e}")
+
+    return {"message": "Žádost o sdílení polohy byla odeslána dodavateli"}
+
+
 class QuickDemandCreate(BaseModel):
     first_name: str
     last_name: str
