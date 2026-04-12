@@ -87,16 +87,18 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
     const checkLocationSharing = async () => {
       try {
         const res = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.data.location_sharing && navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-              await axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
-              setMyLocation(loc);
-              setLocationShared(true);
-            },
-            () => {}
-          );
+        if (res.data.location_sharing) {
+          setLocationShared(true);
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              async (pos) => {
+                const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                await axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+                setMyLocation(loc);
+              },
+              () => {}
+            );
+          }
         }
       } catch {}
     };
