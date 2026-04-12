@@ -19,6 +19,11 @@ const orangeMarkerIcon = new L.Icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
 
 const haversineKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -43,6 +48,10 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
   const [requestingLocation, setRequestingLocation] = useState(false);
   const [locationRequested, setLocationRequested] = useState(false);
   const [supplierLocation, setSupplierLocation] = useState(null);
+  const [sharingMyLocation, setSharingMyLocation] = useState(false);
+  const [sharingWorkLocation, setSharingWorkLocation] = useState(d.latitude && d.longitude ? true : false);
+  const [myLocation, setMyLocation] = useState(null);
+  const [watchId, setWatchId] = useState(null);
   const messagesEndRef = useRef(null);
   const chatPollRef = useRef(null);
 
@@ -80,7 +89,10 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
     if (hasSupplier && !isOpen) {
       fetchSupplierLocation();
       const locInterval = setInterval(fetchSupplierLocation, 15000);
-      return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); clearInterval(locInterval); };
+      return () => {
+      if (chatPollRef.current) clearInterval(chatPollRef.current);
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
     }
     return () => { if (chatPollRef.current) clearInterval(chatPollRef.current); };
   }, [d.id, canChat]);
@@ -110,6 +122,34 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
       setLocationRequested(true);
     } catch (e) { alert(e.response?.data?.detail || 'Nepodařilo se odeslat žádost'); }
     setRequestingLocation(false);
+  };
+
+  const toggleShareMyLocation = () => {
+    if (sharingMyLocation) {
+      // Stop sharing
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+      setWatchId(null);
+      setSharingMyLocation(false);
+      setMyLocation(null);
+      axios.post(`${API}/users/location`, { latitude: null, longitude: null }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    } else {
+      if (!navigator.geolocation) { alert('Geolokace není podporována'); return; }
+      const id = navigator.geolocation.watchPosition(
+        (pos) => {
+          const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+          setMyLocation(loc);
+          axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+        },
+        () => { alert('Přístup k poloze byl zamítnut'); setSharingMyLocation(false); },
+        { enableHighAccuracy: true, maximumAge: 10000 }
+      );
+      setWatchId(id);
+      setSharingMyLocation(true);
+    }
+  };
+
+  const toggleShareWorkLocation = () => {
+    setSharingWorkLocation(prev => !prev);
   };
 
   const handleDisputeResponse = async (action) => {
@@ -284,35 +324,62 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
               </button>
               <button onClick={handleRequestLocation} disabled={requestingLocation || locationRequested}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${locationRequested ? 'bg-emerald-500 text-white' : 'border border-blue-300 dark:border-blue-700 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10'}`} data-testid="request-location-btn">
-                <NavigationArrow className="w-4 h-4 inline mr-1" /> {locationRequested ? 'Žádost odeslána' : 'Požádat o sdílení polohy'}
+                <NavigationArrow className="w-4 h-4 inline mr-1" /> {locationRequested ? 'Žádost odeslána' : 'Požádat dodavatele o polohu'}
               </button>
             </>
           )}
+          {canChat && (
+            <div className="w-full flex flex-col gap-2 mt-2">
+              <label className="inline-flex items-center gap-2 cursor-pointer" data-testid="share-my-location-toggle">
+                <MapPin className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">Sdílet moji polohu</span>
+                <button type="button" role="switch" aria-checked={sharingMyLocation} onClick={toggleShareMyLocation}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${sharingMyLocation ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${sharingMyLocation ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </label>
+              <label className="inline-flex items-center gap-2 cursor-pointer" data-testid="share-work-location-toggle">
+                <MapPin className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">Sdílet polohu místa práce</span>
+                <button type="button" role="switch" aria-checked={sharingWorkLocation} onClick={toggleShareWorkLocation}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${sharingWorkLocation ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${sharingWorkLocation ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </label>
+            </div>
+          )}
         </div>
       </div>
-      {d.latitude && d.longitude && (() => {
-        const hasSupplier = supplierLocation?.latitude && supplierLocation?.longitude;
-        const center = hasSupplier
-          ? [(d.latitude + supplierLocation.latitude) / 2, (d.longitude + supplierLocation.longitude) / 2]
-          : [d.latitude, d.longitude];
-        const dist = hasSupplier ? haversineKm(d.latitude, d.longitude, supplierLocation.latitude, supplierLocation.longitude) : null;
+      {(sharingWorkLocation || supplierLocation || myLocation) && (() => {
+        const points = [];
+        if (sharingWorkLocation && d.latitude && d.longitude) points.push({ lat: d.latitude, lng: d.longitude, type: 'work' });
+        if (supplierLocation?.latitude) points.push({ lat: supplierLocation.latitude, lng: supplierLocation.longitude, type: 'supplier' });
+        if (myLocation?.latitude) points.push({ lat: myLocation.latitude, lng: myLocation.longitude, type: 'customer' });
+        if (points.length === 0) return null;
+        const center = [points.reduce((s,p) => s+p.lat, 0)/points.length, points.reduce((s,p) => s+p.lng, 0)/points.length];
+        const bounds = points.length > 1 ? points.map(p => [p.lat, p.lng]) : undefined;
         return (
           <div className="mt-4">
-            {dist !== null && (
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
-                Vzdálenost dodavatele: <span className="text-orange-500">{dist.toFixed(1)} km</span>
-              </p>
-            )}
+            <div className="flex gap-4 text-xs text-zinc-500 mb-2">
+              {sharingWorkLocation && d.latitude && <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block" /> Místo práce</span>}
+              {supplierLocation?.latitude && <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" /> Dodavatel</span>}
+              {myLocation?.latitude && <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500 inline-block" /> Moje poloha</span>}
+            </div>
             <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-72">
-              <MapContainer center={center} zoom={hasSupplier ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}
-                bounds={hasSupplier ? [[d.latitude, d.longitude], [supplierLocation.latitude, supplierLocation.longitude]] : undefined} boundsOptions={{ padding: [50, 50] }}>
+              <MapContainer center={center} zoom={points.length > 1 ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}
+                bounds={bounds} boundsOptions={{ padding: [50, 50] }}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo zakázky</strong><br/><small>{d.address}</small></Popup></Marker>
-                {hasSupplier && (
-                  <>
-                    <Marker position={[supplierLocation.latitude, supplierLocation.longitude]} icon={blueIcon}><Popup><strong>Dodavatel</strong></Popup></Marker>
-                    <Polyline positions={[[d.latitude, d.longitude], [supplierLocation.latitude, supplierLocation.longitude]]} pathOptions={{ color: '#f97316', weight: 2, dashArray: '8, 8' }} />
-                  </>
+                {sharingWorkLocation && d.latitude && d.longitude && (
+                  <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo práce</strong><br/><small>{d.address}</small></Popup></Marker>
+                )}
+                {supplierLocation?.latitude && (
+                  <Marker position={[supplierLocation.latitude, supplierLocation.longitude]} icon={blueIcon}><Popup><strong>Dodavatel</strong></Popup></Marker>
+                )}
+                {myLocation?.latitude && (
+                  <Marker position={[myLocation.latitude, myLocation.longitude]} icon={greenIcon}><Popup><strong>Moje poloha</strong></Popup></Marker>
+                )}
+                {supplierLocation?.latitude && sharingWorkLocation && d.latitude && (
+                  <Polyline positions={[[supplierLocation.latitude, supplierLocation.longitude], [d.latitude, d.longitude]]} pathOptions={{ color: '#3b82f6', weight: 2, dashArray: '8, 8' }} />
                 )}
               </MapContainer>
             </div>

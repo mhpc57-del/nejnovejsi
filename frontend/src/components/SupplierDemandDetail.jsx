@@ -19,6 +19,11 @@ const orangeMarkerIcon = new L.Icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
 
 const haversineKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -66,6 +71,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
   const [submittingComplete, setSubmittingComplete] = useState(false);
   const [sharingLocation, setSharingLocation] = useState(false);
   const [locationShared, setLocationShared] = useState(false);
+  const [myLocation, setMyLocation] = useState(null);
   const [customerLocation, setCustomerLocation] = useState(null);
 
   const fetchCustomerLocation = async () => {
@@ -151,8 +157,8 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
 
   const handleShareLocation = () => {
     if (locationShared) {
-      // Stop sharing
       setLocationShared(false);
+      setMyLocation(null);
       axios.post(`${API}/users/location`, { latitude: null, longitude: null },
         { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
       return;
@@ -162,9 +168,10 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          await axios.post(`${API}/users/location`, { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
-            { headers: { Authorization: `Bearer ${token}` } });
+          const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+          await axios.post(`${API}/users/location`, loc, { headers: { Authorization: `Bearer ${token}` } });
           setLocationShared(true);
+          setMyLocation(loc);
         } catch { alert('Nepodařilo se sdílet polohu'); }
         setSharingLocation(false);
       },
@@ -440,30 +447,33 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         </div>
       </div>
           {isVerified && d.latitude && d.longitude && (() => {
-            const hasCustomer = customerLocation?.latitude && customerLocation?.longitude;
-            const bounds = hasCustomer
-              ? [[d.latitude, d.longitude], [customerLocation.latitude, customerLocation.longitude]]
-              : [[d.latitude, d.longitude]];
-            const center = hasCustomer
-              ? [(d.latitude + customerLocation.latitude) / 2, (d.longitude + customerLocation.longitude) / 2]
-              : [d.latitude, d.longitude];
-            const dist = hasCustomer ? haversineKm(d.latitude, d.longitude, customerLocation.latitude, customerLocation.longitude) : null;
+            const points = [];
+            if (d.latitude && d.longitude) points.push({ lat: d.latitude, lng: d.longitude, type: 'work' });
+            if (myLocation?.latitude) points.push({ lat: myLocation.latitude, lng: myLocation.longitude, type: 'supplier' });
+            if (customerLocation?.latitude) points.push({ lat: customerLocation.latitude, lng: customerLocation.longitude, type: 'customer' });
+            if (points.length === 0) return null;
+            const center = [points.reduce((s,p) => s+p.lat, 0)/points.length, points.reduce((s,p) => s+p.lng, 0)/points.length];
+            const bounds = points.length > 1 ? points.map(p => [p.lat, p.lng]) : undefined;
             return (
               <div className="mt-4">
-                {dist !== null && (
-                  <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
-                    Vzdálenost: <span className="text-orange-500">{dist.toFixed(1)} km</span>
-                  </p>
-                )}
+                <div className="flex gap-4 text-xs text-zinc-500 mb-2">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block" /> Místo práce</span>
+                  {myLocation && <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" /> Moje poloha</span>}
+                  {customerLocation?.latitude && <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500 inline-block" /> Zákazník</span>}
+                </div>
                 <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 h-72">
-                  <MapContainer center={center} zoom={hasCustomer ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true} bounds={hasCustomer ? bounds : undefined} boundsOptions={{ padding: [50, 50] }}>
+                  <MapContainer center={center} zoom={points.length > 1 ? 10 : 13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}
+                    bounds={bounds} boundsOptions={{ padding: [50, 50] }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                    <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo zakázky</strong><br/><small>{d.address}</small></Popup></Marker>
-                    {hasCustomer && (
-                      <>
-                        <Marker position={[customerLocation.latitude, customerLocation.longitude]} icon={blueIcon}><Popup><strong>Zákazník</strong></Popup></Marker>
-                        <Polyline positions={[[d.latitude, d.longitude], [customerLocation.latitude, customerLocation.longitude]]} pathOptions={{ color: '#f97316', weight: 2, dashArray: '8, 8' }} />
-                      </>
+                    <Marker position={[d.latitude, d.longitude]} icon={orangeMarkerIcon}><Popup><strong>Místo práce</strong><br/><small>{d.address}</small></Popup></Marker>
+                    {myLocation?.latitude && (
+                      <Marker position={[myLocation.latitude, myLocation.longitude]} icon={blueIcon}><Popup><strong>Moje poloha</strong></Popup></Marker>
+                    )}
+                    {customerLocation?.latitude && (
+                      <Marker position={[customerLocation.latitude, customerLocation.longitude]} icon={greenIcon}><Popup><strong>Zákazník</strong></Popup></Marker>
+                    )}
+                    {myLocation?.latitude && d.latitude && (
+                      <Polyline positions={[[myLocation.latitude, myLocation.longitude], [d.latitude, d.longitude]]} pathOptions={{ color: '#3b82f6', weight: 2, dashArray: '8, 8' }} />
                     )}
                   </MapContainer>
                 </div>
