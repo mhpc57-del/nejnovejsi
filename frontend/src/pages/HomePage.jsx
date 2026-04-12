@@ -130,9 +130,10 @@ const HomePage = () => {
               <ThemeToggle />
               {isAuthenticated ? (
                 <>
-                  <Link to="/dashboard" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors" data-testid="dashboard-link">
-                    Hlavní menu
+                  <Link to={user?.role === 'supplier' ? '/dodavatel' : user?.role === 'admin' ? '/admin' : '/zakaznik'} className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors" data-testid="dashboard-link">
+                    Můj profil
                   </Link>
+                  <span className="text-zinc-300 dark:text-zinc-600">|</span>
                   <button onClick={logout} className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors" data-testid="logout-btn">
                     Odhlásit
                   </button>
