@@ -328,9 +328,15 @@ const CustomerDashboard = () => {
             </div>
             {/* SMS toggle */}
             <div className="mt-5 flex items-center gap-3">
-              <button onClick={() => { if (editingProfile) setProfileForm(p => ({...p, sms_notifications: !p.sms_notifications})); }}
-                className={`w-11 h-6 rounded-full transition-colors relative ${profileForm.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'} ${!editingProfile ? 'opacity-60' : ''}`} data-testid="sms-toggle">
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${profileForm.sms_notifications ? 'left-5.5' : 'left-0.5'}`} />
+              <button onClick={async () => {
+                const newVal = !profileForm.sms_notifications;
+                setProfileForm(p => ({...p, sms_notifications: newVal}));
+                try {
+                  await axios.put(`${API}/users/profile`, { sms_notifications: newVal }, { headers: { Authorization: `Bearer ${token}` } });
+                } catch {}
+              }}
+                className={`w-12 h-7 rounded-full transition-colors duration-200 flex items-center px-1 cursor-pointer ${profileForm.sms_notifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} data-testid="sms-toggle">
+                <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${profileForm.sms_notifications ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
               <span className="text-sm text-zinc-600 dark:text-zinc-400">SMS notifikace</span>
             </div>
