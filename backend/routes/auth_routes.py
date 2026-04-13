@@ -194,6 +194,16 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     return user_to_response(current_user)
 
 
+
+@router.post("/auth/check-email")
+async def check_email(data: dict):
+    """Check if email is already registered."""
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return {"exists": False}
+    user = await db.users.find_one({"email": email}, {"_id": 0, "id": 1})
+    return {"exists": bool(user)}
+
 @router.post("/auth/deactivate")
 async def deactivate_account(current_user: dict = Depends(get_current_user), password: str = ""):
     """Deactivate (soft-delete) user account. Requires password confirmation."""

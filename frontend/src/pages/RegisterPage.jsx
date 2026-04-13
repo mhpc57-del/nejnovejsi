@@ -451,8 +451,21 @@ const RegisterPage = () => {
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateStep()) return;
+    // Check email availability on basic step before proceeding
+    const step = steps[currentStep];
+    if (step === 'basic') {
+      try {
+        const res = await axios.post(`${API}/auth/check-email`, { email: formData.email });
+        if (res.data.exists) {
+          setError('Tento e-mail je již zaregistrován. Přihlaste se nebo použijte jiný e-mail.');
+          return;
+        }
+      } catch {
+        // If check fails, continue (server will catch it at registration)
+      }
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
