@@ -22,10 +22,10 @@ const tabScreenOptions = {
   headerShown: false,
   tabBarActiveTintColor: COLORS.primary,
   tabBarInactiveTintColor: COLORS.gray400,
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2 },
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2, marginBottom: 4 },
   tabBarStyle: {
-    backgroundColor: COLORS.white, borderTopWidth: 0,
-    paddingTop: 8, paddingBottom: 4, height: 60,
+    backgroundColor: COLORS.white, borderTopWidth: 1, borderTopColor: COLORS.gray100,
+    paddingTop: 8, paddingBottom: 20, height: 75,
     elevation: 16, shadowColor: '#000', shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.1, shadowRadius: 16,
   },
 };
