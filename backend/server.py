@@ -102,41 +102,23 @@ async def debug_sms_test():
 
 @app.get("/api/debug/db-check")
 async def debug_db_check():
-    """Diagnostic endpoint — check database collections and counts"""
+    """Diagnostic endpoint — check database counts"""
     import os
     db_name = os.environ.get('DB_NAME', 'UNKNOWN')
-    mongo_url = os.environ.get('MONGO_URL', 'UNKNOWN')
-    # Mask mongo URL for security
-    mongo_masked = mongo_url[:20] + "..." if len(mongo_url) > 20 else mongo_url
     
-    result = {
-        "db_name": db_name,
-        "mongo_url_masked": mongo_masked,
-    }
+    result = {"db_name": db_name}
     
     try:
         result["users_count"] = await db.users.count_documents({})
         result["demands_count"] = await db.demands.count_documents({})
-        result["disputes_count"] = await db.disputes.count_documents({})
-        result["messages_count"] = await db.messages.count_documents({})
-        result["collections"] = await db.list_collection_names()
-        
-        # Sample: check if specific users exist
-        admin = await db.users.find_one({"role": "admin"}, {"_id": 0, "email": 1})
-        result["admin_exists"] = bool(admin)
-        result["admin_email"] = admin.get("email") if admin else None
-        
-        # Count by role
         result["customers"] = await db.users.count_documents({"role": "customer"})
         result["suppliers"] = await db.users.count_documents({"role": "supplier"})
         
         # Demand statuses
-        pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
         statuses = {}
-        async for doc in db.demands.aggregate(pipeline):
-            statuses[doc["_id"] or "null"] = doc["count"]
+        for s in ["open", "in_progress", "pending_completion", "completed", "cancelled", "dispute"]:
+            statuses[s] = await db.demands.count_documents({"status": s})
         result["demand_statuses"] = statuses
-        
     except Exception as e:
         result["error"] = str(e)
     
