@@ -369,10 +369,17 @@ const CustomerDashboard = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-zinc-900 dark:text-white text-sm">{inv.total_amount?.toLocaleString('cs-CZ')} Kč</span>
-                    <a href={`${API}/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium rounded-lg transition-colors" data-testid={`download-invoice-${inv.id}`}>
+                    <button onClick={async () => {
+                      try {
+                        const res = await axios.get(`${API}/invoices/${inv.id}/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+                        const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                        const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.click();
+                        window.URL.revokeObjectURL(url);
+                      } catch { alert('Nepodařilo se stáhnout fakturu'); }
+                    }}
+                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer" data-testid={`download-invoice-${inv.id}`}>
                       PDF
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
