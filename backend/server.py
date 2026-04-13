@@ -114,6 +114,18 @@ async def debug_db_check():
         result["customers"] = await db.users.count_documents({"role": "customer"})
         result["suppliers"] = await db.users.count_documents({"role": "supplier"})
         
+        # Check user emails and IDs
+        user_emails = []
+        async for u in db.users.find({}, {"_id": 0, "id": 1, "email": 1, "role": 1}):
+            user_emails.append(f"{u.get('email')}({u.get('role')}) id={u.get('id','?')[:8]}")
+        result["user_list"] = user_emails
+        
+        # Check demands with customer info
+        demand_list = []
+        async for d in db.demands.find({}, {"_id": 0, "title": 1, "status": 1, "customer_id": 1, "assigned_supplier_id": 1}):
+            demand_list.append(f"{d.get('title')}[{d.get('status')}] cust={d.get('customer_id','?')[:8]} sup={str(d.get('assigned_supplier_id','?'))[:8]}")
+        result["demand_list"] = demand_list
+        
         # Demand statuses
         statuses = {}
         for s in ["open", "in_progress", "pending_completion", "completed", "cancelled", "dispute"]:
