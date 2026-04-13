@@ -180,7 +180,7 @@ const HeroSection = () => {
           <div className="lg:col-span-6 order-1 flex flex-col">
             <div className="mb-2 lg:mb-8">
               <h1
-                className="hidden lg:block text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
+                className="block text-base sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white uppercase"
                 style={{ fontFamily: 'Outfit' }}
                 data-testid="hero-title"
               >
