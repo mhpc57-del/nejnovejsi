@@ -355,7 +355,13 @@ async def get_my_demands(current_user: dict = Depends(get_current_user)):
         ]
     
     demands = await db.demands.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return [DemandResponse(**_fix_demand_data(d)) for d in demands]
+    result = []
+    for d in demands:
+        try:
+            result.append(DemandResponse(**_fix_demand_data(d)))
+        except Exception as e:
+            logger.error(f"Failed to serialize demand {d.get('id', '?')}: {e}")
+    return result
 
 
 @router.get("/demands/{demand_id}", response_model=DemandResponse)

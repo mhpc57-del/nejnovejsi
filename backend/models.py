@@ -164,7 +164,7 @@ class DemandResponse(BaseModel):
     blacklist_reason: Optional[str] = None
     agreed_price: Optional[float] = None
     final_price: Optional[float] = None
-    completion_photos: List[dict] = []
+    completion_photos: list = []
     price_confirmed_by_supplier: Optional[bool] = None
     price_confirmed_at: Optional[str] = None
     price_dispute_reason: Optional[str] = None
@@ -174,9 +174,6 @@ class DemandResponse(BaseModel):
     verified_at: Optional[str] = None
     dispute_status: Optional[str] = None
     dispute: Optional[dict] = None
-    completion_photos: List[str] = []
-    completion_type: Optional[str] = None
-    final_price: Optional[float] = None
     customer_rating: Optional[int] = None
     customer_review: Optional[str] = None
     verification_requests: List[dict] = []
