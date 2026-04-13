@@ -1,45 +1,45 @@
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utils/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
-import { registerForPushNotifications, addNotificationListeners } from './src/utils/notifications';
+import { registerForPushNotifications, addNotificationListener, addNotificationResponseListener } from './src/utils/notifications';
 
 function AppContent() {
   const { user } = useAuth();
-  const notifCleanup = useRef(null);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   useEffect(() => {
     if (user) {
+      // Register for push notifications when user is logged in
       registerForPushNotifications();
 
-      notifCleanup.current = addNotificationListeners(
-        (notification) => {
-          console.log('Notification received:', notification);
-        },
-        (response) => {
-          const data = response.notification.request.content.data;
-          console.log('Notification tapped:', data);
-        }
-      );
-    }
+      notificationListener.current = addNotificationListener(notification => {
+        console.log('Notification received:', notification);
+      });
 
-    return () => {
-      if (notifCleanup.current) notifCleanup.current();
-    };
+      responseListener.current = addNotificationResponseListener(response => {
+        console.log('Notification tapped:', response);
+      });
+
+      return () => {
+        if (notificationListener.current) notificationListener.current.remove();
+        if (responseListener.current) responseListener.current.remove();
+      };
+    }
   }, [user]);
 
-  return (
-    <>
-      <StatusBar style="dark" />
-      <AppNavigator />
-    </>
-  );
+  return <AppNavigator />;
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <AppContent />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

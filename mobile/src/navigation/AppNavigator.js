@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS } from '../utils/theme';
@@ -22,37 +23,41 @@ const tabScreenOptions = {
   headerShown: false,
   tabBarActiveTintColor: COLORS.primary,
   tabBarInactiveTintColor: COLORS.gray400,
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2, marginBottom: 8 },
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
   tabBarStyle: {
     backgroundColor: COLORS.white, borderTopWidth: 1, borderTopColor: COLORS.gray100,
-    paddingTop: 10, paddingBottom: 30, height: 90,
-    elevation: 16, shadowColor: '#000', shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.1, shadowRadius: 16,
+    paddingTop: 8, height: 65,
   },
+  tabBarItemStyle: { paddingBottom: 4 },
 };
 
 function CustomerTabs() {
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions}>
-      <Tab.Screen name="Dashboard" component={CustomerDashboard}
-        options={{ tabBarLabel: 'Poptávky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'list' : 'list-outline'} size={22} color={color} /> }} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen}
-        options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
-      <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
-    </Tab.Navigator>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }} edges={['bottom']}>
+      <Tab.Navigator screenOptions={tabScreenOptions}>
+        <Tab.Screen name="Dashboard" component={CustomerDashboard}
+          options={{ tabBarLabel: 'Poptávky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'list' : 'list-outline'} size={22} color={color} /> }} />
+        <Tab.Screen name="Notifications" component={NotificationsScreen}
+          options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
+        <Tab.Screen name="Profile" component={ProfileScreen}
+          options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 
 function SupplierTabs() {
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions}>
-      <Tab.Screen name="Dashboard" component={SupplierDashboard}
-        options={{ tabBarLabel: 'Zakázky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} /> }} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen}
-        options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
-      <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
-    </Tab.Navigator>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }} edges={['bottom']}>
+      <Tab.Navigator screenOptions={tabScreenOptions}>
+        <Tab.Screen name="Dashboard" component={SupplierDashboard}
+          options={{ tabBarLabel: 'Zakázky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} /> }} />
+        <Tab.Screen name="Notifications" component={NotificationsScreen}
+          options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
+        <Tab.Screen name="Profile" component={ProfileScreen}
+          options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 

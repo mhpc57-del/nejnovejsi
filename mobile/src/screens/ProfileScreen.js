@@ -166,6 +166,58 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Reference photos */}
+        {isSupplier && (
+          <View style={styles.card}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={styles.sectionTitle}>Referenční fotky</Text>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {(profile?.reference_photos || []).map((photo, i) => (
+                <View key={i} style={{ position: 'relative' }}>
+                  <Image
+                    source={{ uri: (photo.url || photo).startsWith('http') ? (photo.url || photo) : `https://craftbolt.cz${photo.url || photo}` }}
+                    style={{ width: 90, height: 90, borderRadius: 10 }}
+                  />
+                  {editing && (
+                    <TouchableOpacity
+                      style={{ position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: 11, backgroundColor: COLORS.red500, justifyContent: 'center', alignItems: 'center' }}
+                      onPress={async () => {
+                        const newPhotos = (profile.reference_photos || []).filter((_, idx) => idx !== i);
+                        try {
+                          await userService.updateProfile({ reference_photos: newPhotos });
+                          fetchProfile();
+                        } catch {}
+                      }}>
+                      <Ionicons name="close" size={14} color={COLORS.white} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+              <TouchableOpacity
+                style={{ width: 90, height: 90, borderRadius: 10, borderWidth: 1.5, borderColor: COLORS.gray200, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}
+                onPress={async () => {
+                  const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
+                  if (!result.canceled && result.assets?.[0]) {
+                    try {
+                      const res = await uploadService.upload(result.assets[0].uri);
+                      const current = profile?.reference_photos || [];
+                      await userService.updateProfile({ reference_photos: [...current, { url: res.data.url, uploaded_at: new Date().toISOString() }] });
+                      fetchProfile();
+                      Alert.alert('Hotovo', 'Fotka přidána');
+                    } catch { Alert.alert('Chyba', 'Nepodařilo se nahrát fotku'); }
+                  }
+                }}>
+                <Ionicons name="add" size={28} color={COLORS.gray400} />
+                <Text style={{ fontSize: 10, color: COLORS.gray400, marginTop: 2 }}>Přidat</Text>
+              </TouchableOpacity>
+            </View>
+            {(profile?.reference_photos || []).length === 0 && !editing && (
+              <Text style={{ fontSize: 13, color: COLORS.gray500, marginTop: 4 }}>Přidejte fotky vašich realizací</Text>
+            )}
+          </View>
+        )}
+
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={() => {
           Alert.alert('Odhlášení', 'Opravdu se chcete odhlásit?', [

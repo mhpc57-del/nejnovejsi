@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput,
-  Alert, ActivityIndicator, Image, KeyboardAvoidingView, Platform,
+  Alert, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { demandService, disputeService, messageService, userService, uploadService } from '../services/api';
+import MapView, { Marker } from 'react-native-maps';
+import { demandService, disputeService, messageService, userService, uploadService, authService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS, STATUS_COLORS, RADIUS, SHADOWS } from '../utils/theme';
 import { StatusBadge } from '../components/SharedComponents';
@@ -53,9 +54,7 @@ export default function DemandDetailScreen({ route, navigation }) {
 
   const checkLocationSharing = async () => {
     try {
-      const res = await userService.updateProfile({});
-      // We check from /auth/me
-      const me = await require('../services/api').authService.getMe();
+      const me = await authService.getMe();
       if (me.data.location_sharing) {
         setLocationShared(true);
         startLocationSharing();
@@ -167,6 +166,28 @@ export default function DemandDetailScreen({ route, navigation }) {
               </ScrollView>
             )}
           </View>
+
+          {/* Map */}
+          {d.latitude && d.longitude && (
+            <View style={styles.card}>
+              <Text style={{ fontWeight: '600', color: COLORS.gray900, marginBottom: 10 }}>
+                <Ionicons name="map-outline" size={16} color={COLORS.primary} /> Mapa
+              </Text>
+              <View style={{ borderRadius: RADIUS.md, overflow: 'hidden' }}>
+                <MapView
+                  style={{ width: '100%', height: 200 }}
+                  initialRegion={{
+                    latitude: d.latitude,
+                    longitude: d.longitude,
+                    latitudeDelta: 0.02,
+                    longitudeDelta: 0.02,
+                  }}>
+                  <Marker coordinate={{ latitude: d.latitude, longitude: d.longitude }}
+                    title={d.address} pinColor={COLORS.primary} />
+                </MapView>
+              </View>
+            </View>
+          )}
 
           {/* Pending completion — customer confirms */}
           {isPending && isCustomer && d.completion_initiated_by === 'supplier' && (
