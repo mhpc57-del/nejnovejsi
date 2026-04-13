@@ -35,7 +35,7 @@ export const DemandCard = ({ demand, onPress, showNew }) => {
         </View>
         <Text style={styles.metaDate}>{new Date(demand.created_at).toLocaleDateString('cs-CZ')}</Text>
       </View>
-      {demand.deadline && (
+      {demand.deadline && !isNaN(new Date(demand.deadline).getTime()) && (
         <View style={styles.deadlineRow}>
           <Ionicons name="calendar-outline" size={13} color={COLORS.primary} />
           <Text style={styles.deadlineText}>Termín: {new Date(demand.deadline).toLocaleDateString('cs-CZ')}</Text>
