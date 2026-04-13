@@ -36,12 +36,22 @@ def _register_fonts():
     global _fonts_registered
     if _fonts_registered:
         return
-    try:
-        pdfmetrics.registerFont(TTFont('FreeSans', '/usr/share/fonts/truetype/freefont/FreeSans.ttf'))
-        pdfmetrics.registerFont(TTFont('FreeSans-Bold', '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf'))
-        _fonts_registered = True
-    except Exception:
-        pass
+    # Try bundled fonts first, then system fonts
+    font_dirs = [
+        os.path.join(os.path.dirname(__file__), 'fonts'),
+        '/usr/share/fonts/truetype/freefont',
+    ]
+    for font_dir in font_dirs:
+        regular = os.path.join(font_dir, 'FreeSans.ttf')
+        bold = os.path.join(font_dir, 'FreeSansBold.ttf')
+        if os.path.exists(regular) and os.path.exists(bold):
+            try:
+                pdfmetrics.registerFont(TTFont('FreeSans', regular))
+                pdfmetrics.registerFont(TTFont('FreeSans-Bold', bold))
+                _fonts_registered = True
+                return
+            except Exception:
+                pass
 
 
 def generate_invoice_number(sequence: int, year: int = None) -> str:
