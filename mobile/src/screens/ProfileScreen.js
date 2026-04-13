@@ -1,358 +1,219 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  TextInput, Alert, ActivityIndicator, Image, ActionSheetIOS, Platform,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput,
+  Alert, ActivityIndicator, Switch, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { userService, uploadService, reviewService } from '../services/api';
+import { authService, userService, uploadService } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS, SHADOWS, RADIUS } from '../utils/theme';
+import { COLORS, RADIUS, SHADOWS } from '../utils/theme';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [avatarUri, setAvatarUri] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [reviews, setReviews] = useState([]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
 
   const fetchProfile = async () => {
     try {
-      const res = await userService.getById(user.id);
+      const res = await authService.getMe();
       setProfile(res.data);
       setForm(res.data);
-      if (res.data.profile_image) {
-        const img = res.data.profile_image;
-        setAvatarUri(img.startsWith('http') ? img : `https://craftbolt.cz${img}`);
-      }
-      // Fetch reviews
-      const reviewRes = await reviewService.getByUser(user.id).catch(() => ({ data: [] }));
-      setReviews(reviewRes.data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    } catch {} finally { setLoading(false); }
   };
+
+  useEffect(() => { fetchProfile(); }, []);
+
+  const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await userService.updateProfile({
-        first_name: form.first_name,
-        last_name: form.last_name,
-        company_name: form.company_name,
-        phone: form.phone,
-        address: form.address,
+        first_name: form.first_name, last_name: form.last_name,
+        company_name: form.company_name, phone: form.phone,
+        address: form.address, permanent_address: form.permanent_address,
+        actual_address: form.actual_address, bio: form.bio,
+        ico: form.ico, dic: form.dic, website: form.website,
+        sms_notifications: form.sms_notifications,
       });
       Alert.alert('Uloženo', 'Profil byl aktualizován');
       setEditing(false);
       fetchProfile();
-    } catch (e) {
-      Alert.alert('Chyba', 'Nepodařilo se uložit');
-    } finally {
-      setSaving(false);
+    } catch (e) { Alert.alert('Chyba', e.response?.data?.detail || 'Nepodařilo se uložit'); }
+    finally { setSaving(false); }
+  };
+
+  const handleSmsToggle = async (val) => {
+    update('sms_notifications', val);
+    try { await userService.updateProfile({ sms_notifications: val }); } catch {}
+  };
+
+  const pickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
+    if (!result.canceled && result.assets?.[0]) {
+      try {
+        const res = await uploadService.upload(result.assets[0].uri);
+        await userService.updateProfile({ profile_image: res.data.url });
+        fetchProfile();
+      } catch { Alert.alert('Chyba', 'Nepodařilo se nahrát fotku'); }
     }
   };
 
-  const pickImage = async (useCamera) => {
-    try {
-      if (useCamera) {
-        const perm = await ImagePicker.requestCameraPermissionsAsync();
-        if (!perm.granted) {
-          Alert.alert('Oprávnění', 'Pro fotografování je potřeba přístup k fotoaparátu');
-          return;
-        }
-      } else {
-        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!perm.granted) {
-          Alert.alert('Oprávnění', 'Pro výběr fotky je potřeba přístup ke galerii');
-          return;
-        }
-      }
+  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
 
-      const result = useCamera
-        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 })
-        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-
-      if (!result.canceled && result.assets?.[0]) {
-        const pickedUri = result.assets[0].uri;
-        setAvatarUri(pickedUri);
-        setUploading(true);
-        try {
-          const uploadRes = await uploadService.upload(pickedUri);
-          const relativeUrl = uploadRes.data.url;
-          // Convert relative URL to absolute for mobile display
-          const fullUrl = relativeUrl.startsWith('http') ? relativeUrl : `https://craftbolt.cz${relativeUrl}`;
-          await userService.updateProfile({ profile_image: relativeUrl });
-          setAvatarUri(fullUrl);
-          Alert.alert('Hotovo', 'Profilová fotka nastavena a uložena');
-        } catch (uploadErr) {
-          console.error('Upload error:', JSON.stringify(uploadErr?.response?.data || uploadErr.message));
-          Alert.alert('Chyba uploadu', uploadErr?.response?.data?.detail || 'Nepodařilo se nahrát fotku na server');
-          setAvatarUri(null);
-        } finally {
-          setUploading(false);
-        }
-      }
-    } catch (e) {
-      Alert.alert('Chyba', 'Nepodařilo se vybrat fotku');
-    }
-  };
-
-  const showImageOptions = () => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options: ['Zrušit', 'Vyfotit', 'Vybrat z galerie'], cancelButtonIndex: 0 },
-        (index) => { if (index === 1) pickImage(true); else if (index === 2) pickImage(false); }
-      );
-    } else {
-      Alert.alert('Profilová fotka', 'Vyberte zdroj', [
-        { text: 'Vyfotit', onPress: () => pickImage(true) },
-        { text: 'Vybrat z galerie', onPress: () => pickImage(false) },
-        { text: 'Zrušit', style: 'cancel' },
-      ]);
-    }
-  };
-
-  const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
-
-  if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
-  }
+  const isSupplier = profile?.role === 'supplier' || profile?.role === 'customer_supplier';
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
-        <Text style={styles.pageTitle}>Profil</Text>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
-          <Ionicons name="log-out-outline" size={20} color={COLORS.gray700} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Avatar */}
-      <View style={styles.avatarSection}>
-        <TouchableOpacity onPress={showImageOptions} style={styles.avatarWrap} activeOpacity={0.8}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-          ) : (
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {(profile?.first_name?.[0] || profile?.email?.[0] || 'U').toUpperCase()}
-              </Text>
-            </View>
-          )}
-          <View style={styles.cameraIcon}>
-            <Ionicons name="camera" size={16} color={COLORS.white} />
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.profileName}>
-          {profile?.first_name} {profile?.last_name}
-        </Text>
-        <Text style={styles.profileEmail}>{profile?.email}</Text>
-        <View style={styles.roleBadgeWrap}>
-          <Ionicons name={profile?.role === 'supplier' || profile?.role === 'customer_supplier' ? 'construct-outline' : 'person-outline'} size={14} color={COLORS.primary} />
-          <Text style={styles.roleBadgeText}>
-            {profile?.role === 'supplier' ? 'Dodavatel' : profile?.role === 'customer_supplier' ? 'Zakaznik i Dodavatel' : 'Zakaznik'}
-          </Text>
-        </View>
-      </View>
-
-      {/* Subscription info for suppliers */}
-      {(profile?.role === 'supplier' || profile?.role === 'customer_supplier') && (
-        <View style={styles.subscriptionCard}>
-          <View style={styles.subRow}>
-            <View style={[styles.subIcon, { backgroundColor: profile?.subscription_active ? COLORS.green50 : COLORS.red50 }]}>
-              <Ionicons name={profile?.subscription_active ? 'shield-checkmark' : 'lock-closed'} size={20} color={profile?.subscription_active ? COLORS.green500 : COLORS.red500} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.subTitle}>{profile?.subscription_active ? 'Aktivni pristup' : 'Neaktivni pristup'}</Text>
-              {profile?.subscription_current_period_end && profile?.subscription_active && (
-                <Text style={styles.subDate}>Plati do {new Date(profile.subscription_current_period_end).toLocaleDateString('cs-CZ')}</Text>
-              )}
-              {!profile?.subscription_active && (
-                <Text style={styles.subDate}>Uhradte platbu pro plny pristup</Text>
-              )}
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* Stats */}
-      {(profile?.rating || profile?.punctuality_score != null) && (
-        <View style={styles.statsRow}>
-          {profile?.rating > 0 && (
-            <View style={styles.statItem}>
-              <Ionicons name="star" size={20} color={COLORS.primary} />
-              <Text style={styles.statValue}>{profile.rating?.toFixed(1)}</Text>
-              <Text style={styles.statLabel}>Hodnocení</Text>
-            </View>
-          )}
-          {profile?.punctuality_score != null && (
-            <View style={styles.statItem}>
-              <Ionicons name="time" size={20} color={COLORS.blue500} />
-              <Text style={[styles.statValue, { color: COLORS.blue500 }]}>{profile.punctuality_score?.toFixed(0)}%</Text>
-              <Text style={styles.statLabel}>Dochvilnost</Text>
-            </View>
-          )}
-          {profile?.trust_score > 0 && (
-            <View style={styles.statItem}>
-              <Ionicons name="shield-checkmark" size={20} color={COLORS.green500} />
-              <Text style={[styles.statValue, { color: COLORS.green500 }]}>{profile.trust_score}/5</Text>
-              <Text style={styles.statLabel}>Důvěra</Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Fields */}
-      <View style={styles.fieldsCard}>
-        <View style={styles.fieldHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Ionicons name="create-outline" size={18} color={COLORS.gray900} />
-            <Text style={styles.fieldsTitle}>Osobní údaje</Text>
-          </View>
-          <TouchableOpacity onPress={() => editing ? handleSave() : setEditing(true)} style={styles.editBtnWrap}>
-            {saving ? <ActivityIndicator size="small" color={COLORS.primary} /> : (
-              <>
-                <Ionicons name={editing ? 'checkmark' : 'pencil'} size={16} color={COLORS.primary} />
-                <Text style={styles.editBtn}>{editing ? 'Uložit' : 'Upravit'}</Text>
-              </>
-            )}
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <Text style={styles.headerTitle}>Můj profil</Text>
+        {!editing ? (
+          <TouchableOpacity style={styles.editBtn} onPress={() => setEditing(true)}>
+            <Ionicons name="create-outline" size={18} color={COLORS.primary} />
+            <Text style={{ color: COLORS.primary, fontWeight: '600', fontSize: 14 }}>Upravit</Text>
           </TouchableOpacity>
-        </View>
-
-        {[
-          { key: 'first_name', label: 'Jméno', icon: 'person-outline' },
-          { key: 'last_name', label: 'Příjmení', icon: 'person-outline' },
-          { key: 'company_name', label: 'Firma', icon: 'business-outline', show: profile?.role === 'supplier' },
-          { key: 'phone', label: 'Telefon', icon: 'call-outline' },
-          { key: 'address', label: 'Adresa', icon: 'location-outline' },
-        ].filter(f => f.show !== false).map(field => (
-          <View key={field.key} style={styles.field}>
-            <View style={styles.fieldLabelRow}>
-              <Ionicons name={field.icon} size={16} color={COLORS.gray500} />
-              <Text style={styles.fieldLabel}>{field.label}</Text>
-            </View>
-            {editing ? (
-              <TextInput style={styles.fieldInput} value={form[field.key] || ''}
-                onChangeText={v => update(field.key, v)} placeholder={field.label}
-                placeholderTextColor={COLORS.gray300} />
-            ) : (
-              <Text style={styles.fieldValue}>{profile?.[field.key] || '—'}</Text>
-            )}
-          </View>
-        ))}
+        ) : (
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+            {saving ? <ActivityIndicator size="small" color={COLORS.white} /> :
+              <Text style={{ color: COLORS.white, fontWeight: '600', fontSize: 14 }}>Uložit</Text>}
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Categories for suppliers */}
-      {profile?.role === 'supplier' && profile?.categories?.length > 0 && (
-        <View style={styles.fieldsCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Ionicons name="pricetags-outline" size={18} color={COLORS.gray900} />
-            <Text style={styles.fieldsTitle}>Kategorie služeb</Text>
-          </View>
-          <View style={styles.catsGrid}>
-            {profile.categories.map(cat => (
-              <View key={cat} style={styles.catChip}>
-                <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                <Text style={styles.catChipText}>{cat}</Text>
+      <ScrollView style={{ flex: 1, padding: 16 }}>
+        {/* Avatar */}
+        <View style={styles.avatarSection}>
+          <TouchableOpacity onPress={pickAvatar} style={styles.avatarWrap}>
+            {profile?.profile_image ? (
+              <Image source={{ uri: profile.profile_image.startsWith('http') ? profile.profile_image : `https://craftbolt.cz${profile.profile_image}` }}
+                style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ fontSize: 28, fontWeight: '700', color: COLORS.white }}>{(profile?.first_name?.[0] || 'U').toUpperCase()}</Text>
               </View>
-            ))}
-          </View>
+            )}
+            <View style={styles.cameraIcon}><Ionicons name="camera" size={14} color={COLORS.white} /></View>
+          </TouchableOpacity>
+          <Text style={styles.profileName}>{profile?.company_name || `${profile?.first_name} ${profile?.last_name}`}</Text>
+          <Text style={styles.profileEmail}>{profile?.email}</Text>
+          <Text style={styles.profileRole}>{isSupplier ? 'Dodavatel' : 'Zákazník'}</Text>
         </View>
-      )}
 
-      {/* Reviews */}
-      {reviews.length > 0 && (
-        <View style={styles.fieldsCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Ionicons name="chatbubbles-outline" size={18} color={COLORS.gray900} />
-            <Text style={styles.fieldsTitle}>Hodnocení ({reviews.length})</Text>
-          </View>
-          {reviews.slice(0, 5).map((review) => (
-            <View key={review.id} style={styles.reviewCard}>
-              <View style={styles.reviewHeader}>
-                <View style={styles.reviewStars}>
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Ionicons key={s} name={s <= review.rating ? 'star' : 'star-outline'} size={14} color={s <= review.rating ? COLORS.primary : COLORS.gray300} />
-                  ))}
-                </View>
-                <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString('cs-CZ')}</Text>
-              </View>
-              <Text style={styles.reviewAuthor}>{review.reviewer_name}</Text>
-              <Text style={styles.reviewComment}>{review.comment}</Text>
+        {/* SMS Toggle */}
+        <View style={styles.card}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+              <Text style={{ fontSize: 15, fontWeight: '600', color: COLORS.gray900 }}>SMS notifikace</Text>
             </View>
-          ))}
+            <Switch
+              value={form.sms_notifications || false}
+              onValueChange={handleSmsToggle}
+              trackColor={{ false: COLORS.gray300, true: COLORS.primary }}
+              thumbColor={COLORS.white}
+            />
+          </View>
         </View>
-      )}
 
-      {/* Upload indicator */}
-      {uploading && (
-        <View style={styles.uploadOverlay}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={{ color: COLORS.gray700, marginTop: 8 }}>Nahrávám fotku...</Text>
+        {/* Basic info */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Základní údaje</Text>
+          <ProfileField label="Jméno" value={form.first_name} editing={editing} onChange={v => update('first_name', v)} />
+          <ProfileField label="Příjmení" value={form.last_name} editing={editing} onChange={v => update('last_name', v)} />
+          <ProfileField label="Telefon" value={form.phone} editing={editing} onChange={v => update('phone', v)} keyboardType="phone-pad" />
+          {isSupplier && (
+            <>
+              <ProfileField label="Firma" value={form.company_name} editing={editing} onChange={v => update('company_name', v)} />
+              <ProfileField label="IČO" value={form.ico} editing={editing} onChange={v => update('ico', v)} keyboardType="numeric" />
+              <ProfileField label="DIČ" value={form.dic} editing={editing} onChange={v => update('dic', v)} />
+              <ProfileField label="Adresa sídla" value={form.address} editing={editing} onChange={v => update('address', v)} />
+              <ProfileField label="Web" value={form.website} editing={editing} onChange={v => update('website', v)} />
+            </>
+          )}
+          {!isSupplier && <ProfileField label="Adresa" value={form.address} editing={editing} onChange={v => update('address', v)} />}
         </View>
-      )}
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
+        {/* Bio */}
+        {isSupplier && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>O firmě</Text>
+            {editing ? (
+              <TextInput style={[styles.fieldInput, { height: 80, textAlignVertical: 'top' }]}
+                value={form.bio || ''} onChangeText={v => update('bio', v)} multiline placeholder="Popis vaší firmy..." placeholderTextColor={COLORS.gray300} />
+            ) : (
+              <Text style={styles.fieldValue}>{form.bio || 'Nevyplněno'}</Text>
+            )}
+          </View>
+        )}
+
+        {/* Categories */}
+        {isSupplier && profile?.categories?.length > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Kategorie služeb</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {profile.categories.map((cat, i) => (
+                <View key={i} style={styles.catChip}>
+                  <Text style={styles.catChipText}>{cat}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Logout */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => {
+          Alert.alert('Odhlášení', 'Opravdu se chcete odhlásit?', [
+            { text: 'Ne', style: 'cancel' },
+            { text: 'Ano', style: 'destructive', onPress: logout },
+          ]);
+        }}>
+          <Ionicons name="log-out-outline" size={20} color={COLORS.red500} />
+          <Text style={{ color: COLORS.red500, fontWeight: '600', fontSize: 15 }}>Odhlásit se</Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
   );
 }
 
+const ProfileField = ({ label, value, editing, onChange, keyboardType }) => (
+  <View style={styles.fieldRow}>
+    <Text style={styles.fieldLabel}>{label}</Text>
+    {editing ? (
+      <TextInput style={styles.fieldInput} value={value || ''} onChangeText={onChange}
+        placeholder={label} placeholderTextColor={COLORS.gray300} keyboardType={keyboardType} />
+    ) : (
+      <Text style={styles.fieldValue}>{value || '–'}</Text>
+    )}
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.gray50 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 16, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
-  pageTitle: { fontSize: 20, fontWeight: '700', color: COLORS.gray900 },
-  logoutBtn: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: COLORS.gray200, justifyContent: 'center', alignItems: 'center' },
-  avatarSection: { alignItems: 'center', paddingVertical: 24, backgroundColor: COLORS.white },
-  avatarWrap: { position: 'relative', marginBottom: 14 },
-  avatar: { width: 88, height: 88, borderRadius: 44, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: COLORS.primary + '30' },
-  avatarText: { fontSize: 34, fontWeight: '700', color: COLORS.primary },
-  avatarImage: { width: 88, height: 88, borderRadius: 44, borderWidth: 3, borderColor: COLORS.primary + '30' },
-  cameraIcon: { position: 'absolute', bottom: 0, right: 0, width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: COLORS.white },
-  profileName: { fontSize: 22, fontWeight: '700', color: COLORS.gray900 },
-  profileEmail: { fontSize: 14, color: COLORS.gray500, marginTop: 4 },
-  roleBadgeWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12, marginTop: 10 },
-  roleBadgeText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
-  subscriptionCard: { marginHorizontal: 16, marginTop: 12, backgroundColor: COLORS.white, borderRadius: RADIUS.lg, padding: 16, borderWidth: 1, borderColor: COLORS.gray100, ...SHADOWS.sm },
-  subRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  subIcon: { width: 44, height: 44, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center' },
-  subTitle: { fontSize: 15, fontWeight: '600', color: COLORS.gray900 },
-  subDate: { fontSize: 13, color: COLORS.gray500, marginTop: 2 },
-  statsRow: { flexDirection: 'row', justifyContent: 'center', gap: 32, paddingVertical: 20, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
-  statItem: { alignItems: 'center', gap: 4 },
-  statValue: { fontSize: 20, fontWeight: '700', color: COLORS.primary },
-  statLabel: { fontSize: 12, color: COLORS.gray500 },
-  fieldsCard: { backgroundColor: COLORS.white, margin: 16, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: COLORS.gray100, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4 },
-  fieldHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
-  fieldsTitle: { fontSize: 16, fontWeight: '700', color: COLORS.gray900 },
-  editBtnWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, backgroundColor: COLORS.primaryLight },
-  editBtn: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
-  field: { marginBottom: 18 },
-  fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  fieldLabel: { fontSize: 13, color: COLORS.gray500 },
-  fieldValue: { fontSize: 15, color: COLORS.gray900, fontWeight: '500', paddingLeft: 22 },
-  fieldInput: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: COLORS.gray900, backgroundColor: COLORS.gray50, marginLeft: 22 },
-  catsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  catChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: COLORS.gray900 },
+  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: COLORS.primary, borderRadius: RADIUS.md, paddingHorizontal: 14, paddingVertical: 8 },
+  saveBtn: { backgroundColor: COLORS.primary, borderRadius: RADIUS.md, paddingHorizontal: 20, paddingVertical: 10 },
+  avatarSection: { alignItems: 'center', paddingVertical: 20 },
+  avatarWrap: { position: 'relative' },
+  avatar: { width: 80, height: 80, borderRadius: 40 },
+  cameraIcon: { position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: COLORS.white },
+  profileName: { fontSize: 20, fontWeight: '700', color: COLORS.gray900, marginTop: 10 },
+  profileEmail: { fontSize: 14, color: COLORS.gray500, marginTop: 2 },
+  profileRole: { fontSize: 13, color: COLORS.primary, fontWeight: '600', marginTop: 4 },
+  card: { backgroundColor: COLORS.white, borderRadius: RADIUS.lg, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.gray100, ...SHADOWS.sm },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.gray900, marginBottom: 12 },
+  fieldRow: { marginBottom: 12 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', color: COLORS.gray500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  fieldValue: { fontSize: 15, color: COLORS.gray900 },
+  fieldInput: { borderWidth: 1, borderColor: COLORS.gray200, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, color: COLORS.gray900, backgroundColor: COLORS.gray50 },
+  catChip: { backgroundColor: COLORS.primaryLight, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   catChipText: { fontSize: 13, color: COLORS.primary, fontWeight: '500' },
-  reviewCard: { borderBottomWidth: 1, borderBottomColor: COLORS.gray100, paddingBottom: 14, marginBottom: 14 },
-  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  reviewStars: { flexDirection: 'row', gap: 2 },
-  reviewDate: { fontSize: 12, color: COLORS.gray500 },
-  reviewAuthor: { fontSize: 13, fontWeight: '600', color: COLORS.gray900, marginBottom: 4 },
-  reviewComment: { fontSize: 14, color: COLORS.gray700, lineHeight: 20 },
-  uploadOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.85)', justifyContent: 'center', alignItems: 'center' },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.red100, borderRadius: RADIUS.md, paddingVertical: 14, marginTop: 8 },
 });

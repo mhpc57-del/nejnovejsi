@@ -7,7 +7,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../utils/AuthContext';
-import { miscService } from '../services/api';
+import { miscService, authService } from '../services/api';
 import { COLORS } from '../utils/theme';
 
 export default function RegisterScreen({ navigation }) {
@@ -110,8 +110,13 @@ export default function RegisterScreen({ navigation }) {
         placeholder="Min. 8 znaků" secureTextEntry />
       <InputField icon="call-outline" value={form.phone} onChange={v => update('phone', v)}
         placeholder="+420..." keyboardType="phone-pad" />
-      <TouchableOpacity style={styles.button} onPress={() => {
+      <TouchableOpacity style={styles.button} onPress={async () => {
         if (!form.email || !form.password || !form.phone) { Alert.alert('Chyba', 'Vyplňte všechna pole'); return; }
+        if (form.password.length < 8) { Alert.alert('Chyba', 'Heslo musí mít alespoň 8 znaků'); return; }
+        try {
+          const res = await authService.checkEmail(form.email.trim().toLowerCase());
+          if (res.data.exists) { Alert.alert('Chyba', 'Tento e-mail je již zaregistrován. Přihlaste se nebo použijte jiný.'); return; }
+        } catch {}
         setStep(2);
       }}>
         <View style={styles.buttonInner}>

@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../utils/AuthContext';
-import { COLORS, SHADOWS, RADIUS } from '../utils/theme';
+import { COLORS } from '../utils/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -14,7 +14,6 @@ import SupplierDashboard from '../screens/SupplierDashboard';
 import DemandDetailScreen from '../screens/DemandDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
-import MapScreen from '../screens/MapScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,18 +22,11 @@ const tabScreenOptions = {
   headerShown: false,
   tabBarActiveTintColor: COLORS.primary,
   tabBarInactiveTintColor: COLORS.gray400,
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2, letterSpacing: 0.2 },
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: -2 },
   tabBarStyle: {
-    backgroundColor: COLORS.white,
-    borderTopWidth: 0,
-    paddingTop: 8,
-    paddingBottom: 4,
-    height: 60,
-    elevation: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
+    backgroundColor: COLORS.white, borderTopWidth: 0,
+    paddingTop: 8, paddingBottom: 4, height: 60,
+    elevation: 16, shadowColor: '#000', shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.1, shadowRadius: 16,
   },
 };
 
@@ -42,33 +34,11 @@ function CustomerTabs() {
   return (
     <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={CustomerDashboard}
-        options={{
-          tabBarLabel: 'Přehled',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} />
-          ),
-        }} />
-      <Tab.Screen name="Map" component={MapScreen}
-        options={{
-          tabBarLabel: 'Mapa',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Poptávky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'list' : 'list-outline'} size={22} color={color} /> }} />
       <Tab.Screen name="Notifications" component={NotificationsScreen}
-        options={{
-          tabBarLabel: 'Oznámení',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{
-          tabBarLabel: 'Profil',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
     </Tab.Navigator>
   );
 }
@@ -77,33 +47,11 @@ function SupplierTabs() {
   return (
     <Tab.Navigator screenOptions={tabScreenOptions}>
       <Tab.Screen name="Dashboard" component={SupplierDashboard}
-        options={{
-          tabBarLabel: 'Přehled',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} />
-          ),
-        }} />
-      <Tab.Screen name="Map" component={MapScreen}
-        options={{
-          tabBarLabel: 'Mapa',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Zakázky', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} /> }} />
       <Tab.Screen name="Notifications" component={NotificationsScreen}
-        options={{
-          tabBarLabel: 'Oznámení',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Oznámení', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={22} color={color} /> }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{
-          tabBarLabel: 'Profil',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
-          ),
-        }} />
+        options={{ tabBarLabel: 'Profil', tabBarIcon: ({ focused, color }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
     </Tab.Navigator>
   );
 }

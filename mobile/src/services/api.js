@@ -11,9 +11,7 @@ const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -21,6 +19,7 @@ export const authService = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (data) => api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
+  checkEmail: (email) => api.post('/auth/check-email', { email }),
 };
 
 export const demandService = {
@@ -30,11 +29,16 @@ export const demandService = {
   getById: (id) => api.get(`/demands/${id}`),
   create: (data) => api.post('/demands', data),
   accept: (id) => api.post(`/demands/${id}/accept`),
-  softAccept: (id, reason) => api.post(`/demands/${id}/soft-accept`, null, { params: { reason } }),
-  arrive: (id) => api.post(`/demands/${id}/arrive`),
-  complete: (id) => api.post(`/demands/${id}/complete`),
-  cancel: (id, reason) => api.post(`/demands/${id}/cancel-reason`, null, { params: { reason } }),
+  complete: (id, data) => api.post(`/demands/${id}/complete`, data || {}),
+  cancel: (id) => api.post(`/demands/${id}/cancel`, {}),
+  requestVerification: (id, data) => api.post(`/demands/${id}/request-verification`, data),
   verifyCheckout: (id) => api.post(`/demands/${id}/verify-checkout`),
+};
+
+export const disputeService = {
+  create: (demandId, data) => api.post(`/demands/${demandId}/dispute`, data),
+  get: (demandId) => api.get(`/demands/${demandId}/dispute`),
+  respond: (demandId, data) => api.post(`/demands/${demandId}/dispute/respond`, data),
 };
 
 export const messageService = {
@@ -45,19 +49,16 @@ export const messageService = {
 
 export const userService = {
   getById: (id) => api.get(`/users/${id}`),
+  getLocation: (id) => api.get(`/users/${id}/location`),
   updateProfile: (data) => api.put('/users/profile', data),
+  updateLocation: (data) => api.post('/users/location', data),
 };
 
 export const subscriptionService = {
   getPlans: () => api.get('/subscription/plans'),
   getMy: () => api.get('/subscription/my'),
   createCheckout: (data) => api.post('/subscription/checkout', data),
-  getStatus: (sessionId) => api.get(`/subscription/status/${sessionId}`),
-};
-
-export const reviewService = {
-  create: (data) => api.post('/reviews', data),
-  getByUser: (userId) => api.get(`/reviews/user/${userId}`),
+  syncPending: () => api.post('/payments/sync-pending', {}),
 };
 
 export const uploadService = {
@@ -67,18 +68,16 @@ export const uploadService = {
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
     formData.append('file', { uri, name: filename || 'photo.jpg', type });
-    const res = await api.post('/upload', formData, {
+    return api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       transformRequest: (data) => data,
     });
-    return res;
   },
 };
 
 export const miscService = {
   getCategories: () => api.get('/categories'),
   geocodeSearch: (q) => api.get('/geocode/search', { params: { q } }),
-  suggestCategory: (name) => api.post('/categories/suggest', { name }),
   aresLookup: (ico) => api.get(`/ares/${ico}`),
   getPlatformStats: () => api.get('/platform/stats'),
 };

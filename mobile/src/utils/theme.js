@@ -29,6 +29,14 @@ export const COLORS = {
   blue100: '#dbeafe',
   blue500: '#3b82f6',
   blue700: '#1d4ed8',
+  purple50: '#faf5ff',
+  purple100: '#f3e8ff',
+  purple500: '#a855f7',
+  purple700: '#7e22ce',
+  amber50: '#fffbeb',
+  amber100: '#fef3c7',
+  amber500: '#f59e0b',
+  amber700: '#b45309',
   orange50: '#fff7ed',
   orange100: '#ffedd5',
   orange500: '#f97316',
@@ -36,34 +44,10 @@ export const COLORS = {
 };
 
 export const SHADOWS = {
-  sm: {
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-  },
-  md: {
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-  },
-  lg: {
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-  },
-  glow: {
-    elevation: 6,
-    shadowColor: '#f97316',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-  },
+  sm: { elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3 },
+  md: { elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8 },
+  lg: { elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 16 },
+  glow: { elevation: 6, shadowColor: '#f97316', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
 };
 
 export const FONTS = {
@@ -78,17 +62,33 @@ export const FONTS = {
   caption: { fontSize: 11, color: COLORS.gray500, letterSpacing: 0.3 },
 };
 
-export const RADIUS = {
-  sm: 10,
-  md: 14,
-  lg: 18,
-  xl: 24,
-  full: 999,
-};
+export const RADIUS = { sm: 10, md: 14, lg: 18, xl: 24, full: 999 };
 
 export const STATUS_COLORS = {
   open: { bg: COLORS.green50, text: COLORS.green700, label: 'Otevřená', icon: 'radio-button-on' },
   in_progress: { bg: COLORS.blue50, text: COLORS.blue700, label: 'Probíhá', icon: 'time-outline' },
+  pending_completion: { bg: COLORS.purple50, text: COLORS.purple700, label: 'K potvrzení', icon: 'hourglass-outline' },
+  dispute: { bg: COLORS.amber50, text: COLORS.amber700, label: 'V řešení', icon: 'warning-outline' },
   completed: { bg: COLORS.gray100, text: COLORS.gray700, label: 'Dokončeno', icon: 'checkmark-circle-outline' },
   cancelled: { bg: COLORS.red50, text: COLORS.red700, label: 'Zrušeno', icon: 'close-circle-outline' },
 };
+
+export const DEMAND_TABS_CUSTOMER = [
+  { key: 'verified', label: 'Ověřené', color: COLORS.green500, icon: 'shield-checkmark-outline' },
+  { key: 'unverified', label: 'Neověřené', color: COLORS.orange500, icon: 'alert-circle-outline' },
+  { key: 'in_progress', label: 'Probíhající', color: COLORS.blue500, icon: 'time-outline' },
+  { key: 'pending_completion', label: 'K potvrzení', color: COLORS.purple500, icon: 'hourglass-outline' },
+  { key: 'dispute', label: 'V řešení', color: COLORS.amber500, icon: 'warning-outline' },
+  { key: 'completed', label: 'Dokončené', color: COLORS.gray500, icon: 'checkmark-circle-outline' },
+  { key: 'cancelled', label: 'Nedokončené', color: COLORS.red500, icon: 'close-circle-outline' },
+];
+
+export const DEMAND_TABS_SUPPLIER = [
+  { key: 'available_verified', label: 'Ověřené', color: COLORS.green500, icon: 'shield-checkmark-outline' },
+  { key: 'available_unverified', label: 'Neověřené', color: COLORS.orange500, icon: 'alert-circle-outline' },
+  { key: 'in_progress', label: 'Rozdělané', color: COLORS.blue500, icon: 'time-outline' },
+  { key: 'pending_completion', label: 'K potvrzení', color: COLORS.purple500, icon: 'hourglass-outline' },
+  { key: 'dispute', label: 'V řešení', color: COLORS.amber500, icon: 'warning-outline' },
+  { key: 'completed', label: 'Dokončené', color: COLORS.gray500, icon: 'checkmark-circle-outline' },
+  { key: 'cancelled', label: 'Nedokončené', color: COLORS.red500, icon: 'close-circle-outline' },
+];
