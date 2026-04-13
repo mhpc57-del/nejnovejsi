@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth, API } from '../App';
 import axios from 'axios';
 import WelcomeModal from '../components/WelcomeModal';
@@ -56,6 +56,7 @@ import SupplierDemandDetail from '../components/SupplierDemandDetail';
 const SupplierDashboard = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [availableDemands, setAvailableDemands] = useState([]);
   const [myDemands, setMyDemands] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,9 +138,26 @@ const SupplierDashboard = () => {
     }, 15000);
     const dataPoll = setInterval(fetchData, 15000);
     // Sync pending payments (e.g. subscription that wasn't activated)
-    axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => { if (res.data.synced > 0) { fetchData(); fetchProfile(); } })
-      .catch(() => {});
+    const syncPayments = async () => {
+      try {
+        const res = await axios.post(`${API}/payments/sync-pending`, {}, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.data.synced > 0) { fetchData(); fetchProfile(); }
+      } catch {}
+    };
+    syncPayments();
+    // If returning from Stripe payment, poll aggressively for sync
+    if (searchParams.get('payment') === 'success' || window.location.search.includes('session_id')) {
+      const paymentPoll = setInterval(async () => {
+        await syncPayments();
+        const me = await axios.get(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+        if (me?.data?.subscription_active) {
+          clearInterval(paymentPoll);
+          fetchProfile();
+        }
+      }, 3000);
+      // Stop polling after 30s
+      setTimeout(() => clearInterval(paymentPoll), 30000);
+    }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -160,6 +178,7 @@ const SupplierDashboard = () => {
         first_name: profileForm.first_name, last_name: profileForm.last_name,
         company_name: profileForm.company_name, phone: profileForm.phone,
         sms_notifications: profileForm.sms_notifications,
+        address: profileForm.address,
         permanent_address: profileForm.permanent_address,
         actual_address: profileForm.actual_address,
         profile_image: profileForm.profile_image,
@@ -359,7 +378,7 @@ const SupplierDashboard = () => {
                 { key: 'email', label: 'E-mail', readonly: true },
                 { key: 'ico', label: 'IČ' },
                 { key: 'dic', label: 'DIČ' },
-                { key: 'permanent_address', label: 'Adresa sídla', full: true },
+                { key: 'address', label: 'Adresa sídla', full: true },
               ].map(f => (
                 <div key={f.key} className={f.full ? 'sm:col-span-2' : ''}>
                   <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{f.label}</label>
