@@ -705,6 +705,7 @@ const SupplierDashboard = () => {
           onBack={() => setSelectedDemand(null)}
           onAccept={handleAcceptDemand}
           onRefresh={fetchData}
+          onTabChange={setActiveTab}
         />
       );
     }

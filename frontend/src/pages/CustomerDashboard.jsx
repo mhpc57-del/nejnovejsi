@@ -440,6 +440,7 @@ const CustomerDashboard = () => {
           onBack={() => setSelectedDemand(null)}
           onVerify={handleVerifyDemand}
           onRefresh={fetchDemands}
+          onTabChange={setActiveTab}
           userId={user?.id}
         />
       );

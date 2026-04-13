@@ -33,7 +33,7 @@ const haversineKm = (lat1, lon1, lat2, lon2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 };
 
-const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, userId }) => {
+const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProgress, hasSupplier, onBack, onVerify, onRefresh, onTabChange, userId }) => {
   const isDispute = d.status === 'dispute';
   const isCompleted = d.status === 'completed';
   const isPendingCompletion = d.status === 'pending_completion';
@@ -247,6 +247,7 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
         customer_review: reviewText.trim() || undefined,
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Dokončení zakázky bylo potvrzeno!');
+      if (onTabChange) onTabChange('completed');
       onBack();
       onRefresh();
     } catch (error) {
@@ -265,6 +266,7 @@ const CustomerDemandDetail = ({ demand: d, token, isOpen, isUnverified, isInProg
         photos: customerPhotos,
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Dokončení bylo odmítnuto. Zakázka přesunuta do sporů.');
+      if (onTabChange) onTabChange('dispute');
       onBack();
       onRefresh();
     } catch (error) {

@@ -42,7 +42,7 @@ const DISPUTE_OPTIONS = [
   { key: 'f', label: 'Jiný důvod — popíši vlastními slovy', hasCustomDescription: true },
 ];
 
-const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRefresh }) => {
+const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRefresh, onTabChange }) => {
   const isVerified = d.verified;
   const isOpen = d.status === 'open';
   const isInProgress = d.status === 'in_progress';
@@ -196,6 +196,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
         completion_photos: completionPhotos,
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Zakázka byla označena jako dokončená.');
+      if (onTabChange) onTabChange('pending_completion');
       onBack();
       onRefresh();
     } catch (error) {
@@ -565,6 +566,7 @@ const SupplierDemandDetail = ({ demand: d, token, userId, onBack, onAccept, onRe
                   try {
                     await axios.post(`${API}/demands/${d.id}/complete`, { completion_type: 'standard', final_price: d.final_price || 0 }, { headers: { Authorization: `Bearer ${token}` } });
                     alert('Dokončení potvrzeno!');
+                    if (onTabChange) onTabChange('completed');
                     onBack(); onRefresh();
                   } catch (err) { alert(err.response?.data?.detail || 'Chyba'); }
                 }} className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-colors" data-testid="confirm-completion-supplier-btn">
