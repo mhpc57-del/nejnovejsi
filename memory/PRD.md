@@ -5,7 +5,7 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v CR.
 
 ## Tech Stack
 - **Web**: React + Tailwind | FastAPI + MongoDB
-- **Mobile**: React Native + Expo (Android first)
+- **Mobile**: React Native + Expo SDK 54 (Android) — build funguje, app nainstalovana
 - **Integrace**: BulkGate SMS (http.client), Stripe LIVE, Wedos SMTP, OpenAI GPT-4o
 
 ## Mobilni aplikace — stav
@@ -25,20 +25,22 @@ Platforma pro propojeni zakazniku s remeslniky a dodavateli sluzeb v CR.
 - Deep linking
 
 ## Web opravy 13. duben 2026
-- FIX: DemandResponse duplicitni pole (completion_photos List[dict] vs List[str]) — pricina zmizeni poptavek
-- FIX: SMS prepinac zakaznika (left-5.5 bug)
+- FIX: DemandResponse duplicitni pole — pricina zmizeni poptavek
+- FIX: location_sharing chybelo v user_to_response()
+- FIX: sms_notifications chybelo v query projection
+- FIX: SMS prepinac zakaznika
 - FIX: Faktura font FreeSans zabaleny v /backend/fonts/
-- FIX: Adresa sidla — mapuje na address (z ARES)
-- FIX: Platba Stripe — agresivni polling 3s po navratu
-- FIX: Email kontrola pri registraci v 1. kroku
-- FIX: Tab prepinani po dokonceni/odmitnuti zakazky
-- FIX: Admin panel error handling pro vadne uzivatele
-- NOVY: /api/debug/db-check diagnosticky endpoint
+- FIX: Adresa sidla mapuje na address (ARES)
+- FIX: Platba Stripe agresivni polling
+- FIX: Email kontrola pri registraci
+- FIX: Tab prepinani po dokonceni/odmitnuti
+- FIX: Admin panel error handling
+- NOVY: /api/debug/db-check endpoint
+- NOVY: /api/auth/check-email endpoint
 
 ## Backlog
-- P1: SMS na AC/DC MONT (potreba db-check z produkce)
-- P1: Push notifikace v mobilni app
+- P1: Push notifikace mobilni app
+- P1: SMS na AC/DC MONT (db-check z produkce)
 - P2: Referencni fotky dodavatelu
-- P2: Bezpecnostni zpevneni (Rate limiting, CSRF, XSS)
-- P3: QR kody, nove platebni moznosti
-- P3: iOS verze (potreba Apple Developer ucet)
+- P2: Bezpecnostni zpevneni
+- P3: QR kody, iOS verze, nove platebni moznosti
