@@ -154,7 +154,14 @@ export default function DemandDetailScreen({ route, navigation }) {
             <InfoRow icon="location-outline" color={COLORS.gray500} text={d.address} />
             {d.budget_max > 0 && <InfoRow icon="cash-outline" color={COLORS.green500} text={`Max. ${d.budget_max.toLocaleString('cs-CZ')} Kč`} />}
             {d.deadline && !isNaN(new Date(d.deadline).getTime()) && <InfoRow icon="calendar-outline" color={COLORS.primary} text={`Termín: ${new Date(d.deadline).toLocaleDateString('cs-CZ')}`} />}
-            {d.assigned_supplier_name && <InfoRow icon="person-outline" color={COLORS.blue500} text={`Dodavatel: ${d.assigned_supplier_name}`} />}
+            {d.assigned_supplier_name && (
+              <TouchableOpacity onPress={() => d.assigned_supplier_id && navigation.navigate('SupplierProfile', { supplierId: d.assigned_supplier_id, supplierName: d.assigned_supplier_name })}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <Ionicons name="person-outline" size={16} color={COLORS.blue500} />
+                <Text style={{ fontSize: 14, color: COLORS.blue500, fontWeight: '500' }}>{d.assigned_supplier_name}</Text>
+                <Ionicons name="chevron-forward" size={14} color={COLORS.blue500} />
+              </TouchableOpacity>
+            )}
             {d.customer_name && isSupplier && <InfoRow icon="person-outline" color={COLORS.green500} text={`Zákazník: ${d.customer_name}`} />}
 
             {d.images?.length > 0 && (

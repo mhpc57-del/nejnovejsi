@@ -13,6 +13,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import CustomerDashboard from '../screens/CustomerDashboard';
 import SupplierDashboard from '../screens/SupplierDashboard';
 import DemandDetailScreen from '../screens/DemandDetailScreen';
+import SupplierPublicProfile from '../screens/SupplierPublicProfile';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 
@@ -76,8 +77,20 @@ export default function AppNavigator() {
     );
   }
 
+  const linking = {
+    prefixes: ['craftbolt://', 'https://craftbolt.cz'],
+    config: {
+      screens: {
+        DemandDetail: 'zakazka/:demandId',
+        SupplierProfile: 'dodavatel/:supplierId',
+        SupplierHome: { screens: { Dashboard: 'dodavatel' } },
+        CustomerHome: { screens: { Dashboard: 'zakaznik' } },
+      },
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         {!user ? (
           <>
@@ -92,6 +105,7 @@ export default function AppNavigator() {
               <Stack.Screen name="CustomerHome" component={CustomerTabs} />
             )}
             <Stack.Screen name="DemandDetail" component={DemandDetailScreen} />
+            <Stack.Screen name="SupplierProfile" component={SupplierPublicProfile} />
           </>
         )}
       </Stack.Navigator>

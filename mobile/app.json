@@ -22,8 +22,20 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "cz.craftbolt.app"
+      "package": "cz.craftbolt.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "craftbolt.cz", "pathPrefix": "/zakazka" },
+            { "scheme": "https", "host": "craftbolt.cz", "pathPrefix": "/chat" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
+    "scheme": "craftbolt",
     "plugins": [
       "./plugins/minSdkProjectGradlePatch.js",
       [
